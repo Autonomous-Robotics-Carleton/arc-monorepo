@@ -1,0 +1,175 @@
+---
+title: Updating Content
+description: How to update team members, projects, sponsors, and governance links.
+icon: FilePen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+All editable content lives in `data/` as plain TypeScript files. There's no CMS — just edit the file and the page updates automatically.
+
+## Team Members (`data/team.ts`)
+
+```ts
+export type TeamMember = {
+  name: string;
+  role: string;
+  image?: string; // relative path to image in /public
+};
+
+export const teamMembers: TeamMember[] = [
+  { name: 'Your Name', role: 'President' },
+  { name: 'Name Two',  role: 'VP Finance & Administration' },
+  // ...
+];
+```
+
+**Current roles (in order):**
+1. President
+2. VP Finance & Administration
+3. VP External
+4. VP Media
+5. Software Lead
+6. Electrical Lead
+7. Mechanical Lead
+
+### Adding a photo
+
+1. Drop the photo into `public/team/` (create the folder if it doesn't exist). Square or portrait crops work best — the card uses `aspect-[3/4]`.
+2. Add the path to the member's `image` field:
+
+```ts
+{ name: 'Jane Smith', role: 'President', image: '/team/jane.jpg' }
+```
+
+3. Update the team card in `app/team/page.tsx` to render the image using `next/image`:
+
+```tsx
+{member.image ? (
+  <Image
+    src={member.image}
+    alt={member.name}
+    fill
+    className="object-cover"
+  />
+) : (
+  <div className="aspect-[3/4] w-full bg-bp-blue-light" />
+)}
+```
+
+<Callout type="info">
+The image div needs `position: relative` on the parent for `fill` layout to work. Add `relative` to the photo container div.
+</Callout>
+
+## Projects / Robots (`data/projects.ts`)
+
+```ts
+export type Project = {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  image?: string;  // relative path to image in /public
+  github?: string; // URL to the GitHub repo for this subsystem
+};
+
+export const projects: Project[] = [
+  {
+    id: 'autonomy-stack',
+    title: 'Autonomy Stack',
+    description: 'Full self-driving pipeline...',
+    tags: ['ROS2', 'Python', 'C++'],
+    github: 'https://github.com/Autonomous-Robotics-Carleton/autonomy',
+  },
+  // ...
+];
+```
+
+Each project appears as a card on `/robots`. Clicking a card opens a modal with the full description and a GitHub link.
+
+### Adding a project image
+
+1. Drop the image into `public/projects/`
+2. Add the path to the project's `image` field
+3. The image placeholder div in the modal (`aspect-video w-full bg-bp-blue-light`) in `app/robots/page.tsx` currently renders a solid block — swap it for a `next/image` when you have real images
+
+## Sponsors (`data/sponsors.ts`)
+
+```ts
+export const sponsors = [
+  { name: 'Vexal' },
+  { name: 'Notion' },
+  { name: 'KSRC' },
+  { name: 'Chorus' },
+];
+```
+
+Logos are mapped in `components/ui/SponsorLogos.tsx`. To add a new sponsor:
+
+<Steps>
+  <Step>
+    ### Add to sponsors.ts
+    ```ts
+    { name: 'NewSponsor' }
+    ```
+  </Step>
+  <Step>
+    ### Add the logo SVG to SponsorLogos.tsx
+    Add a new `case` in the `getSponsorLogo` switch:
+    ```tsx
+    case 'NewSponsor':
+      return <NewSponsorSvg fill="currentColor" />;
+    ```
+    Logos render with `fill="currentColor"` so they inherit the parent text colour automatically.
+  </Step>
+</Steps>
+
+## Governance Links (`app/governance/page.tsx`)
+
+The constitution and meeting minutes links are hardcoded in the `ROWS` array at the top of the file:
+
+```ts
+const ROWS = [
+  {
+    id: 'constitution',
+    label: 'CONSTITUTION',
+    description: 'Club founding documents and bylaws.',
+    action: 'OPEN IN DRIVE →',
+    href: '#',  // ← replace with real Google Drive share link
+  },
+  {
+    id: 'minutes',
+    label: 'MEETING MINUTES',
+    description: 'Most recent general meeting notes.',
+    action: 'OPEN NOTES →',
+    href: '#',  // ← replace with the latest meeting notes link (update weekly)
+  },
+  // ...
+];
+```
+
+**Updating meeting minutes week to week:** change the `href` on the `minutes` row to the new Google Drive / Notion link. That's it.
+
+<Callout type="warn" title="Share settings">
+Make sure the Google Drive link is set to "Anyone with the link can view" before publishing.
+</Callout>
+
+## Contact Page Links (`app/contact/page.tsx`)
+
+GitHub repo and docs links are also hardcoded. Find the GitHub and Docs rows and update the `href` values:
+
+```tsx
+{/* GitHub row */}
+<a href="https://github.com/Autonomous-Robotics-Carleton/2026" ...>
+  GITHUB
+</a>
+<a href="https://github.com/Autonomous-Robotics-Carleton/2026" ...>
+  VIEW REPO →
+</a>
+
+{/* Docs row */}
+<a href="https://docs.arcarleton.ca" ...>OPEN DOCS →</a>
+```
+
+Social links (Instagram, LinkedIn, GitHub) are in the `SOCIAL_LINKS` constant at the top of the same file.

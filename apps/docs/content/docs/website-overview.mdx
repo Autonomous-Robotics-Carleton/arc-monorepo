@@ -1,0 +1,79 @@
+---
+title: Overview
+description: Stack, architecture, and design decisions behind the ARC website.
+icon: Globe
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+The ARC website (`apps/web`) is the public-facing club site. It lives in the monorepo alongside the docs site and any other apps.
+
+## Tech Stack
+
+| Layer | Tool | Version |
+|---|---|---|
+| Framework | Next.js (App Router) | 14 |
+| Styling | Tailwind CSS | v4 |
+| Language | TypeScript | 5 |
+| Animation | GSAP + ScrollTrigger | 3 |
+| Package manager | pnpm (monorepo) | — |
+
+### Why these choices
+
+**Next.js App Router** — server components by default, file-based routing, zero-config image optimisation. Every page uses `'use client'` today since most have animations, but the structure is ready for server components where it makes sense.
+
+**Tailwind v4** — uses a `@theme` block in `globals.css` instead of a separate config file. All design tokens live there as CSS custom properties. This means you can reference them in both Tailwind classes *and* raw CSS/inline styles.
+
+**GSAP** — used for the blueprint exploded view scroll scene and scroll-triggered entrance animations. A shared `lib/animations.ts` wrapper handles registration and reduced-motion checks.
+
+## Running Locally
+
+```bash
+# From the monorepo root
+pnpm install
+pnpm --filter web dev
+```
+
+The site starts at `http://localhost:3000`.
+
+<Callout type="info" title="Port conflict?">
+If 3000 is taken, Next.js auto-increments to 3001, 3002, etc. Check the terminal output.
+</Callout>
+
+## Pages at a Glance
+
+| Route | Purpose |
+|---|---|
+| `/` | Home — hero, identity, mission, sponsors |
+| `/robots` | Project cards with click-to-expand modal |
+| `/team` | Exec grid + Instagram feed + join CTA |
+| `/governance` | Constitution, meeting minutes, current status |
+| `/contact` | Email, location, socials, GitHub, docs |
+| `/blueprint` | Easter egg — GSAP scroll exploded car view |
+
+## Key Directories
+
+```
+apps/web/
+├── app/                  # Next.js routes (one folder = one route)
+├── components/
+│   ├── layout/           # Header, Footer
+│   ├── sections/         # Page-specific sections (BlueprintExplode, LoadingScreen)
+│   └── ui/               # Shared UI primitives
+├── context/              # TransitionContext (page transition system)
+├── data/                 # Content data files — edit these to update page content
+├── hooks/                # useScrollReveal, useStaggerReveal
+├── lib/                  # animations.ts GSAP wrapper
+└── public/               # Static assets (car.png, part PNGs)
+```
+
+## Further Reading
+
+<Cards>
+  <Card title="File Structure" href="/docs/website-structure" description="Routing, page anatomy, and where everything lives" />
+  <Card title="Design System" href="/docs/website-design-system" description="Colors, CSS variables, typography, utility classes" />
+  <Card title="Components" href="/docs/website-components" description="Guide to the key UI components" />
+  <Card title="Updating Content" href="/docs/website-content" description="How to change team, projects, sponsors, and governance links" />
+  <Card title="Instagram Feed" href="/docs/website-instagram" description="Setting up the Behold.so feed on the Team page" />
+</Cards>

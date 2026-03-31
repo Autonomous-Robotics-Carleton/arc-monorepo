@@ -1,4 +1,4 @@
-# 🚗 ARC Docs — Autonomous Robotics Carleton  
+# 🚗 ARC — Autonomous Robotics Carleton  
 
 <p align="center">
   <img src="https://img.shields.io/github/last-commit/Autonomous-Robotics-Carleton/2026?color=blue&style=for-the-badge" />
@@ -16,8 +16,8 @@
 
 ---
 
-Welcome to the **documentation hub** for **ARC (Autonomous Robotics Carleton)**!  
-This project is dedicated to documenting everything about building, configuring, and maintaining our **autonomous car** as we prepare for competitions.  
+Welcome to the **monorepo** for **ARC (Autonomous Robotics Carleton)**!  
+This project houses our public-facing website and documentation hub — everything related to building, configuring, and showcasing our **autonomous car** as we prepare for competitions.  
 
 We’re keeping this project **fully open source**, so current and future members — and the wider robotics community — can learn, contribute, and grow with us.  
 
@@ -25,7 +25,16 @@ We’re keeping this project **fully open source**, so current and future member
 
 ## 📖 What’s Inside  
 
-This repository contains:  
+This repository contains two apps:
+
+### 🌐 `apps/web` — Public Website  
+The ARC marketing and showcase site built with **Next.js 15**, **Tailwind CSS v4**, and **GSAP** animations.  
+- 🏎 **Home page** — interactive hero, sponsors, and team highlights  
+- 📐 **Blueprint page** — animated exploded-view car visualization  
+- 👥 **Projects & team pages** — showcasing members and ongoing work  
+
+### 📚 `apps/docs` — Documentation Hub  
+The technical docs site built with **Fumadocs** + **Next.js**.  
 - ✅ **Setup guides** — step-by-step instructions for getting the ARC car up and running.  
 - 🛠 **Configuration docs** — details on software, hardware, and environment settings.  
 - 📚 **Knowledge base** — collected learnings and resources as the project evolves.  
@@ -64,28 +73,34 @@ pnpm install           # installs all workspace dependencies
 
 ---
 
-## ▶️ Run the Dev Server
+## ▶️ Run the Dev Servers
 
 ```bash
-npx nx dev docs        # or: pnpm dev:docs
+npx nx dev docs        # Docs site → http://localhost:3000
+npx nx dev web         # Public website → http://localhost:3001
 ```
-
-Site is now live at `http://localhost:3000`
 
 ---
 
 ## 🧪 Lint + Build
 
 ```bash
+# Docs
 npx nx build docs
 npx nx lint docs
+
+# Website
+npx nx build web
+npx nx lint web
 ```
 
 ---
 
 ## 2️⃣ Make Your Changes
 
-Docs live in:
+### Docs (`apps/docs`)
+
+Content lives in:
 
 ```
 apps/docs/content/
@@ -96,6 +111,21 @@ UI + logic:
 ```
 apps/docs/app/
 apps/docs/lib/
+```
+
+### Website (`apps/web`)
+
+Pages live in:
+
+```
+apps/web/app/
+```
+
+Components + UI:
+
+```
+apps/web/components/
+apps/web/lib/
 ```
 
 ---
@@ -137,12 +167,20 @@ Contributors never touch Docker.
 ```
 2026/                             # Nx monorepo root
 ├── apps/
-│   └── docs/                 # Fumadocs / Next.js docs app
-│       ├── app/              # Next.js App Router
-│       ├── content/          # MDX documentation pages
-│       ├── public/           # Static assets
-│       ├── lib/              # Utility functions
-│       ├── components/       # React components
+│   ├── docs/                 # Fumadocs / Next.js docs app
+│   │   ├── app/              # Next.js App Router
+│   │   ├── content/          # MDX documentation pages
+│   │   ├── public/           # Static assets
+│   │   ├── lib/              # Utility functions
+│   │   ├── components/       # React components
+│   │   ├── next.config.mjs
+│   │   └── package.json
+│   └── web/                  # Next.js public website
+│       ├── app/              # Next.js App Router (pages)
+│       ├── components/       # UI + layout components
+│       ├── lib/              # Animation utilities
+│       ├── hooks/            # Custom React hooks
+│       ├── public/           # Static assets (images, video)
 │       ├── next.config.mjs
 │       └── package.json
 ├── nx.json                   # Nx workspace config
@@ -162,14 +200,14 @@ This repo uses **Nx** + **pnpm workspaces**. All apps live in `apps/`, shared co
 1. Create the app directory with its own `package.json`:
 
 ```bash
-mkdir -p apps/web
+mkdir -p apps/myapp
 ```
 
 2. Add a `package.json` inside it:
 
 ```json
 {
-  "name": "arc-web",
+  "name": "arc-myapp",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -184,13 +222,13 @@ mkdir -p apps/web
 
 ```json
 {
-  "name": "web",
+  "name": "myapp",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "targets": {
-    "dev": { "command": "next dev", "options": { "cwd": "apps/web" } },
-    "build": { "command": "next build", "options": { "cwd": "apps/web" }, "outputs": ["{projectRoot}/.next"] },
-    "start": { "command": "next start", "options": { "cwd": "apps/web" }, "dependsOn": ["build"] }
+    "dev": { "command": "next dev", "options": { "cwd": "apps/myapp" } },
+    "build": { "command": "next build", "options": { "cwd": "apps/myapp" }, "outputs": ["{projectRoot}/.next"] },
+    "start": { "command": "next start", "options": { "cwd": "apps/myapp" }, "dependsOn": ["build"] }
   }
 }
 ```
@@ -199,7 +237,7 @@ mkdir -p apps/web
 
 ```bash
 pnpm install
-npx nx dev web
+npx nx dev myapp
 ```
 
 ## Add a shared library
