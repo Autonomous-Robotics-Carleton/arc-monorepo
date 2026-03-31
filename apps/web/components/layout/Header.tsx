@@ -7,8 +7,10 @@ import NavIcon from '@/components/ui/NavIcon';
 import TransitionLink from '@/components/ui/TransitionLink';
 
 const NAV_ITEMS = [
-  { label: 'ABOUT US', href: '/' },
-  { label: 'PROJECTS', href: '/projects' },
+  { label: 'HOME', href: '/' },
+  { label: 'ROBOTS', href: '/robots' },
+  { label: 'TEAM', href: '/team' },
+  { label: 'GOVERNANCE', href: '/governance' },
   { label: 'CONTACT', href: '/contact' },
 ] as const;
 
@@ -17,8 +19,8 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full">
-      <nav className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-5 md:px-10 lg:px-16">
+    <header className="fixed top-0 left-0 z-50 w-full border-b border-bp-line bp-glass-strong">
+      <nav className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3 md:px-10 lg:px-16">
         {/* Logo */}
         <TransitionLink href="/" aria-label="ARC Home">
           <ArcLogo className="h-10 w-auto text-white md:h-12" />

@@ -2,8 +2,16 @@
 
 import { useEffect, useRef, useState } from 'react';
 import ArcLogo from '@/components/ui/ArcLogo';
+import CornerTicks from '@/components/ui/CornerTicks';
 import { useTransition } from '@/context/TransitionContext';
 import { gsap, prefersReducedMotion } from '@/lib/animations';
+
+const GRID_STYLE = {
+  backgroundImage: `
+    repeating-linear-gradient(0deg,  rgba(212,212,212,0.07) 0px, rgba(212,212,212,0.07) 1px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(90deg, rgba(212,212,212,0.07) 0px, rgba(212,212,212,0.07) 1px, transparent 1px, transparent 60px)
+  `,
+} as React.CSSProperties;
 
 export default function LoadingScreen() {
   const { isInitialLoad, completeInitialLoad } = useTransition();
@@ -16,18 +24,15 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (!isInitialLoad) return;
 
-    // Check for reduced motion
     if (prefersReducedMotion()) {
       completeInitialLoad();
       return;
     }
 
-    // Phase 1: Show logo for 800ms
     const logoTimer = setTimeout(() => {
       setPhase('loading');
       startRef.current = performance.now();
 
-      // Phase 2: Animate counter 0 → 100 over 1.5s
       const COUNTER_DURATION = 1500;
       const animate = (now: number) => {
         const elapsed = now - startRef.current;
@@ -36,19 +41,15 @@ export default function LoadingScreen() {
         if (pct < 100) {
           rafRef.current = requestAnimationFrame(animate);
         } else {
-          // Counter complete, wait a moment then slide up
           setTimeout(() => {
             setPhase('complete');
-            // Slide the loading screen up to reveal site
             gsap.to(containerRef.current, {
               yPercent: -100,
               duration: 0.8,
               ease: 'power2.out',
-              onComplete: () => {
-                completeInitialLoad();
-              },
+              onComplete: () => completeInitialLoad(),
             });
-          }, 300); // Small pause at 100% before sliding
+          }, 300);
         }
       };
       rafRef.current = requestAnimationFrame(animate);
@@ -60,14 +61,18 @@ export default function LoadingScreen() {
     };
   }, [isInitialLoad, completeInitialLoad]);
 
-  // Don't render if not initial load
   if (!isInitialLoad) return null;
 
   return (
     <div
       ref={containerRef}
       className="fixed inset-0 z-[101] flex items-center justify-center bg-bp-blue-dark"
+      style={GRID_STYLE}
     >
+      {/* Corner ticks */}
+      <CornerTicks size={20} />
+
+      {/* Original centre layout */}
       <div className="flex items-center gap-6 md:gap-10">
         <ArcLogo className="h-10 w-auto text-white md:h-14" />
 
@@ -91,6 +96,21 @@ export default function LoadingScreen() {
           </p>
         </div>
       </div>
+
+      {/* Progress bar along bottom edge */}
+      <div className="absolute bottom-0 left-0 h-px w-full bg-bp-line">
+        <div
+          className="h-full bg-accent/60 transition-none"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Bottom-right label */}
+      <p
+        className="absolute bottom-4 right-6 font-mono text-xs tracking-widest text-fg/20"
+      >
+        ARC · CARLETON
+      </p>
     </div>
   );
 }

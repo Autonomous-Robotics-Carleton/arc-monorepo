@@ -13,8 +13,8 @@ const HOVER_R = 1.5;   // cells — highlight radius around cursor
 const RIPPLE_R = 5;    // cells — ripple spread radius on click
 const RIPPLE_MS = 1200; // ms  — ripple animation duration
 
-const BORDER   = 'rgba(94, 196, 232, 0.13)';
-const HOVER_BG = 'rgba(94, 196, 232, 0.10)';
+const BORDER   = 'rgba(212, 212, 212, 0.13)';
+const HOVER_BG = 'rgba(212, 212, 212, 0.10)';
 
 function dist(r1: number, c1: number, r2: number, c2: number) {
   return Math.sqrt((r1 - r2) ** 2 + (c1 - c2) ** 2);
@@ -109,7 +109,7 @@ export default function BackgroundBoxes({ className = '' }: { className?: string
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse at 50% 40%, transparent 35%, rgba(19, 36, 64, 0.60) 100%)',
+            'radial-gradient(ellipse at 50% 40%, transparent 35%, rgba(10, 10, 10, 0.60) 100%)',
         }}
       />
 
