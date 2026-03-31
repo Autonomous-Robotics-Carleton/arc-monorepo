@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import ArcLogo from '@/components/ui/ArcLogo';
+import CornerTicks from '@/components/ui/CornerTicks';
 
 type TransitionPhase = 'idle' | 'covering' | 'covered' | 'revealing';
 
@@ -32,6 +33,13 @@ interface TransitionProviderProps {
   children: ReactNode;
 }
 
+const GRID_STYLE = {
+  backgroundImage: `
+    repeating-linear-gradient(0deg,  rgba(212,212,212,0.07) 0px, rgba(212,212,212,0.07) 1px, transparent 1px, transparent 60px),
+    repeating-linear-gradient(90deg, rgba(212,212,212,0.07) 0px, rgba(212,212,212,0.07) 1px, transparent 1px, transparent 60px)
+  `,
+} as React.CSSProperties;
+
 export function TransitionProvider({ children }: TransitionProviderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -39,64 +47,42 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [targetHref, setTargetHref] = useState<string | null>(null);
 
-  // Called by LoadingScreen after it finishes its slide animation
   const completeInitialLoad = useCallback(() => {
     if (!isInitialLoad) return;
     setIsInitialLoad(false);
     setPhase('idle');
   }, [isInitialLoad]);
 
-  // Route transition: slide down, navigate, slide up
   const navigateTo = useCallback(
     (href: string) => {
-      // Normalize paths for comparison
       const normalizedHref = href.replace(/\/$/, '') || '/';
       const normalizedPathname = pathname.replace(/\/$/, '') || '/';
-
-      // Don't navigate if already on that page
-      if (normalizedHref === normalizedPathname) {
-        return;
-      }
-
-      // Don't navigate if mid-transition
-      if (phase !== 'idle') {
-        return;
-      }
-
-      // Check reduced motion preference
+      if (normalizedHref === normalizedPathname) return;
+      if (phase !== 'idle') return;
       if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
         router.push(href);
         return;
       }
-
-      // Start transition - overlay slides down
       setTargetHref(href);
       setPhase('covering');
     },
     [pathname, phase, router]
   );
 
-  // Handle the covering phase - wait for animation, then navigate
   useEffect(() => {
     if (phase !== 'covering' || !targetHref) return;
-
     const timer = setTimeout(() => {
       setPhase('covered');
       router.push(targetHref);
     }, 800);
-
     return () => clearTimeout(timer);
   }, [phase, targetHref, router]);
 
-  // Handle pathname change after navigation
   useEffect(() => {
     if (phase !== 'covered' || !targetHref) return;
-
     const normalizedTarget = targetHref.replace(/\/$/, '') || '/';
     const normalizedPathname = pathname.replace(/\/$/, '') || '/';
-
     if (normalizedPathname === normalizedTarget) {
-      // Page has changed, start revealing
       const timer = setTimeout(() => {
         setPhase('revealing');
         setTargetHref(null);
@@ -105,18 +91,12 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
     }
   }, [phase, pathname, targetHref]);
 
-  // Handle revealing phase - wait for animation to complete
   useEffect(() => {
     if (phase !== 'revealing') return;
-
-    const timer = setTimeout(() => {
-      setPhase('idle');
-    }, 800);
-
+    const timer = setTimeout(() => setPhase('idle'), 800);
     return () => clearTimeout(timer);
   }, [phase]);
 
-  // Calculate overlay styles
   const isVisible = phase === 'covering' || phase === 'covered' || phase === 'revealing';
   const isDown = phase === 'covering' || phase === 'covered';
 
@@ -132,18 +112,51 @@ export function TransitionProvider({ children }: TransitionProviderProps) {
           position: 'fixed',
           inset: 0,
           zIndex: 100,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           backgroundColor: 'var(--color-bp-blue-dark)',
           transform: isDown ? 'translateY(0%)' : 'translateY(-100%)',
           transition: 'transform 800ms',
           transitionTimingFunction: phase === 'covering' ? 'ease-in' : 'ease-out',
           pointerEvents: isVisible ? 'auto' : 'none',
+          ...GRID_STYLE,
         }}
         aria-hidden="true"
       >
-        <ArcLogo className="h-10 w-auto text-white md:h-14" />
+        {/* Corner ticks */}
+        <CornerTicks size={20} />
+
+        {/* Centred logo */}
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <ArcLogo className="h-10 w-auto text-white md:h-14" />
+        </div>
+
+        {/* Scan line — sweeps down while covering */}
+        {phase === 'covering' && (
+          <div
+            className="bp-scanning pointer-events-none absolute left-0 right-0 h-px bg-accent/40"
+            style={{ top: 0 }}
+          />
+        )}
+
+        {/* Bottom label */}
+        <p
+          style={{
+            position: 'absolute',
+            bottom: '1rem',
+            right: '1.5rem',
+            fontFamily: 'var(--font-mono)',
+            fontSize: '0.65rem',
+            letterSpacing: '0.2em',
+            color: 'rgba(240,240,240,0.2)',
+          }}
+        >
+          ARC · CARLETON
+        </p>
       </div>
     </TransitionContext.Provider>
   );

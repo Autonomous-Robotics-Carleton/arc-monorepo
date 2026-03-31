@@ -5,10 +5,11 @@ export type TeamMember = {
 };
 
 export const teamMembers: TeamMember[] = [
-  { name: 'Member One', role: 'Team Lead' },
-  { name: 'Member Two', role: 'Software Lead' },
-  { name: 'Member Three', role: 'Hardware Lead' },
-  { name: 'Member Four', role: 'Perception Lead' },
-  { name: 'Member Five', role: 'Controls Lead' },
-  { name: 'Member Six', role: 'Design Lead' },
+  { name: 'Member One',   role: 'President' },
+  { name: 'Member Two',   role: 'VP Finance & Administration' },
+  { name: 'Member Three', role: 'VP External' },
+  { name: 'Member Four',  role: 'VP Media' },
+  { name: 'Member Five',  role: 'Software Lead' },
+  { name: 'Member Six',   role: 'Electrical Lead' },
+  { name: 'Member Seven', role: 'Mechanical Lead' },
 ];

@@ -52,7 +52,7 @@ export default function StackedLogos({
           className="stacked-logos__glow pointer-events-none absolute inset-0 z-10"
           style={{
             opacity: 0,
-            background: 'radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(94,196,232,0.12), transparent 70%)',
+            background: 'radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212,212,212,0.12), transparent 70%)',
           }}
         />
         {/* Mouse-follow border glow */}
@@ -60,7 +60,7 @@ export default function StackedLogos({
           className="stacked-logos__border-glow pointer-events-none absolute inset-0 z-20"
           style={{
             opacity: 0,
-            background: 'radial-gradient(500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(94,196,232,0.5), transparent 40%)',
+            background: 'radial-gradient(500px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(212,212,212,0.5), transparent 40%)',
             maskImage: `repeating-linear-gradient(to right, transparent, transparent calc(100% / ${columns} - 1px), black calc(100% / ${columns} - 1px), black calc(100% / ${columns})), linear-gradient(to bottom, black 0, black 1px, transparent 1px, transparent calc(100% - 1px), black calc(100% - 1px), black 100%)`,
             WebkitMaskImage: `repeating-linear-gradient(to right, transparent, transparent calc(100% / ${columns} - 1px), black calc(100% / ${columns} - 1px), black calc(100% / ${columns})), linear-gradient(to bottom, black 0, black 1px, transparent 1px, transparent calc(100% - 1px), black calc(100% - 1px), black 100%)`,
             maskComposite: 'add' as string,
@@ -74,10 +74,10 @@ export default function StackedLogos({
             style={{ '--index': colIdx, gridTemplate: '1fr / 1fr' } as React.CSSProperties}
           >
             {/* Cell borders */}
-            <div className="absolute top-0 right-0 bottom-0 w-px" style={{ backgroundColor: 'rgba(94,196,232,0.15)' }} />
-            <div className="absolute right-0 bottom-0 left-0 h-px" style={{ backgroundColor: 'rgba(94,196,232,0.15)' }} />
-            <div className="absolute top-0 right-0 left-0 h-px" style={{ backgroundColor: 'rgba(94,196,232,0.15)' }} />
-            {colIdx === 0 && <div className="absolute top-0 bottom-0 left-0 w-px" style={{ backgroundColor: 'rgba(94,196,232,0.15)' }} />}
+            <div className="absolute top-0 right-0 bottom-0 w-px" style={{ backgroundColor: 'rgba(212,212,212,0.22)' }} />
+            <div className="absolute right-0 bottom-0 left-0 h-px" style={{ backgroundColor: 'rgba(212,212,212,0.22)' }} />
+            <div className="absolute top-0 right-0 left-0 h-px" style={{ backgroundColor: 'rgba(212,212,212,0.22)' }} />
+            {colIdx === 0 && <div className="absolute top-0 bottom-0 left-0 w-px" style={{ backgroundColor: 'rgba(212,212,212,0.22)' }} />}
 
             {logos.map((logo, itemIdx) => (
               <div
