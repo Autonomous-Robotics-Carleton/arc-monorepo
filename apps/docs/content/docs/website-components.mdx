@@ -1,0 +1,158 @@
+---
+title: Components
+description: Guide to the key UI components in the ARC website.
+icon: Component
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+All components live in `components/`. The split between `ui/` (reusable primitives) and `sections/` (page-specific, heavier components) is intentional — keep it that way.
+
+## BlueprintGrid
+
+Renders the subtle background grid used on inner pages.
+
+```tsx
+import BlueprintGrid from '@/components/ui/BlueprintGrid';
+
+<BlueprintGrid variant="hero" />    // first section of a page
+<BlueprintGrid variant="section" /> // subsequent sections
+```
+
+It's a `div` with `position: absolute; inset: 0` and a CSS `background-image` grid pattern. Always put it as the first child of a `relative` section so it sits behind content.
+
+## CornerTicks
+
+Places L-shaped tick marks at the four corners of the nearest `relative` parent.
+
+```tsx
+import CornerTicks from '@/components/ui/CornerTicks';
+
+// On cards (size 8–10)
+<CornerTicks size={8} />
+
+// On large containers like the Join CTA (size 12–16)
+<CornerTicks size={14} />
+
+// On full-screen overlays like loading/transition (size 20)
+<CornerTicks size={20} />
+
+// With a section label (used on home page sections)
+<CornerTicks label="01" />
+```
+
+The parent must have `position: relative` for the ticks to position correctly.
+
+## BackgroundBoxes
+
+The interactive grid on the home page. Cells highlight near the cursor and ripple outward on click. Built with direct DOM manipulation so mouse events never trigger React re-renders.
+
+```tsx
+// Used only on the home page
+<div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+  <BackgroundBoxes />
+</div>
+```
+
+<Callout type="info">
+This component only appears on the home page. Other pages use `BlueprintGrid` for their background.
+</Callout>
+
+## StackedLogos
+
+The sponsor logo grid on the home page. Each column cycles through logos using a CSS animation. Supports mouse-follow glow on hover.
+
+```tsx
+import StackedLogos from '@/components/ui/StackedLogos';
+
+<StackedLogos
+  logoGroups={logoGroups}  // ReactNode[][] — each inner array is one column
+  columns={4}
+  duration={28}            // seconds per full cycle
+  stagger={3}              // seconds between column offsets
+/>
+```
+
+Logos are defined in `data/sponsors.ts` and mapped to SVG components in `components/ui/SponsorLogos.tsx`.
+
+## Button
+
+```tsx
+import Button from '@/components/ui/Button';
+
+<Button href="/contact" variant="outline">Get in Touch</Button>
+<Button variant="primary">Submit</Button>
+```
+
+Two variants: `primary` (accent background) and `outline` (bordered, transparent). Renders as `<Link>` when `href` is provided, `<button>` otherwise.
+
+## InstagramFeed
+
+Fetches posts from Behold.so and renders them as a card grid. Falls back to 6 placeholder cards when no feed ID is set.
+
+```tsx
+import InstagramFeed from '@/components/ui/InstagramFeed';
+
+// In app/team/page.tsx — set BEHOLD_FEED_ID at the top of the file
+const BEHOLD_FEED_ID = ''; // ← paste your Behold feed ID here
+
+<InstagramFeed feedId={BEHOLD_FEED_ID || undefined} />
+```
+
+See [Instagram Feed Setup](/docs/website-instagram) for full setup instructions.
+
+## BlueprintExplode (Easter Egg)
+
+The scroll-driven exploded car view at `/blueprint`. This is a complex GSAP ScrollTrigger scene — don't touch it unless you know what you're doing.
+
+Key things to know:
+- The wrapper div is `400vh` tall — the sticky viewport creates the scroll-scrubbed effect
+- Each car part is a PNG with `mix-blend-mode: screen` to composite cleanly on the dark background
+- GSAP timeline is driven by a `ScrollTrigger` with `scrub: 1.4`
+- Parts are defined in the `PARTS` array at the top of the component
+
+## TransitionLink
+
+Intercepts clicks to trigger the page transition animation before navigating.
+
+```tsx
+import TransitionLink from '@/components/ui/TransitionLink';
+
+// Use everywhere you'd use Next.js Link for internal routes
+<TransitionLink href="/team">Meet the Team</TransitionLink>
+```
+
+The transition is handled by `TransitionContext` — a slide-down dark panel with a blueprint grid and scan line animation.
+
+## LoadingScreen
+
+Shown on first page load only. Animates a progress counter from 0 → 100 then slides away.
+
+- Renders as `null` after the initial load completes
+- Respects `prefers-reduced-motion` — skips entirely if set
+- The "FULL SPEED. NO HANDS." tagline and `LOADING…` counter are hardcoded in `components/sections/LoadingScreen.tsx`
+
+## NavIcon
+
+The small diamond/square icon used in nav links and the contact/governance row labels.
+
+```tsx
+import NavIcon from '@/components/ui/NavIcon';
+
+<NavIcon />           // unfilled
+<NavIcon filled />    // filled with accent colour (active state)
+```
+
+## VerticalLine + ArcLogo
+
+```tsx
+import VerticalLine from '@/components/ui/VerticalLine';
+import ArcLogo from '@/components/ui/ArcLogo';
+
+// Decorative vertical rule used in page left columns
+<VerticalLine className="hidden h-[400px] shrink-0 md:flex" />
+
+// The ARC wordmark SVG
+<ArcLogo className="h-10 w-auto text-white" />
+```

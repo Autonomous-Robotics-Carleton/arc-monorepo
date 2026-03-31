@@ -1,0 +1,162 @@
+---
+title: Design System
+description: Colors, CSS variables, typography, and utility classes for the ARC website.
+icon: Palette
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+All design tokens are defined in `app/globals.css` inside a `@theme` block. Tailwind v4 reads this block and makes every variable available as a utility class automatically.
+
+## Color Tokens
+
+```css
+/* app/globals.css */
+@theme {
+  --color-bg:           #111111;   /* Page background */
+  --color-fg:           #f0f0f0;   /* Primary text */
+  --color-muted:        #737373;   /* Secondary/muted text */
+  --color-border:       #2e2e2e;   /* Generic borders */
+  --color-accent:       #d4d4d4;   /* Active states, CTAs, glows */
+
+  --color-bp-blue:      #111111;   /* Blueprint background alias */
+  --color-bp-blue-light:#1a1a1a;   /* Lifted surfaces (image placeholders) */
+  --color-bp-blue-dark: #0a0a0a;   /* Footer, header, near-black surfaces */
+  --color-bp-cyan:      #d4d4d4;   /* Blueprint accent alias */
+  --color-bp-cyan-dim:  #a0a0a0;   /* Dimmed accent */
+  --color-bp-muted:     #737373;   /* Blueprint muted alias */
+
+  /* Grid line colours (used in background-image gradients) */
+  --color-bp-grid:       rgba(212, 212, 212, 0.10);
+  --color-bp-grid-major: rgba(212, 212, 212, 0.18);
+  --color-bp-glow:       rgba(212, 212, 212, 0.20);
+  --color-bp-line:       rgba(212, 212, 212, 0.22);
+}
+```
+
+### Using tokens in Tailwind
+
+Tailwind exposes every `--color-*` variable as a utility:
+
+```tsx
+<div className="bg-bg text-fg border border-bp-line" />
+<p className="text-accent/60" />          // 60% opacity accent
+<div className="bg-bp-blue-light" />      // image placeholder background
+```
+
+<Callout type="warn" title="Never hardcode hex values">
+Always use the CSS variable aliases. If the theme changes, one edit to `globals.css` updates the entire site.
+</Callout>
+
+## Typography
+
+Three fonts are loaded via `next/font/google` in `app/layout.tsx`:
+
+| Variable | Font | Usage |
+|---|---|---|
+| `--font-heading` | Chakra Petch | All headings — bold, italic, uppercase |
+| `--font-body` | Inter | Body text, paragraphs |
+| `--font-mono` | JetBrains Mono | Labels, counters, HUD text, metadata |
+
+Headings are styled globally in `globals.css`:
+
+```css
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+```
+
+This means any `<h1>`–`<h6>` automatically gets the Chakra Petch bold italic uppercase treatment. No extra classes needed.
+
+### Common text patterns
+
+```tsx
+// Section heading
+<h2 className="text-3xl md:text-4xl lg:text-5xl">SECTION TITLE</h2>
+
+// Body copy
+<p className="text-sm leading-relaxed text-fg/70 md:text-base">...</p>
+
+// Muted label / section marker
+<p className="text-xs tracking-widest text-fg/40">— LABEL</p>
+
+// Mono metadata
+<p className="font-mono text-xs tracking-[0.2em] text-fg/30">v0.1 · ARC</p>
+```
+
+## Utility Classes
+
+These are defined in `globals.css` and can be added to any element:
+
+### Glass surfaces
+
+```css
+.bp-glass        /* Cards, team grid, Instagram cards — rgba(20,14,14,0.74) + blur(10px) */
+.bp-glass-strong /* Header, modals — rgba(12,8,8,0.92) + blur(20px) */
+```
+
+Both use `backdrop-filter: blur()` so they need the element to have `position: relative` or be in a stacking context to work correctly.
+
+### Glows
+
+```css
+.bp-glow         /* Static box-shadow glow — used on the Join CTA */
+.bp-glow-hover   /* Box-shadow on :hover — used on cards */
+```
+
+### Borders
+
+```css
+.bp-border       /* Sets border-color to rgba(212,212,212,0.15) */
+.bp-border-hover /* Sets border-color to rgba(212,212,212,0.35) on :hover */
+```
+
+### Grid backgrounds
+
+```css
+.bp-grid         /* Standard 30px/120px blueprint grid */
+.bp-grid-dense   /* Denser 15px/60px grid */
+```
+
+### Animation
+
+```css
+.animate-marquee /* Continuous horizontal scroll (used in bottom marquee) */
+.bp-rippling     /* Cell ripple animation triggered on click (BackgroundBoxes) */
+.bp-scanning     /* Single-pixel scanline sweep — used in page transition overlay */
+```
+
+## Standard CTA Style
+
+All call-to-action links and buttons follow this pattern for consistency:
+
+```tsx
+// Primary CTA (accent border + accent text)
+<a className="border border-accent/40 px-5 py-2.5 text-xs tracking-widest text-accent
+              transition-all duration-200 hover:border-accent hover:bg-accent/10">
+  ACTION LABEL →
+</a>
+
+// Secondary CTA (neutral border + muted text)
+<a className="border border-bp-line px-5 py-2.5 text-xs tracking-widest text-fg/60
+              transition-all duration-200 hover:border-accent/40 hover:text-accent/80">
+  SECONDARY ACTION
+</a>
+```
+
+## Card Pattern
+
+```tsx
+<div className="group relative border border-bp-line p-6
+                transition-all duration-300 hover:border-accent/30
+                bp-glow-hover bp-glass">
+  <CornerTicks size={8} />
+  {/* card content */}
+</div>
+```
+
+The `CornerTicks` component places small L-shaped tick marks at all four corners of the nearest `relative` parent — it's what gives the cards their blueprint-panel feel.

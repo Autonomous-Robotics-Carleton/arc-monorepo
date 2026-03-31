@@ -27,6 +27,14 @@
 
     "--- Reference ---",
     "knowledge-base",
-    "linux-cheat"
+    "linux-cheat",
+
+    "--- Website ---",
+    "website-overview",
+    "website-structure",
+    "website-design-system",
+    "website-components",
+    "website-content",
+    "website-instagram"
   ]
 }
