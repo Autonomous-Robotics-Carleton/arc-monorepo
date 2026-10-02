@@ -39,7 +39,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-05 | A physical e-stop removes drive torque without depending on any software | Safety; covers a hung sync MCU | T + I | Draft |
 | SYS-06 | Vehicle-state estimate available to the controller at ≥ `TBD` Hz with age ≤ `TBD` ms | Classical control and MPC (mission 1). Sets encoder/pot sample rates and VESC status rates (ADR-0008, ADR-0009). | T | Draft |
 | SYS-07 | All sensor samples carry timestamps on one time base, aligned to within `TBD` µs | Sensor fusion and MPC (mission 1); aligned training data (mission 2) | T | Draft |
-| SYS-08 | Onboard compute runs the classical stack at ≥ `TBD` Hz and a learned policy of class `TBD` (model size, precision) at ≥ `TBD` Hz | Missions 1 and 2; the parent for the compute module choice | T | Draft |
+| SYS-08 | Onboard compute runs the classical stack at ≥ `TBD` Hz and a learned policy that fits in 16 GB alongside the platform software (ADR-0010) at ≥ `TBD` Hz | Missions 1 and 2; the parent for the compute module choice | T | Draft |
 | SYS-09 | All sensor streams are logged onboard for a full run (≥ SYS-03) | Training data (mission 2) and fault attribution (mission 3) | D | Draft |
 | SYS-10 | Measure ground speed and per-wheel speed well enough to estimate slip to within `TBD` % | MPC on a low-grip surface (mission 1) | T | Draft |
 | SYS-11 | Manual teleop end-to-end latency ≤ `TBD` ms (p95) | Demonstration data quality (mission 2) | T | Draft |
@@ -66,5 +66,4 @@ Mission 4 (sensors already there) gives the sensor suite a parent. The rule stil
 | Four CSI ports, event camera, quad side/rear cameras | SYS-08, mission 4 | Which first experiment uses side/rear views and the event camera? |
 | Second IMU | SYS-06, mission 4 | Which experiment uses it? |
 | Steering servo current as a grip proxy | SYS-10, mission 4 | Used in v1 or just logged? |
-| Orin NX 16GB | SYS-08 | Does 16 GB fit the learned-policy class you want to run onboard? (See ADR to write.) |
 | Regulators rated ≥ 20 V input | SYS-14 | 20 V leaves almost no margin over a 19 V brick (see RSK-06) |
