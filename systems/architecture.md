@@ -102,7 +102,7 @@ The car runs on 4S LiPo, with two separate paths: high current to the corners, a
 - Wall input is a 19 V supply, above full-pack voltage, so the wall wins when plugged in.
 - Every regulator on the power board is rated for at least 20 V input. The compute rail is regulated to a fixed voltage from whichever source is active, never passed straight through, because the Orin NX module accepts only 5–20 V and a 19 V brick leaves too little margin.
 - Wall power feeds the low-voltage rails only; the motor path stays on the battery.
-- No onboard LiPo charging; packs are balance-charged off the car.
+- No onboard LiPo charging. Packs are removed and charged at the team's separate charging station; the pack itself is the interface between the two systems (ICD-battery-pack).
 
 Rail current ratings stay open until the battery and full power budget are settled. v1 builds the power board and sync board as two boards stacked on a header.
 

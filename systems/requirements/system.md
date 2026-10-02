@@ -16,7 +16,7 @@ The car is a 1/10-scale 4WD research platform that:
 ## Operating concept (draft)
 
 - **Environment:** indoor, glossy/uniform tile, dedicated Wi-Fi access point at the track.
-- **Session:** a battery pack lasts one run of ≥ 10 min hard driving; packs are charged off the car.
+- **Session:** a battery pack lasts one run of ≥ 10 min hard driving. Packs are removed and charged at the team's charging station, a separate system outside this spec. The car does no charging.
 - **Bench:** subsystems run on 19 V wall power without a LiPo.
 - **Operators:** one laptop operator with a gamepad, plus a person at the physical e-stop.
 
