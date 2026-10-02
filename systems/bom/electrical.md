@@ -39,7 +39,18 @@
 | E-27 | Steering servo current sense | 1 | TBD (on power board servo rail) | Bandwidth high enough to see self-aligning torque changes (TBD) | E-30 (ADC) or E-41 monitor | — | SYS-10, mission 4 |
 | E-28 | Motor temperature NTC | 4 | Decided (spec) | Glued to motor can; matches VESC motor-temp input curve | E-50 | — | SYS-19 |
 
-**Note on E-25.** Common optical-flow modules are far too slow: the PMW3901 is rated 7.4 rad/s with an 80 mm minimum distance, so 0.58 m/s at 80 mm. That's an order of magnitude short of SYS-01. Gaming mouse sensors handle the speed but need a fixed working distance of a few millimetres, which suspension travel breaks. No candidate is known yet; RSK-07 is now a selection problem, not just a tile test.
+**E-25 is an open question.** No candidate yet tracks at top speed from a workable mounting distance. Findings so far:
+
+| Candidate | Max speed | Working distance | Problem |
+| --- | --- | --- | --- |
+| PMW3901 optical flow | 7.4 rad/s (0.58 m/s at 80 mm) | ≥ 80 mm | ~20× too slow |
+| PAA5160E1 (SparkFun OTOS) | 2.5 m/s | 10–27 mm | ~5× too slow |
+| PAW3395 gaming mouse sensor | 650 IPS (~16.5 m/s) | 0.7–2 mm lift-off | Fast enough, but suspension travel breaks the fixed distance; would need custom optics |
+| Kistler Correvit S-Motion (automotive) | Fine | Datasheet behind login | Full-size-car sensor; size and mass on a 1/10 car unknown |
+| Unpowered measuring wheels (two omni "dead wheels", FTC-style) | Fine | Touches the floor | Not optical; uses underfloor space reserved for aero (SYS-15) |
+| Downward camera or the event camera | TBD | TBD | Compute and lighting work |
+
+Decide this before the sync board's I/O is frozen.
 
 ## Sync and control
 
