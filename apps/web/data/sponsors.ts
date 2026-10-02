@@ -6,6 +6,5 @@ export type Sponsor = {
 export const sponsors: Sponsor[] = [
   { name: 'KEFC' },
   { name: 'Notion' },
-  { name: 'Vercel' },
-  { name: 'Osmows' },
+  { name: 'Altium Designer' },
 ];
