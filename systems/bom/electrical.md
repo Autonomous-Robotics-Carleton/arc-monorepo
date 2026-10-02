@@ -65,7 +65,7 @@ Decide this before the sync board's I/O is frozen.
 
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); hardware ESTOP_EN into gate-driver enable, fail-safe pull-down (ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD) | E-51, E-28, CAN trunk, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
+| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); hardware ESTOP_EN into gate-driver enable, fail-safe pull-down (ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4 (proposed, ADR-0011). High-rate telemetry link pending ADR-0011 | E-51, E-28, CAN trunk, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
 | E-51 | Drive motor | 4 | Decided: Castle 1010-4400kV sensored | 2S–4S; Hall sensored; 28 mm can | E-50 | — | SYS-01 |
 
 ## Power

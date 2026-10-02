@@ -37,7 +37,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-03 | Run time ≥ 10 min of hard driving per pack | One session per pack | T | Draft |
 | SYS-04 | After loss of operator heartbeat, stop from top speed within `TBD` m | Safety; sets watchdog timeout and VESC brake config | T | Draft |
 | SYS-05 | A physical e-stop removes drive torque without depending on any software | Safety; covers a hung sync MCU | T + I | Draft |
-| SYS-06 | Vehicle-state estimate available to the controller at ≥ `TBD` Hz with age ≤ `TBD` ms | Classical control and MPC (mission 1). Sets encoder/pot sample rates and VESC status rates (ADR-0008, ADR-0009). | T | Draft |
+| SYS-06 | Vehicle-state estimate available to the controller at ≥ 200 Hz, age ≤ 5 ms p99 (sensor sample to estimate available); output rate configurable upward | Classical control and MPC (mission 1). Sets encoder/pot sample rates and VESC status rates (ADR-0008, ADR-0009). | T | Draft |
 | SYS-07 | All sensor samples carry timestamps on one time base, aligned to within `TBD` µs | Sensor fusion and MPC (mission 1); aligned training data (mission 2) | T | Draft |
 | SYS-08 | Onboard compute runs the classical stack at ≥ `TBD` Hz and a learned policy that fits in 16 GB alongside the platform software (ADR-0010) at ≥ `TBD` Hz | Missions 1 and 2; the parent for the compute module choice | T | Draft |
 | SYS-09 | All sensor streams are logged onboard for a full run (≥ SYS-03) | Training data (mission 2) and fault attribution (mission 3) | D | Draft |
@@ -55,6 +55,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-21 | An experiment process that crashes, hangs, or exhausts CPU, GPU, memory or disk cannot stop platform software from driving, logging or stopping | Platform vs experiment (missions 3, 4) | T | Draft |
 | SYS-22 | No policy, learned or classical, can command beyond the safety envelope (speed, acceleration, steering limits `TBD`); the envelope is enforced outside the policy's process | Layered control (mission 2) | T | Draft |
 | SYS-23 | Logs record operator commands and policy outputs on the same time base as the sensors | Training data (mission 2) | T | Draft |
+| SYS-24 | Every sensor is sampled at the fastest rate its data is useful at, timestamped and logged; no data path (bus, link, storage, offload) exceeds 50% of capacity with all sensors at full rate | Hardware never limits what software can try (mission 4) | A + T | Draft |
 
 ## Spec items with no parent yet
 
@@ -62,7 +63,6 @@ Mission 4 (sensors already there) gives the sensor suite a parent. The rule stil
 
 | Spec item | Parent | Question to answer |
 | --- | --- | --- |
-| Encoder/pot sample rate, VESC status rates | SYS-06 | What rate and latency does the MPC need? (Status rates are also capped by CAN bus load, ADR-0009.) |
 | Four CSI ports, event camera, quad side/rear cameras | SYS-08, mission 4 | Which first experiment uses side/rear views and the event camera? |
 | Second IMU | SYS-06, mission 4 | Which experiment uses it? |
 | Steering servo current as a grip proxy | SYS-10, mission 4 | Used in v1 or just logged? |
