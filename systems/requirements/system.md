@@ -10,13 +10,13 @@ The car is a 1/10-scale 4WD **autonomy research platform**: a sandbox where the 
 1. **Classical autonomy first.** Get conventional pipelines (state estimation, localization, planning, MPC) running and dependable.
 2. **Then learned and embodied AI.** Move on to vision-language-action (VLA) models and other embodied-AI architectures running on the car.
 3. **Hardware is never the reason an experiment fails.** When something doesn't work, the cause must be the software under test. The hardware has to be reliable, and any fault it does have must be detected and logged so it can be ruled out.
-4. **Sensors are already there.** The car carries a broad sensor suite on standard ports, so a new idea needs code, not a hardware build.
+4. **Sensors are already there.** The car carries a broad sensor suite, so a new idea needs code, not a hardware build. The sandbox is the software. The hardware is tightly integrated and doesn't need to be easy to change; modular hardware is a v2 goal.
 
 Known first users (from `architecture.md`, TBC): MPC research, head-to-head racing against a Traxxas Slash 4x4, and the active-aero capstone.
 
 ### What this means for the architecture
 
-- **Core vs payload.** The *core* (drive, power, safety, compute, primary state sensors) must be reliable. The *payload* (sandbox sensors and experiments) must be unable to take the core down: a shorted, hung or babbling payload device is isolated, and the car still drives and stops.
+- **Platform vs experiment software.** *Platform* software (drivers, time sync, logging, state estimation, low-level control, safety) is maintained by the team and must stay up. *Experiment* software is whatever an engineer is trying today. An experiment that crashes, hangs or hogs CPU, GPU, memory or disk cannot stop the platform from driving, logging or stopping. On the hardware side, this only needs per-rail fusing, which the power board already has.
 - **Layered control.** Learned policies run slowly and can be wrong, so they never command the motors directly. They command a classical control layer, which runs inside a safety envelope that neither layer can override.
 - **Data is a product.** Learned methods need demonstration and run data, so time-aligned logs of every sensor, every command and every operator input are a requirement, not a debugging aid.
 
@@ -51,20 +51,20 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-17 | v1 build cost ≤ `TBD` CAD | Team budget | A | Draft |
 | SYS-18 | Complete ≥ `TBD` hours of test runs with zero hardware-caused failures | Mission 3 | T | Draft |
 | SYS-19 | Every hardware fault (brownout, rail overcurrent, bus error, sensor dropout, over-temperature, watchdog trip) is detected, timestamped and logged | Mission 3: a failed run can be attributed to hardware or ruled out | T + I | Draft |
-| SYS-20 | Provide ≥ `TBD` payload ports, each with fused, switchable power, a data link and access to the time base, on the deck mounting grid | Mission 4 | I | Draft |
-| SYS-21 | A payload fault (short, hang, bus flooding) cannot stop the core from driving, logging or stopping | Core vs payload (mission 3) | T | Draft |
+| SYS-20 | *Deleted:* payload ports. Hardware modularity moved to v2 | — | — | Deleted |
+| SYS-21 | An experiment process that crashes, hangs, or exhausts CPU, GPU, memory or disk cannot stop platform software from driving, logging or stopping | Platform vs experiment (missions 3, 4) | T | Draft |
 | SYS-22 | No policy, learned or classical, can command beyond the safety envelope (speed, acceleration, steering limits `TBD`); the envelope is enforced outside the policy's process | Layered control (mission 2) | T | Draft |
 | SYS-23 | Logs record operator commands and policy outputs on the same time base as the sensors | Training data (mission 2) | T | Draft |
 
 ## Spec items with no parent yet
 
-Mission 4 (sensors already there) gives the sandbox sensors a parent. The rule still applies: each payload sensor names at least one experiment someone wants to run with it, so the suite is chosen, not just accumulated.
+Mission 4 (sensors already there) gives the sensor suite a parent. The rule still applies: each payload sensor names at least one experiment someone wants to run with it, so the suite is chosen, not just accumulated.
 
 | Spec item | Parent | Question to answer |
 | --- | --- | --- |
 | Encoder/pot sample rate, VESC status rates | SYS-06 | What rate and latency does the MPC need? (Status rates are also capped by CAN bus load, ADR-0009.) |
-| Four CSI ports, event camera, quad side/rear cameras | SYS-08, SYS-20 | Core or payload? Which first experiment uses side/rear views and the event camera? |
-| Second IMU | SYS-06 or SYS-20 | Core or payload? |
-| Steering servo current as a grip proxy | SYS-10 or SYS-20 | Used in v1 or just logged? |
+| Four CSI ports, event camera, quad side/rear cameras | SYS-08, mission 4 | Which first experiment uses side/rear views and the event camera? |
+| Second IMU | SYS-06, mission 4 | Which experiment uses it? |
+| Steering servo current as a grip proxy | SYS-10, mission 4 | Used in v1 or just logged? |
 | Orin NX 16GB | SYS-08 | Does 16 GB fit the learned-policy class you want to run onboard? (See ADR to write.) |
 | Regulators rated ≥ 20 V input | SYS-14 | 20 V leaves almost no margin over a 19 V brick (see RSK-06) |
