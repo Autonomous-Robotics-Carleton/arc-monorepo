@@ -112,7 +112,7 @@ v1 compute is the Jetson Orin NX 16GB, because the car is driven by onboard AI f
 
 | Item | Size / interface | Price (USD, after July 2026 increase) |
 | --- | --- | --- |
-| Orin NX 16GB module (v1) | 69.6 × 45 mm module | $999 (1,000-unit price; single units cost more) |
+| Orin NX 16GB module (v1) | 69.6 × 45 mm module | $899 (1,000-unit price; single units cost more) |
 | Antmicro Orin baseboard, forked as the v1 carrier | 120 × 60 mm | Open hardware |
 
 Prices from [CNX Software](https://www.cnx-software.com/2026/07/22/nvidia-increases-the-price-of-jetson-modules-and-devkits-by-up-to-101/). Baseboard: [Antmicro](https://openhardware.antmicro.com/boards/jetson-orin-baseboard/), KiCad, Apache-2.0.

@@ -15,5 +15,6 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0007](0007-ride-height-sensors.md) | Four corner ride-height sensors in v1, plus one at the optical flow sensor | Accepted |
 | [0008](0008-corner-sensors-to-sync-board.md) | Wheel encoders and suspension pots wire directly to the sync board | Accepted |
 | [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted |
+| [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted |
 
-Decisions still to record: Orin NX vs Nano (needs SYS-08), PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.
+Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.
