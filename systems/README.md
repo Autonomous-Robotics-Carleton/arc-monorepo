@@ -1,0 +1,39 @@
+# ARC Car — Systems Engineering
+
+This folder is the source of truth for the car's requirements, interfaces, decisions, budgets and risks.
+`architecture.md` is the overview that links into it; when the two disagree, the files here win.
+
+| Folder / file | What lives there | Format |
+| --- | --- | --- |
+| `requirements/` | Mission, system requirements, subsystem requirements | Markdown tables with IDs |
+| `icd/` | One interface control document per interface | Markdown tables; `.dbc` for CAN, `.msg` for ROS 2 |
+| `adr/` | Architecture decision records | One Markdown file per decision |
+| `budgets/` | Mass/CG, power per rail, bus load, latency, cost | CSV (one file per budget) |
+| `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
+| `reviews/` | Gate checklists and review records | Markdown |
+| `architecture.md` | Narrative overview of the whole car | Markdown |
+
+## IDs
+
+| Prefix | Meaning | Example |
+| --- | --- | --- |
+| `SYS-nn` | System requirement | SYS-05 |
+| `<SUB>-nn` | Subsystem requirement (`DRV`, `PWR`, `CMP`, `SNS`, `SAF`, `MEC`, `SW`) | PWR-03 |
+| `ICD-<name>` | Interface control document | ICD-corner-connector |
+| `ADR-nnnn` | Decision record | ADR-0002 |
+| `RSK-nn` | Risk | RSK-01 |
+
+IDs are never reused. A deleted requirement keeps its row with status `Deleted`.
+
+## Rules
+
+1. **Every number has a parent.** Each subsystem requirement and each spec value in an ICD traces to a `SYS` requirement. A value with no parent is either gold-plating or a missing requirement; flag it, don't hide it.
+2. **Every requirement has a verification method:** Test (T), Analysis (A), Inspection (I) or Demonstration (D), plus a link to the test once it exists.
+3. **Changes go through PRs.** A PR that changes a requirement, ICD or budget links the ADR or issue that justifies it. ICD changes need sign-off from the owners on both sides.
+4. **Unknown values are written as `TBD` (no value yet) or `TBC` (value proposed, not confirmed)**, never as "about" or "around".
+5. **Gate before spending.** Nothing is fabbed, machined or bought over the team's spending threshold until it passes `reviews/fab-gate.md`.
+6. **Releases are tags:** `sys-v1-srr` (requirements baselined), then one tag per gated build (e.g. `corner-board-r1`).
+
+## Status values
+
+`Draft` → `Proposed` → `Baselined` → (`Changed` via PR) / `Deleted`
