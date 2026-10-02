@@ -2,6 +2,8 @@
 
 Sep 23, 2026 · @shrikar vempati
 
+> **Partly superseded.** ADR-0006 to ADR-0009 drop the corner module, the corner sensor node, tire temperature and the CAN-FD bus for v1, and move the corner encoders and pots to the sync board. Where this overview disagrees with `systems/`, `systems/` wins.
+
 ## Purpose and roadmap
 
 Every interface below stays fixed from v1 onward, so each upgrade is a swap, not a redesign. v1 builds the cheap version of each subsystem; the interfaces are sized for the later ones.

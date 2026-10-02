@@ -1,0 +1,12 @@
+# Budgets
+
+One CSV per budget. Each row has: item, value, unit, margin/contingency, source (datasheet link, measured, or estimate), owner.
+A budget "closes" when the total plus contingency is within its `SYS` limit.
+
+| File | Limit from | Status |
+| --- | --- | --- |
+| `mass.csv` (mass and CG position) | SYS-16 | TBD |
+| `power.csv` (per rail: peak and continuous) | SYS-03, ICD power-rails | TBD |
+| `bus-load.csv` (both CAN buses, Ethernet) | SYS-06 | TBD |
+| `latency.csv` (sensor → estimate → command) | SYS-06, SYS-11 | TBD |
+| `cost.csv` | SYS-17 | TBD |

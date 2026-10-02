@@ -1,0 +1,16 @@
+# Risk Register
+
+Ranked by how much of the design the risk could force us to redo. Retire risks from the top. Each risk is closed by its spike test, not by discussion.
+
+| Rank | ID | Risk | If it bites | Spike test that retires it | Owner | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | RSK-01 | Antmicro carrier fork (4× 22-pin CSI, new power input, trigger routing) plus our own camera device-tree and driver work | No compute, no cameras: blocks autonomy | Bring up each camera kit on the Orin Nano dev kit with the NX module first; get a quote and DFM review for the forked board before layout freeze | TBD | Open |
+| 2 | RSK-02 | Custom VESC 6 derived single-motor corner board (new layout, mount-cooled FETs, e-stop enable input not in stock VESC) | No drive | Run a stock VESC 6 (or a clone) on a 1010 motor on the bench with the target gear load; validate thermals with the FETs bolted to an aluminum plate | TBD | Open (custom board confirmed, ADR-0006) |
+| 3 | RSK-03 | CAN-FD at 5 Mbit/s with four nodes fails from ringing or stubs | Corner data rate drops; may force a topology or connector change (see RSK-05) | Bench harness: sync MCU + 4 dev boards at 1 kHz, real cable lengths and JST-GH connectors, measure error frames at 2 and 5 Mbit/s | — | Retired by ADR-0009 |
+| 4 | RSK-04 | Front corner doesn't fit: staggered motor, two gear stages, CVD and encoder at full lock and full bump | Changes wheelbase, track or gearbox | CAD block layout of one front corner with real envelopes | TBD | Open |
+| 5 | RSK-05 | The corner connector has no e-stop enable line and no spare pin, and a daisy-chained CAN-FD trunk needs in and out pins at every corner | E-stop can't reach corner boards in hardware; connector redesign after harness build | Close in `icd/corner-connector.md` before any corner board layout | TBD | Mitigated by ICD-corner-connector rev B; closes at sign-off |
+| 6 | RSK-06 | Regulators rated "≥ 20 V" against a 19 V wall brick and LiPo hot-plug transients | Power board failure takes the Orin with it | Analysis: worst-case input including plug-in transients; pick parts rated ≥ 30 V with TVS | TBD | Open |
+| 7 | RSK-07 | Optical ground-speed sensor and time-of-flight ride-height sensors fail on glossy tile | No ground truth for slip (SYS-10); no ride-height or aero baseline data (ADR-0007) | Test the candidate flow and ride-height sensors on the actual tile at ride height, across the full suspension travel | TBD | Open |
+| 8 | RSK-08 | Orin NX overheats in the printed enclosure under sustained load | Throttling breaks SYS-08 | Run the target workload in a mock enclosure, log temps and clocks | TBD | Open |
+| 9 | RSK-09 | Wi-Fi drops longer than the watchdog timeout cause frequent false stops | Unusable test sessions | Drive the track with a laptop and AP, log heartbeat gaps to set the timeout | TBD | Open |
+| 10 | RSK-10 | Hokuyo UST-10LX sourcing (price, lead time) | LiDAR swap; ADR-0001 reopens | Get quotes now | TBD | Open |
