@@ -42,6 +42,8 @@ No termination on corner boards. The 120 Ω terminators sit at the sync board an
 
 ## Open issues
 
+0. **Pending ADR-0011:** a high-rate telemetry link may add 2 pins (one-way UART, 8-pin) or 4 pins (two-way UART, 10-pin). Don't lay out the connector until ADR-0011 is decided.
+
 1. ESTOP_EN logic level and driver: who sources it (power board e-stop circuit), and the current per corner.
 2. Sync-board CAN ground and power-board ground both reach battery negative through motor power, which forms a loop. Settle this in the grounding strategy before harness layout.
 3. Confirm coast-on-e-stop meets SYS-05; if not, the e-stop needs a braking path.
