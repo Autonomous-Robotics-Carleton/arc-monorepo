@@ -9,6 +9,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `icd/` | One interface control document per interface | Markdown tables; `.dbc` for CAN, `.msg` for ROS 2 |
 | `adr/` | Architecture decision records | One Markdown file per decision |
 | `budgets/` | Mass/CG, power per rail, bus load, latency, cost | CSV (one file per budget) |
+| `bom/` | Functional BOM: what each part must do and what it connects to | Markdown tables |
 | `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
 | `reviews/` | Gate checklists and review records | Markdown |
 | `architecture.md` | Narrative overview of the whole car | Markdown |
