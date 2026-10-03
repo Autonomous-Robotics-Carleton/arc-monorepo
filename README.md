@@ -17,7 +17,7 @@
 ---
 
 Welcome to the **monorepo** for **ARC (Autonomous Robotics Carleton)**!  
-This project houses our public-facing website and documentation hub — everything related to building, configuring, and showcasing our **autonomous car** as we prepare for competitions.  
+This project houses everything for our **autonomous car**: its systems engineering, the code that runs on it, its hardware designs, plus our public website and documentation hub.  
 
 We’re keeping this project **fully open source**, so current and future members — and the wider robotics community — can learn, contribute, and grow with us.  
 
@@ -25,7 +25,16 @@ We’re keeping this project **fully open source**, so current and future member
 
 ## 📖 What’s Inside  
 
-This repository contains two apps:
+| Folder | What lives there |
+| --- | --- |
+| [`systems/`](systems/README.md) | Source of truth for the car: requirements, decisions (ADRs), interfaces, budgets, risks |
+| [`ros/`](ros/README.md) | ROS 2 workspace for the Jetson Orin NX |
+| [`firmware/`](firmware/README.md) | Sync MCU (Zephyr) and VESC firmware |
+| [`hardware/`](hardware/README.md) | Board designs and mechanical exports |
+| [`platform/`](platform/README.md) | Jetson image, kernel, containers, system services |
+| [`tools/`](tools/README.md) | Developer scripts |
+| [`libs/`](libs/README.md) | Shared TypeScript packages |
+| `apps/` | The public website and the docs site (below) |
 
 ### 🌐 `apps/web` — Public Website  
 The ARC marketing and showcase site built with **Next.js 15**, **Tailwind CSS v4**, and **GSAP** animations.  
@@ -165,7 +174,14 @@ Contributors never touch Docker.
 # 🏗 Project Structure
 
 ```
-arc-monorepo/                     # Nx monorepo root
+arc-monorepo/                 # Nx monorepo root
+├── systems/                  # Requirements, ADRs, ICDs, budgets, risks
+├── ros/                      # ROS 2 workspace (Orin)
+├── firmware/                 # Sync MCU and VESC firmware
+├── hardware/                 # Board designs, mechanical exports
+├── platform/                 # Jetson image and services
+├── tools/                    # Developer scripts
+├── libs/                     # Shared TypeScript packages
 ├── apps/
 │   ├── docs/                 # Fumadocs / Next.js docs app
 │   │   ├── app/              # Next.js App Router
