@@ -1,4 +1,4 @@
-# Security Policy for ARC Docs
+# Security Policy
 
 Thank you for helping keep ARC (Autonomous Robotics Carleton) and its documentation secure. This document describes how to report security vulnerabilities, what information to provide, our handling and disclosure process, and other guidelines for contributors and researchers.
 
@@ -11,7 +11,7 @@ If you discover a security issue in this repository or the systems described by 
 Preferred contact methods:
 
 - Email: `devlead@arcarleton.mycses.ca`
-- Alternatively, open a private issue and mark it `private` or use GitHub's secure vulnerability reporting flow.
+- GitHub: **Report a vulnerability** on the repository's Security tab (private vulnerability reporting). Public issues are visible to everyone, so never use them for security reports.
 
 When reporting, please include:
 
@@ -98,7 +98,7 @@ If emailing, include `[SECURITY]` in the subject line.
 
 ## 8. Scope
 
-This policy applies to the `2026` repository and the documentation and scripts hosted within it.
+This policy applies to the `arc-monorepo` repository: its documentation, websites, scripts, CI workflows and the car software and firmware hosted within it.
 
 Exclusions (out of scope):
 
@@ -114,7 +114,7 @@ If you’re unsure whether something is in scope, send us the report privately a
 Maintainership and contact details should be kept up to date in the repo. Suggested canonical contact:
 
 - `devlead@arcarleton.mycses.ca`
-- GitHub: open a private security issue or use the repository's security advisories feature.
+- GitHub: private vulnerability reporting on the Security tab.
 
 ---
 
@@ -127,7 +127,8 @@ We appreciate the time and effort of security researchers who responsibly disclo
 ## 11. Revision History
 
 - 2025-09-18 — Initial security policy created for ARC Docs.
+- 2026-10-03 — Renamed repository (arc-monorepo), widened scope to the car code, reporting through GitHub private vulnerability reporting.
 
 ---
 
-*Last updated: 2025-09-18*
+*Last updated: 2026-10-03*
