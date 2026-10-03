@@ -12,12 +12,7 @@ jobs:
   auto-assign:
     runs-on: ubuntu-latest
     steps:
-      - name: Auto-assign PR to author
-        uses: pozil/auto-assign-issue@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: ${{ github.actor }}
-          numOfAssignee: 1
-          allowSelfAssign: true
-          abortIfPreviousAssignees: false
-          removePreviousAssignees: false
+      - name: Assign PR to its author
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr edit ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --add-assignee ${{ github.event.pull_request.user.login }}

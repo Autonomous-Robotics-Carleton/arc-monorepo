@@ -11,12 +11,7 @@ jobs:
   auto-assign:
     runs-on: ubuntu-latest
     steps:
-      - name: Auto-assign Issue
-        uses: pozil/auto-assign-issue@v1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: HalfPast9
-          numOfAssignee: 1
-          allowSelfAssign: true
-          abortIfPreviousAssignees: false
-          removePreviousAssignees: false
+      - name: Assign issue to the maintainer
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue edit ${{ github.event.issue.number }} --repo ${{ github.repository }} --add-assignee HalfPast9
