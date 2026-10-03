@@ -2,7 +2,7 @@
 
 Sep 23, 2026 · @shrikar vempati
 
-> **Partly superseded.** ADR-0006 to ADR-0017 drop the corner module, corner sensor node and tire temperature for v1, move the corner encoders and pots to the sync board, put VESC commands on one classic CAN bus with telemetry on two CAN-FD buses, make the e-stop a controlled braked stop, use a downward event camera as the ground-speed sensor, define the ground link (team router, laptop gateway, button hotspot, service port), and set the software platform (JetPack 7.2.1, ROS 2 Jazzy, Zephyr on the sync MCU). Where this overview disagrees with `systems/`, `systems/` wins.
+> **Partly superseded.** ADR-0006 to ADR-0020 drop the corner module, corner sensor node and tire temperature for v1, move the corner encoders and pots to the sync board, put VESC commands on one classic CAN bus with telemetry on two CAN-FD buses, make the e-stop a controlled braked stop, use a downward event camera as the ground-speed sensor, define the ground link (team router, laptop gateway, button hotspot, service port), and set the software platform (JetPack 7.2.1, ROS 2 Jazzy, Zephyr on the sync MCU). Where this overview disagrees with `systems/`, `systems/` wins.
 
 ## Purpose and roadmap
 
