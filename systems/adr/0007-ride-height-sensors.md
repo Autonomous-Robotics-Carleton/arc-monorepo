@@ -3,7 +3,7 @@
 - **Status:** Accepted
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
-- **Traces to:** SYS-10, SYS-15, RSK-07
+- **Traces to:** SYS-10, SYS-15, RSK-07, ADR-0014 (the fifth sensor scales the downward event camera)
 
 ## Context
 
