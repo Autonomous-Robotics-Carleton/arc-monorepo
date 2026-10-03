@@ -21,6 +21,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 | Bus load, latency, cost | `budgets/bus-load.csv`, `budgets/latency.csv`, `budgets/cost.csv` |
 | Risks | `risks.md` |
 | Bench test for the CAN-FD buses | `tests/rsk-03-canfd-bench.md` |
+| Verification plan (rigs R1–R8, pre-order S0 checklist) | `verification/plan.md` |
 
 ## Boards
 
