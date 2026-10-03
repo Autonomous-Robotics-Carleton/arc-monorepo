@@ -14,7 +14,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 | What | Where |
 | --- | --- |
 | System requirements | `requirements/system.md` |
-| Decisions (ADRs 0001–0019) | `adr/README.md` |
+| Decisions (ADRs) | `adr/README.md` |
 | Functional BOM + sync MCU I/O tally | `bom/electrical.md` |
 | Corner connector (rev D, 10-pin) | `icd/corner-connector.md` |
 | Power loads and scenarios | `budgets/power.csv`, `budgets/power-scenarios.md` |
