@@ -15,9 +15,10 @@ state,AS5047 encoders + magnets + breakouts (4 wheel + steering),5,100,150,estim
 state,Suspension potentiometers,4,40,80,estimate,baseline
 state,Ride-height ToF sensors,5,50,125,estimate,baseline
 drive,Castle 1010-4400kV sensored motors,4,400,520,estimate,
-drive,VESC 6.4 fork boards incl. CAN-FD parts (4 corners + steering + spare),6,600,1200,estimate,small-batch fab + assembly
+drive,VESC 6.4 fork boards incl. CAN-FD parts (4 corners + spares),6,550,1100,estimate,small-batch fab + assembly; extra bare PCBs for rework
 drive,Gearboxes (steel gears) + bearings + CVDs,4 corners,400,700,estimate,
-steering,VESC-driven steering actuator mechanics (BLDC + reduction + AS5047),1,80,200,estimate,board counted under drive
+steering,moteus-c1 controller,1,69,69,"mjbots list $69",ADR-0019
+steering,Steering actuator mechanics (gimbal motor + belt + pulleys + mount),1,80,200,estimate,ADR-0019
 power,Central power board,1 build,200,500,estimate,
 power,Sync MCU board (STM32H723 + PHY + transceivers),1 build,200,500,estimate,
 power,Bus clamp board,1,50,100,estimate,
