@@ -27,5 +27,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted |
 | [0020](0020-time-sync-ptp.md) | Time sync: PTP with hardware timestamping through a PTP-aware switch | Superseded by 0021 |
 | [0021](0021-time-sync-sync-mcu-domain.md) | Time sync: µs-critical sensors timestamped in the sync MCU's clock; Orin synced in software; optional i210/i226 | Accepted |
+| [0022](0022-power-board-telemetry-and-shutdown.md) | Power-board data to the sync MCU over I2C with fault interrupts; two-tier low-battery shutdown | Proposed (recommendation) |
+| [0023](0023-no-orin-i210-nic.md) | No i210/i226 network card on the Orin carrier in v1; sync MCU stays on the switch | Proposed (recommendation) |
 
 Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.

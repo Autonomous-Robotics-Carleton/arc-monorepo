@@ -90,16 +90,16 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 | --- | --- | --- | --- |
 | SPI devices (chip-selects) | 2 IMUs, 4 wheel encoders, 4 suspension angle sensors, 2 steering knuckle encoders | 12 | ≥ 1 |
 | Interrupt inputs (data-ready) | 2 IMUs | 2 | ≥ 1 |
-| Power-board data (stacking header) | Battery V/I, per-rail currents and faults, 4 cell voltages (E-46) | **Open:** digitised on E-41 and sent over a bus, or analogue into E-30's ADC; settle with ICD power-sync-stack | ≥ 1 |
+| Power-board data (stacking header) | Battery V/I, per-rail currents and faults, 4 cell voltages (E-46) | **Open.** Recommended (ADR-0022, Proposed): 1 dedicated I2C bus + an interrupt input per alert/fault source (`TBD`), with analog battery V/I as a rework fallback | ≥ 1 |
 | I2C | 5 ride-height ToF (via mux or XSHUT) | 1 bus + mux, or 5 XSHUT GPIO | ≥ 1 |
 | Camera trigger outputs | Stereo kit, quad kit, forward event camera, downward event camera | 4 | ≥ 1 |
 | PPS / time-sync output | To Orin | 1 | — |
 | PWM output | None (steering moved to CAN, ADR-0019) | 0 | ≥ 1 |
 | CAN | Command bus (classic, 4 VESCs); telemetry front and rear (CAN-FD, 2 VESCs each); steering bus (CAN-FD, moteus-c1) | 3 FDCAN + 1 MCP2518FD (all used) | Another bus needs another external controller |
 | UART | Debug console | 1 | ≥ 1 |
-| Ethernet | Link to Orin via switch (E-06). **Open:** if the optional i210/i226 is fitted, this link runs point-to-point to it instead (ADR-0021), freeing a switch port | 1 | — |
+| Ethernet | Link to Orin via switch (E-06). **Open:** if the optional i210/i226 is fitted, this link runs point-to-point to it instead (ADR-0021), freeing a switch port. Recommended (ADR-0023, Proposed): don't fit it | 1 | — |
 | GPIO | E-stop status in, status LEDs, ground-speed lighting mode select (3) | TBD + 3 | ≥ 2 |
-| Low-battery shutdown signal to the Orin (SYS-30) | Orin | **Open:** driven by E-41 or E-30 | — |
+| Low-battery shutdown signal to the Orin (SYS-30) | Orin | **Open.** Recommended (ADR-0022, Proposed): 1 E-30 GPIO; E-41 cuts the compute rail after the Orin halts and has its own undervoltage backstop | — |
 
 ## Ground equipment
 
