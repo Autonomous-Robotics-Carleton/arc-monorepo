@@ -20,7 +20,7 @@ drive,Gearboxes (steel gears) + bearings + CVDs,4 corners,400,700,estimate,
 steering,moteus-c1 controller,1,69,69,"mjbots list $69",ADR-0019
 steering,Steering actuator mechanics (gimbal motor + belt + pulleys + mount),1,80,200,estimate,ADR-0019
 power,Central power board,1 build,200,500,estimate,
-power,Sync MCU board (STM32H723 + PHY + transceivers),1 build,200,500,estimate,
+sync,Sync MCU board (STM32H723 + PHY + transceivers),1 build,200,500,estimate,
 power,Bus clamp board,1,50,100,estimate,
 power,4S LiPo hardcase packs,3-4,250,450,estimate,charging station is a separate system
 power,Harness (JST-GH + XT60 + wire + crimp tool),1,150,350,estimate,

@@ -4,7 +4,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 
 ## How this repo works
 
-- `systems/` is the source of truth. `architecture.md` is the old narrative overview; where it disagrees with an ADR, ICD or requirement, those win.
+- `systems/` is the source of truth. `architecture.md` is the overview; where it disagrees with an ADR, ICD or requirement, those win.
 - Changes go through PRs. A change to an ICD needs sign-off from the owners on both sides.
 - Nothing is fabbed until it passes `reviews/fab-gate.md`.
 - **Funding is a single order**, so there's no early hardware testing. Design in rework-only fallbacks (unpopulated footprints, jumpers, harness options), and order extra bare PCBs of every custom board.
@@ -44,6 +44,8 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Low-battery thresholds (on the lowest cell) and the clean-shutdown signal to the Orin (SYS-30)
   - Cell-monitor part and balance-lead connection while the pack is installed (E-46)
   - Stacking-header pinout with the sync board (ICD power-sync-stack, not written yet)
+  - Whether battery V/I, rail currents and cell voltages are digitised here and sent to the sync MCU over a bus, or read as analogue by the sync MCU's ADC (`bom/electrical.md` I/O tally)
+  - Whether this board or the sync MCU drives the clean-shutdown signal to the Orin (SYS-30)
   - Anti-spark / loop key and motor distribution parts (E-42, E-45)
   - Grounding strategy (shared with all boards; see Cross-cutting)
 
@@ -67,6 +69,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Connector map and pinouts for every sensor run
   - Camera-trigger connector to the carrier (ICD carrier-sync, not written yet)
   - Isolated vs non-isolated transceivers (follows the grounding decision)
+  - Ethernet path if the optional i210/i226 is fitted: point-to-point to the Orin instead of through the switch (ADR-0021)
   - Lighting driver design
 
 ### 3. VESC 6.4 fork (×4 corners + spares)
