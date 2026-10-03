@@ -2,7 +2,7 @@
 
 Sep 23, 2026 · @shrikar vempati
 
-> **Partly superseded.** ADR-0006 to ADR-0009 drop the corner module, the corner sensor node, tire temperature and the CAN-FD bus for v1, and move the corner encoders and pots to the sync board. Where this overview disagrees with `systems/`, `systems/` wins.
+> **Partly superseded.** ADR-0006 to ADR-0012 drop the corner module, corner sensor node and tire temperature for v1, move the corner encoders and pots to the sync board, put VESC commands on one classic CAN bus with telemetry on two CAN-FD buses, and make the e-stop a controlled braked stop. Where this overview disagrees with `systems/`, `systems/` wins.
 
 ## Purpose and roadmap
 

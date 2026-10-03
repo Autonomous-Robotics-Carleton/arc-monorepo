@@ -55,7 +55,8 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-21 | An experiment process that crashes, hangs, or exhausts CPU, GPU, memory or disk cannot stop platform software from driving, logging or stopping | Platform vs experiment (missions 3, 4) | T | Draft |
 | SYS-22 | No policy, learned or classical, can command beyond the safety envelope (speed, acceleration, steering limits `TBD`); the envelope is enforced outside the policy's process | Layered control (mission 2) | T | Draft |
 | SYS-23 | Logs record operator commands and policy outputs on the same time base as the sensors | Training data (mission 2) | T | Draft |
-| SYS-24 | Every sensor is sampled at the fastest rate its data is useful at, timestamped and logged; no data path (bus, link, storage, offload) exceeds 50% of capacity with all sensors at full rate | Hardware never limits what software can try (mission 4) | A + T | Draft |
+| SYS-24 | Every sensor is sampled at the fastest rate its data is useful at, timestamped and logged; no data path (link, storage, offload) exceeds 50% of capacity, and no CAN bus exceeds 70%, with all sensors at full rate (`budgets/bus-load.csv`) | Hardware never limits what software can try (mission 4) | A + T | Draft |
+| SYS-25 | Loss of commands or telemetry from any one corner (missing CAN acknowledgements, health status or telemetry frames, or bus-off) triggers a controlled stop of all four corners within `TBD` ms, using the SYS-04 brake ramp | A single-corner fault must not leave one corner braking while the others drive (ADR-0011) | T | Draft |
 
 ## Spec items with no parent yet
 

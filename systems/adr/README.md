@@ -14,9 +14,9 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0006](0006-no-corner-module.md) | No corner module in v1; VESC is the only corner board | Accepted |
 | [0007](0007-ride-height-sensors.md) | Four corner ride-height sensors in v1, plus one at the optical flow sensor | Accepted |
 | [0008](0008-corner-sensors-to-sync-board.md) | Wheel encoders and suspension pots wire directly to the sync board | Accepted |
-| [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted |
+| [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted, amended by 0011 |
 | [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted |
-| [0011](0011-vesc-telemetry-link.md) | High-rate VESC telemetry link (UART vs CAN-FD) | Proposed, open |
+| [0011](0011-vesc-telemetry-link.md) | VESC 6.4 fork; telemetry on two CAN-FD buses, commands on the classic bus | Accepted |
 | [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Proposed |
 
 Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.
