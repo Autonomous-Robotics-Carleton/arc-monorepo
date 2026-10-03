@@ -1,5 +1,5 @@
 # --- Base stage: install deps with pnpm ---
-FROM node:20-alpine AS deps
+FROM node:22-alpine AS deps
 WORKDIR /app
 
 RUN corepack enable
@@ -11,7 +11,7 @@ COPY apps/docs/package.json apps/docs/source.config.ts ./apps/docs/
 RUN pnpm install --frozen-lockfile
 
 # --- Build stage ---
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -29,7 +29,7 @@ RUN cp -r /app/apps/docs/.next /deploy/.next
 RUN cp -r /app/apps/docs/public /deploy/public
 
 # --- Runtime stage ---
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -39,6 +39,9 @@ RUN addgroup -g 1001 nodejs \
   && adduser -u 1001 -G nodejs -s /bin/sh -D nextjs
 
 COPY --from=builder /deploy ./
+
+# fumadocs-mdx regenerates .source/ when `next start` runs
+RUN mkdir .source && chown nextjs:nodejs .source
 
 USER nextjs
 EXPOSE 3000
