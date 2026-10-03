@@ -1,6 +1,6 @@
 # ADR-0018: Steering is a VESC-driven brushless actuator with belt reduction
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0019 (no fifth VESC)
 - **Date:** 2026-10-03
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-05, SYS-06, SYS-08, SYS-10, SYS-22, SYS-24, SYS-29, ADR-0011, ADR-0012
