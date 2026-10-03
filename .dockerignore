@@ -3,7 +3,6 @@ node_modules
 .nx
 .git
 .gitignore
-*.md
 LICENSE
 .github
 .claude

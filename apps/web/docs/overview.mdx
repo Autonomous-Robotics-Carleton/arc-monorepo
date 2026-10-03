@@ -4,16 +4,13 @@ description: Stack, architecture, and design decisions behind the ARC website.
 icon: Globe
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-import { Cards, Card } from 'fumadocs-ui/components/card';
-
 The ARC website (`apps/web`) is the public-facing club site. It lives in the monorepo alongside the docs site and any other apps.
 
 ## Tech Stack
 
 | Layer | Tool | Version |
 |---|---|---|
-| Framework | Next.js (App Router) | 14 |
+| Framework | Next.js (App Router) | 15 |
 | Styling | Tailwind CSS | v4 |
 | Language | TypeScript | 5 |
 | Animation | GSAP + ScrollTrigger | 3 |
@@ -32,13 +29,13 @@ The ARC website (`apps/web`) is the public-facing club site. It lives in the mon
 ```bash
 # From the monorepo root
 pnpm install
-pnpm --filter web dev
+npx nx dev web
 ```
 
-The site starts at `http://localhost:3000`.
+The site starts at `http://localhost:3001` (the docs site uses 3000).
 
 <Callout type="info" title="Port conflict?">
-If 3000 is taken, Next.js auto-increments to 3001, 3002, etc. Check the terminal output.
+If 3001 is taken, Next.js picks the next free port. Check the terminal output.
 </Callout>
 
 ## Pages at a Glance
@@ -71,9 +68,9 @@ apps/web/
 ## Further Reading
 
 <Cards>
-  <Card title="File Structure" href="/docs/website-structure" description="Routing, page anatomy, and where everything lives" />
-  <Card title="Design System" href="/docs/website-design-system" description="Colors, CSS variables, typography, utility classes" />
-  <Card title="Components" href="/docs/website-components" description="Guide to the key UI components" />
-  <Card title="Updating Content" href="/docs/website-content" description="How to change team, projects, sponsors, and governance links" />
-  <Card title="Instagram Feed" href="/docs/website-instagram" description="Setting up the Behold.so feed on the Team page" />
+  <Card title="File Structure" href="./structure.mdx" description="Routing, page anatomy, and where everything lives" />
+  <Card title="Design System" href="./design-system.mdx" description="Colors, CSS variables, typography, utility classes" />
+  <Card title="Components" href="./components.mdx" description="Guide to the key UI components" />
+  <Card title="Updating Content" href="./content.mdx" description="How to change team, projects, sponsors, and governance links" />
+  <Card title="Instagram Feed" href="./instagram.mdx" description="Setting up the Behold.so feed on the Team page" />
 </Cards>
