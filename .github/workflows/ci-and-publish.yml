@@ -20,15 +20,15 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # nx affected needs history to diff against
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4 # version from packageManager in package.json
+        uses: pnpm/action-setup@v6 # version from packageManager in package.json
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Set Nx base and head
-        uses: nrwl/nx-set-shas@v4
+        uses: nrwl/nx-set-shas@v5
 
       - name: List affected projects
         id: affected
@@ -51,19 +51,19 @@ jobs:
 
       - name: Check HTML in systems/
         if: contains(steps.affected.outputs.projects, ' systems ')
-        uses: anishathalye/proof-html@v1.1.0
+        uses: anishathalye/proof-html@v2
         with:
           directory: ./systems
           check_favicon: false # standalone pages, not a site
           # rel="preconnect" hints: the bare origins return 404 by design
-          url_ignore: |
+          ignore_url: |
             https://fonts.googleapis.com
             https://fonts.gstatic.com
 
       # Publish the docs image only on pushes to main that change the docs
       - name: Log in to GHCR
         if: github.ref == 'refs/heads/main' && contains(steps.affected.outputs.projects, ' docs ')
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -71,7 +71,7 @@ jobs:
 
       - name: Build & push Docker image
         if: github.ref == 'refs/heads/main' && contains(steps.affected.outputs.projects, ' docs ')
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./apps/docs/Dockerfile
@@ -83,7 +83,7 @@ jobs:
       - name: Trigger Watchtower Update
         if: github.ref == 'refs/heads/main' && contains(steps.affected.outputs.projects, ' docs ')
         continue-on-error: true # a failed deploy hook shouldn't fail CI
-        uses: fjogeleit/http-request-action@v1
+        uses: fjogeleit/http-request-action@v2
         with:
           url: 'https://api.mycses.ca/arcarleton/docs/update'
           method: 'GET'
