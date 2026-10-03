@@ -35,7 +35,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-01 | Top speed on tile ≥ `TBD` m/s (spec gear table spans 8–12.5 m/s) | Racing (known user) | T | Draft |
 | SYS-02 | Wheelbase ≤ 324 mm and track ≤ 296 mm | Fair racing vs the Slash 4x4 (known user) | I | Draft |
 | SYS-03 | Run time ≥ 10 min of hard driving per pack | One session per pack | T | Draft |
-| SYS-04 | After loss of operator heartbeat, brake to a stop from top speed within `TBD` m, using the same controlled brake ramp as the e-stop | Safety; sets watchdog timeout and VESC brake config | T | Draft |
+| SYS-04 | After loss of operator heartbeat, the car rolls ≤ 2 m before braking starts (≤ ~150 ms watchdog timeout at 12 m/s), then brakes to a stop using the same controlled brake ramp as the e-stop. Expected total from 12 m/s at ~5 m/s²: ~17 m | Safety; sets watchdog timeout and VESC brake config | T | Draft |
 | SYS-05 | A physical e-stop brings the car to a controlled, braked stop (ramped, not instantaneous; never free rolling), then removes drive torque in hardware within `TBC` 3 s, without depending on Orin or sync-board software (IEC 60204-1 stop category 1, ADR-0012) | Safety; covers a hung Orin or sync MCU | T + I | Draft |
 | SYS-06 | Vehicle-state estimate available to the controller at ≥ 200 Hz, age ≤ 5 ms p99 (sensor sample to estimate available); output rate configurable upward | Classical control and MPC (mission 1). Sets encoder/pot sample rates and VESC status rates (ADR-0008, ADR-0009). | T | Draft |
 | SYS-07 | All sensor samples carry timestamps on one time base, aligned to within `TBD` µs | Sensor fusion and MPC (mission 1); aligned training data (mission 2) | T | Draft |
