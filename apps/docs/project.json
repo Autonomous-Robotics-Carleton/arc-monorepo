@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/docs",
   "projectType": "application",
+  "implicitDependencies": ["systems"],
   "targets": {
     "dev": {
       "command": "next dev --turbo",

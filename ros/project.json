@@ -1,0 +1,6 @@
+{
+  "name": "ros",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["systems"],
+  "targets": {}
+}
