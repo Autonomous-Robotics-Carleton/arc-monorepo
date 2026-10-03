@@ -43,11 +43,10 @@ The ARC marketing and showcase site built with **Next.js 15**, **Tailwind CSS v4
 - 👥 **Projects & team pages** — showcasing members and ongoing work  
 
 ### 📚 `apps/docs` — Documentation Hub  
-The technical docs site built with **Fumadocs** + **Next.js**.  
-- ✅ **Setup guides** — step-by-step instructions for getting the ARC car up and running.  
-- 🛠 **Configuration docs** — details on software, hardware, and environment settings.  
-- 📚 **Knowledge base** — collected learnings and resources as the project evolves.  
-- 🏎 **Race preparation logs** — documenting our progress on the road to competition.  
+**[docs.arcarleton.ca](https://docs.arcarleton.ca)**, built with **Fumadocs** + **Next.js**.  
+- 🏎 **The car** — everything in `systems/`, with every requirement, risk and decision ID linked to its definition  
+- 🧰 **Handbook** — dev setup, contributing, Fusion, the Orin dev kit and the club website  
+- 🤖 **For LLMs** — `/llms.txt`, `/llms-full.txt`, `/ids.json`, and every page as Markdown at its URL + `.md`  
 
 ---
 
@@ -61,13 +60,13 @@ npx nx dev docs        # Docs site → http://localhost:3000
 npx nx dev web         # Website  → http://localhost:3001
 ```
 
-Requires Node.js 22 (`.nvmrc`). Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](.github/CONTRIBUTING.md)**.
+Requires Node.js 22 (`.nvmrc`). Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](.github/CONTRIBUTING.md)**. Coding agents: start with **[AGENTS.md](AGENTS.md)**.
 
 ---
 
 # 🧪 CI/CD Pipeline
 
-**GitHub Actions** runs `nx affected`, so each PR only lints, checks and builds the projects its changes touch. A change in `systems/` also marks the projects that depend on it (`docs`, `ros`, `sync-mcu`).
+**GitHub Actions** runs `nx affected`, so each PR only lints, tests, checks and builds the projects its changes touch. A change in `systems/` also marks the projects that depend on it (`docs`, `ros`, `sync-mcu`).
 
 On every merge to `main` that affects the docs:
 
@@ -89,18 +88,20 @@ arc-monorepo/                 # Nx monorepo root
 ├── firmware/                 # Sync MCU and VESC firmware
 ├── hardware/                 # Board designs, mechanical exports
 ├── platform/                 # Jetson image and services
-├── tools/                    # Developer scripts
-├── libs/                     # Shared TypeScript packages
+├── tools/                    # Repo scripts (systems/ checker, ID lookup)
+├── libs/
+│   └── systems-model/        # Parser and checks for systems/
 ├── apps/
 │   ├── docs/                 # Fumadocs / Next.js docs app
 │   │   ├── app/              # Next.js App Router
-│   │   ├── content/          # MDX documentation pages
+│   │   ├── content/          # Handbook pages (MDX); other pages come from systems/, apps/web/docs/, platform/dev-kit/
 │   │   ├── public/           # Static assets
 │   │   ├── lib/              # Utility functions
 │   │   ├── components/       # React components
 │   │   ├── next.config.mjs
 │   │   └── package.json
 │   └── web/                  # Next.js public website
+│       ├── docs/             # Website docs (shown on the docs site)
 │       ├── app/              # Next.js App Router (pages)
 │       ├── components/       # UI + layout components
 │       ├── lib/              # Animation utilities
@@ -110,7 +111,8 @@ arc-monorepo/                 # Nx monorepo root
 │       └── package.json
 ├── nx.json                   # Nx workspace config
 ├── pnpm-workspace.yaml       # pnpm workspace config
-├── .github/workflows/        # CI & Docker build pipelines
+├── .github/                  # CI workflows, templates, CONTRIBUTING.md, CODEOWNERS
+├── AGENTS.md                 # Guidance for coding agents (CLAUDE.md points here)
 └── README.md
 ```
 
@@ -210,8 +212,9 @@ import { something } from '@arc/config';
 | `npx nx show projects` | List all registered projects |
 | `npx nx graph` | Open interactive dependency graph |
 | `npx nx run-many -t build` | Build all projects |
-| `npx nx affected -t lint check build` | What CI runs: only projects your changes touch |
-| `npx nx check systems` | Check links and ADR references in `systems/` |
+| `npx nx affected -t lint test check build` | What CI runs: only projects your changes touch |
+| `npx nx check systems` | Check `systems/`: links, IDs, ADRs, verification coverage |
+| `node tools/systems-ids.mts SYS-04` | Look up an ID: definition, status, references |
 
 ---
 
