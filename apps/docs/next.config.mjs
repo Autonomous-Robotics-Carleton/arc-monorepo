@@ -46,6 +46,15 @@ const config = {
       })),
     ];
   },
+  // /docs/<page>.md: each page as Markdown (app/docs-md)
+  async rewrites() {
+    return {
+      beforeFiles: [
+        { source: '/docs.md', destination: '/docs-md' },
+        { source: '/docs/:path*.md', destination: '/docs-md/:path*' },
+      ],
+    };
+  },
   images: {
     remotePatterns: [
       {
