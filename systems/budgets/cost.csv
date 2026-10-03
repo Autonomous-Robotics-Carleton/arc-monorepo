@@ -1,0 +1,35 @@
+group,item,qty,low_usd,high_usd,source,notes
+compute,Jetson Orin NX 16GB module,1,950,1100,"NVIDIA 1KU list $899 (Jul 2026); single units cost more",ADR-0010
+compute,Carrier board (Antmicro fork) fab + assembly + parts,1 build (several boards),500,1200,estimate,high-speed CSI layout; small-batch assembly
+compute,NVMe SSD 4 TB swappable,1,250,450,estimate,
+compute,Wi-Fi card MT7922 + antennas,1,25,50,estimate,ADR-0015
+compute,Cooling (heatsink + fan),1,30,60,estimate,
+compute,Ethernet switch (>= 5 ports),1,40,150,estimate,
+perception,Arducam AR0234 stereo kit,1,260,260,"Arducam list $259.99",
+perception,Arducam quad OV9281 kit,1,300,450,estimate,
+perception,Prophesee GenX320 (forward + ground speed),2,600,800,"OpenMV module $300-400 each; Jetson-ready version needs a quote",ADR-0014
+perception,Hokuyo UST-10LX 2D LiDAR,1,1600,2200,estimate,largest single item; sourcing is RSK-10
+perception,Ground-speed lighting (LED rings + Class 1 VCSEL module + polarizers + lens),1,50,100,estimate,ADR-0014
+state,IMUs (consumer grade),2,20,40,estimate,baseline
+state,AS5047 encoders + magnets + breakouts (4 wheel + steering),5,100,150,estimate,
+state,Suspension potentiometers,4,40,80,estimate,baseline
+state,Ride-height ToF sensors,5,50,125,estimate,baseline
+drive,Castle 1010-4400kV sensored motors,4,400,520,estimate,
+drive,VESC 6.4 fork boards incl. CAN-FD parts (4 corners + steering + spare),6,600,1200,estimate,small-batch fab + assembly
+drive,Gearboxes (steel gears) + bearings + CVDs,4 corners,400,700,estimate,
+steering,VESC-driven steering actuator mechanics (BLDC + reduction + AS5047),1,80,200,estimate,board counted under drive
+power,Central power board,1 build,200,500,estimate,
+power,Sync MCU board (STM32H723 + PHY + transceivers),1 build,200,500,estimate,
+power,Bus clamp board,1,50,100,estimate,
+power,4S LiPo hardcase packs,3-4,250,450,estimate,charging station is a separate system
+power,Harness (JST-GH + XT60 + wire + crimp tool),1,150,350,estimate,
+power,E-stop button + loop key + misc,1,50,100,estimate,
+chassis,Machined aluminium parts (decks + mounts + bearing plates),1,300,1000,estimate,CNC service
+chassis,Carbon fibre plates,1,150,400,estimate,
+chassis,Printed parts (CF nylon etc.),1,100,300,estimate,
+chassis,Suspension + steering parts + wheels/tyres (off-the-shelf 1/10),1,200,500,estimate,
+chassis,Fasteners + hardware,1,50,100,estimate,
+ground,Team router GL.iNet Flint 3 + cables,1,240,260,"GL.iNet list $209.99",ADR-0015
+upgrade,Navigation-grade CG IMU (ADIS1650x / Murata SCHA63T class) - delta over consumer,1,100,600,estimate,optional
+upgrade,Magnetic suspension angle sensors instead of pots - delta,4,0,100,estimate,optional
+upgrade,Laser triangulation ride height instead of ToF - delta,4,2000,3600,estimate,optional; packaging check needed
