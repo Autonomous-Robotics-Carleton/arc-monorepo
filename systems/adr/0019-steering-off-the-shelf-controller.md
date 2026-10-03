@@ -31,7 +31,7 @@ Option C′. **Fallback: option B** if the belt mechanism doesn't fit the front 
 | --- | --- |
 | Controller | **mjbots moteus-c1** ($69): 38 × 38 × 9 mm, 8.9 g, 10–51 V, 20 A peak phase current, CAN-FD 5 Mbit/s, > 1 kHz command/telemetry |
 | Motor + reduction | Gimbal-style brushless motor, ~4–6:1 belt (zero backlash, back-drivable) |
-| Position | The moteus onboard encoder on the motor × belt ratio for commutation and the position loop. The steering-knuckle encoder on the sync board (E-24) gives absolute output angle at startup (written into the controller as its output position) and a continuous cross-check |
+| Position | The moteus onboard encoder on the motor × belt ratio for commutation and the position loop. The steering-knuckle encoders on the sync board (E-24, one per front knuckle, added 2026-10-03) give absolute output angle at startup (written into the controller as its output position) and a continuous cross-check |
 | Torque | Controller-reported torque from q-axis current, at ≥ 1 kHz. A model removes inertia, belt friction and cogging. A torque sensor in the link is a v2 option |
 | Bus | **A dedicated fourth CAN-FD bus**, using the MCP2518FD footprint reserved on the sync board (ADR-0013), now populated. Steering traffic stays isolated from the drive buses |
 | Power | From the motor bus through a **switched, fused output on the power board** that the delayed e-stop line turns off |

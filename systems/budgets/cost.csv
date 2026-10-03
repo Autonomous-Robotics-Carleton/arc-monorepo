@@ -11,7 +11,7 @@ perception,Prophesee GenX320 (forward + ground speed),2,600,800,"OpenMV module $
 perception,Hokuyo UST-10LX 2D LiDAR,1,1600,2200,estimate,largest single item; sourcing is RSK-10
 perception,Ground-speed lighting (LED rings + Class 1 VCSEL module + polarizers + lens),1,50,100,estimate,ADR-0014
 state,IMUs (consumer grade),2,20,40,estimate,baseline
-state,AS5047 encoders + magnets + breakouts (4 wheel + steering),5,100,150,estimate,
+state,AS5047 encoders + magnets + breakouts (4 wheel + 2 steering knuckles),6,120,180,estimate,
 state,Suspension potentiometers,4,40,80,estimate,baseline
 state,Ride-height ToF sensors,5,50,125,estimate,baseline
 drive,Castle 1010-4400kV sensored motors,4,400,520,estimate,
