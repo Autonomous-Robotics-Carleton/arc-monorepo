@@ -51,121 +51,30 @@ The technical docs site built with **Fumadocs** + **Next.js**.
 
 ---
 
-## 🚀 Getting Started  
-
-1. Clone this repository:  
-   ```bash
-   git clone https://github.com/Autonomous-Robotics-Carleton/arc-monorepo.git
-   cd arc-monorepo
----
-
-This is an **Nx monorepo**. Documentation source code lives in **`apps/docs/`**.
-
----
-
-# 🔧 Local Development (for Contributors)
-
-Contributors **do NOT need Docker**.
-Docker is used only in production via CI/CD.
-
----
-
-## 📌 Prerequisites
-
-* **Node.js 20+**
-* **Git**
+## 🚀 Getting Started
 
 ```bash
-corepack enable        # activates pnpm (version pinned in package.json)
-pnpm install           # installs all workspace dependencies
-```
-
----
-
-## ▶️ Run the Dev Servers
-
-```bash
+git clone https://github.com/Autonomous-Robotics-Carleton/arc-monorepo.git
+cd arc-monorepo
+corepack enable && pnpm install
 npx nx dev docs        # Docs site → http://localhost:3000
-npx nx dev web         # Public website → http://localhost:3001
+npx nx dev web         # Website  → http://localhost:3001
 ```
 
----
+Requires Node.js 22 (`.nvmrc`). Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
 
-## 🧪 Lint + Build
-
-```bash
-# Docs
-npx nx build docs
-npx nx lint docs
-
-# Website
-npx nx build web
-npx nx lint web
-```
-
----
-
-## 2️⃣ Make Your Changes
-
-### Docs (`apps/docs`)
-
-Content lives in:
-
-```
-apps/docs/content/
-```
-
-UI + logic:
-
-```
-apps/docs/app/
-apps/docs/lib/
-```
-
-### Website (`apps/web`)
-
-Pages live in:
-
-```
-apps/web/app/
-```
-
-Components + UI:
-
-```
-apps/web/components/
-apps/web/lib/
-```
-
----
-
-## 3️⃣ Test Locally
-
-```bash
-pnpm install
-npx nx dev docs
-```
 ---
 
 # 🧪 CI/CD Pipeline
 
-This repository uses **GitHub Actions + GitHub Container Registry (GHCR)**.
+**GitHub Actions** runs `nx affected`, so each PR only lints, checks and builds the projects its changes touch. A change in `systems/` also marks the projects that depend on it (`docs`, `ros`, `sync-mcu`).
 
-### 🔹 For every Pull Request:
+On every merge to `main` that affects the docs:
 
-* Installs dependencies
-* Lints the docs
-* Builds the site
-* Tests Docker build
-
-### 🔹 For every merge to `main`:
-
-* Builds the production Docker image
-* Pushes it to GHCR:
-
+* Builds the production Docker image and pushes it to GHCR:
   * `ghcr.io/autonomous-robotics-carleton/2026:latest`
   * `ghcr.io/autonomous-robotics-carleton/2026:<commit-sha>`
-* ARC infrastructure auto-deploys the new version to **arcarleton.ca** via Watchtower
+* ARC infrastructure auto-deploys it to **docs.arcarleton.ca** via Watchtower
 
 Contributors never touch Docker.
 
@@ -301,6 +210,8 @@ import { something } from '@arc/config';
 | `npx nx show projects` | List all registered projects |
 | `npx nx graph` | Open interactive dependency graph |
 | `npx nx run-many -t build` | Build all projects |
+| `npx nx affected -t lint check build` | What CI runs: only projects your changes touch |
+| `npx nx check systems` | Check links and ADR references in `systems/` |
 
 ---
 
