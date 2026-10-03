@@ -39,7 +39,7 @@
 | E-25 | Ground-speed sensor: downward event camera | 1 | Decided: Prophesee GenX320 (ADR-0014) | Forward and sideways ground velocity at 0–12 m/s on the school floor; ~90° M12 lens, aperture ~f/8 for speckle; mounted inside the chassis looking through a floor window with a light shroud; scale from E-26 | Carrier CSI port 4; trigger/sync from E-30 | 3.3 V / 5 V | SYS-10, RSK-07 |
 | E-29 | Ground-speed illumination | 1 set | Decided (ADR-0014) | Three switchable modes: (1) cross-polarized LED ring, constant-current DC (no PWM); (2) grazing-angle LEDs; (3) off-the-shelf **certified IEC 60825-1 Class 1** IR VCSEL module with a hardware current limit, for laser speckle | E-30 GPIO (mode select) | 5 V via current-limited drivers | SYS-10, RSK-07 |
 | E-26 | Ride-height ToF sensor | 5 (4 corners + 1 beside E-25 for scale) | TBD: ToF (ADR-0007); laser triangulation considered and rejected on cost | Minimum range ≤ sensor-to-floor distance at full compression (recess the sensor if needed); works on glossy tile; individually addressable (I2C mux or one XSHUT line each) | E-30 (I2C) | 3.3 V | SYS-10, SYS-15, RSK-07 |
-| E-27 | *Deleted:* steering servo current sense. Steering torque comes from the steering VESC's current (ADR-0018) | — | — | — | — | — | — |
+| E-27 | *Deleted:* steering servo current sense. Steering torque comes from the steering controller's current (ADR-0019) | — | — | — | — | — | — |
 | E-28 | Motor temperature NTC | 4 | Decided (spec) | Glued to motor can; matches VESC motor-temp input curve | E-50 | — | SYS-19 |
 
 **E-25 selection** is recorded in ADR-0014, including the rejected candidates (PMW3901 0.58 m/s, PAA5100JE 1.14 m/s, SparkFun OTOS 2.5 m/s, mouse chips, radar, Correvit). Fallback: the dead-wheel pod design in ADR-0014, with its underfloor space and sync-board channels reserved.
@@ -93,7 +93,7 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 | I2C | 5 ride-height ToF (via mux or XSHUT) | 1 bus + mux, or 5 XSHUT GPIO | ≥ 1 |
 | Camera trigger outputs | Stereo kit, quad kit, forward event camera, downward event camera | 4 | ≥ 1 |
 | PPS / time-sync output | To Orin | 1 | — |
-| PWM output | None (steering moved to CAN, ADR-0018) | 0 | ≥ 1 |
+| PWM output | None (steering moved to CAN, ADR-0019) | 0 | ≥ 1 |
 | CAN | Command bus (classic, 4 VESCs); telemetry front and rear (CAN-FD, 2 VESCs each); steering bus (CAN-FD, moteus-c1) | 3 FDCAN + 1 MCP2518FD (all used) | Another bus needs another external controller |
 | UART | Debug console | 1 | ≥ 1 |
 | Ethernet | Link to Orin via switch | 1 | — |
