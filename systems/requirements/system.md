@@ -57,6 +57,9 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-23 | Logs record operator commands and policy outputs on the same time base as the sensors | Training data (mission 2) | T | Draft |
 | SYS-24 | Every sensor is sampled at the fastest rate its data is useful at, timestamped and logged; no data path (link, storage, offload) exceeds 50% of capacity, and no CAN bus exceeds 70%, with all sensors at full rate (`budgets/bus-load.csv`) | Hardware never limits what software can try (mission 4) | A + T | Draft |
 | SYS-25 | Loss of commands or telemetry from any one corner (missing CAN acknowledgements, health status or telemetry frames, or bus-off) triggers a controlled stop of all four corners within `TBD` ms, using the SYS-04 brake ramp | A single-corner fault must not leave one corner braking while the others drive (ADR-0011) | T | Draft |
+| SYS-26 | A laptop connected to the car keeps its own internet connection; the team network gives a default gateway only to the car (ADR-0015) | Operators need internet while working on the car | D | Draft |
+| SYS-27 | The car is reachable with no outside network present: over the team router network, through a button-activated car hotspot, or through a wired service Ethernet port (ADR-0015) | The car must never be unreachable because of building Wi-Fi | D | Draft |
+| SYS-28 | The car gets internet through the team network when a ground-station laptop or the router's phone link provides it; control traffic (teleop, heartbeat) has priority, and bulk transfers run only while the car is parked | Updates and package installs without risking the driving link | T | Draft |
 
 ## Spec items with no parent yet
 

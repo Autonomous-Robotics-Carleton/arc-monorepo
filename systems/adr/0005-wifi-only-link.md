@@ -1,6 +1,6 @@
 # ADR-0005: Wi-Fi is the only wireless link
 
-- **Status:** Accepted (backfilled)
+- **Status:** Accepted (backfilled); reconfirmed 2026-10-03 (ExpressLRS considered, not adopted); network design in ADR-0015
 - **Date:** before 2026-09-23
 - **Deciders:** TBD
 - **Traces to:** SYS-04, SYS-05, SYS-11, RSK-09

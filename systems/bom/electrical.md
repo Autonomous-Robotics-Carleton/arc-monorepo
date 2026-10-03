@@ -12,9 +12,11 @@
 | E-02 | Carrier board | 1 | Decided: fork of Antmicro Orin baseboard | 4× 22-pin CSI ports; camera trigger connector to sync board; input from fixed compute rail; M.2 key M and key E; GbE | E-01, cameras, E-04, E-05, E-06 | Compute | SYS-08, RSK-01 |
 | E-03 | Compute cooling (heatsink + fan) | 1 | TBD | Holds full NX power (~25 W, ~40 W Super mode) inside the enclosure without throttling | Carrier fan header | Compute | RSK-08 |
 | E-04 | NVMe SSD | 1 | TBD | Sustained write ≥ total log rate (TBD, dominated by cameras) with margin; capacity ≥ `TBD` runs of ≥ 10 min | Carrier M.2 key M | Compute | SYS-09, SYS-23 |
-| E-05 | Wi-Fi card + antennas | 1 | Planned: Wi-Fi 6/6E | M.2 key E; 5/6 GHz; antennas mounted high, away from motors and carbon-filled parts | Carrier | Compute | SYS-11, RSK-09 |
-| E-06 | Ethernet switch | 1 | TBD (off-the-shelf in v1) | ≥ 4 GbE ports (Orin, LiDAR, sync MCU, spare); hardware PTP if the PTP time-sync ADR goes that way | E-02, E-10, E-30 | 5 V or sensor rail (TBC) | SYS-07 |
-| E-07 | RC receiver (ExpressLRS) | 1 | Pending ADR (reopens ADR-0005) | Low-latency manual control and independent remote kill; UART (CRSF) to sync MCU | E-30 | 5 V | SYS-04, SYS-11 |
+| E-05 | Wi-Fi card + antennas | 1 | Decided: MediaTek MT7922 (Filogic 330), M.2 2230 key E; fallback Intel AX210 (ADR-0015) | Wi-Fi 6E client on the team router's 6 GHz band; hotspot (AP) mode on 5 GHz for the button hotspot; driver available on the JetPack kernel (RSK-14); power saving off; antennas mounted high, away from motors and carbon-filled parts | Carrier M.2 key E | Compute | SYS-11, SYS-27, RSK-09, RSK-14 |
+| E-06 | Ethernet switch | 1 | TBD (off-the-shelf in v1) | ≥ 5 GbE ports (Orin, LiDAR, sync MCU, chassis service port E-09, spare); hardware PTP if the PTP time-sync ADR goes that way | E-02, E-10, E-30 | 5 V or sensor rail (TBC) | SYS-07 |
+| E-07 | *Deleted:* RC receiver (ExpressLRS). Not adopted; Wi-Fi stays the only wireless link (ADR-0005, ADR-0015) | — | — | — | — | — | — |
+| E-08 | Hotspot button + LED | 1 | Decided (ADR-0015) | Momentary, panel-mount; press toggles the car's Wi-Fi between the team network and its own 5 GHz hotspot; LED shows hotspot on | Carrier expansion header GPIO (button, LED) | 3.3 V | SYS-27 |
+| E-09 | Service Ethernet port | 1 | Decided (ADR-0015) | Panel-mount RJ45 (or locking equivalent) on the chassis; fixed car address, no gateway handed out | E-06 spare port | — | SYS-27 |
 
 ## Perception sensors
 
@@ -75,7 +77,7 @@
 | --- | --- | --- |
 | Compute | E-01, E-02, E-03 (and E-04, E-05 via the carrier) | Fixed regulated voltage within the carrier's input range; current for NX Super mode plus carrier, NVMe and Wi-Fi |
 | Sensor | E-10 (and E-06 if powered here) | Voltage per the Hokuyo datasheet |
-| 5 V / 3.3 V | Cameras, E-30, vehicle-state sensors, E-07 | Low noise for the IMUs and ADC reference |
+| 5 V / 3.3 V | Cameras, E-30, vehicle-state sensors, E-29 | Low noise for the IMUs and ADC reference |
 | Servo | E-31 only | Voltage per servo; isolated so servo stall current can't brown out logic |
 
 Rail currents stay `TBD` until `budgets/power.csv` exists.
@@ -94,6 +96,17 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 | PPS / time-sync output | To Orin | 1 | — |
 | PWM output | Steering servo | 1 | ≥ 1 |
 | CAN | Command bus (classic, 4 VESCs); telemetry front and rear (CAN-FD, 2 VESCs each) | 3 FDCAN (all used) | Add an external FD controller over SPI if a fourth bus is needed |
-| UART | ExpressLRS receiver (pending), optical flow sensor (if UART) | 1–2 | ≥ 1 |
+| UART | Debug console | 1 | ≥ 1 |
 | Ethernet | Link to Orin via switch | 1 | — |
 | GPIO | E-stop status in, status LEDs, ground-speed lighting mode select (3) | TBD + 3 | ≥ 2 |
+
+## Ground equipment
+
+Not on the car, but part of the system: its configuration (DHCP options, WMM priorities, fixed addresses, the laptop gateway script) goes in version control.
+
+| ID | Item | Qty | Selection | Requirements | Traces to |
+| --- | --- | --- | --- | --- | --- |
+| G-01 | Team router | 1 | Decided: GL.iNet Flint 3 (GL-BE9300), $209.99 (ADR-0015) | Wi-Fi 6 GHz band for the car link; OpenWrt (per-host DHCP options, WMM); ≥ 2 wired ports for laptops; USB tethering for phone internet backup; mounted high at the track | SYS-11, SYS-26, SYS-27, SYS-28 |
+| G-02 | Travel router | 0 (later) | Optional: GL.iNet Slate 7 (GL-BE3600), $159.99 | USB-C powered for away events | SYS-27 |
+| G-03 | Ground-station laptop | 1+ | Team laptops | Ethernet port (or USB-Ethernet); Linux or macOS for the gateway script | SYS-26, SYS-28 |
+
