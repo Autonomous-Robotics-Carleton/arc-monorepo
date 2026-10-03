@@ -21,5 +21,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Accepted |
 | [0014](0014-ground-speed-event-camera.md) | Ground speed: downward event camera with three lighting modes; dead-wheel pod as fallback | Accepted |
 | [0015](0015-ground-link.md) | Ground link: team router (Flint 3), laptop gateway, button hotspot, wired service port | Accepted |
+| [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted |
+| [0017](0017-sync-mcu-rtos.md) | Sync MCU firmware on Zephyr | Accepted |
 
 Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.

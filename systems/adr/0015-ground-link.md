@@ -51,7 +51,7 @@ Manual driving, telemetry, SSH and log transfer all run over Wi-Fi to a laptop. 
 | --- | --- |
 | Team router | **GL.iNet Flint 3 (GL-BE9300), $209.99:** Wi-Fi 7 tri-band incl. 6 GHz, 5 × 2.5 GbE, USB 3.0 (tethering), OpenWrt. Mounted high at the track. Chosen for a clean 6 GHz channel in a crowded school, wired ports, and tethering |
 | Travel router (later, optional) | GL.iNet Slate 7 (GL-BE3600), $159.99: USB-C powered for away events; no 6 GHz |
-| Car Wi-Fi card | **MediaTek MT7922 (Filogic 330), M.2 2230 key E:** Wi-Fi 6E client on 6 GHz; hotspot (AP) on 5 GHz, one band at a time, no 6 GHz AP. Linux driver needs kernel ≥ 5.16 or a backport (RSK-14). **Fallback:** Intel AX210 (works on JetPack's kernel; hotspot limited to 2.4 GHz) |
+| Car Wi-Fi card | **MediaTek MT7922 (Filogic 330), M.2 2230 key E:** Wi-Fi 6E client on 6 GHz; hotspot (AP) on 5 GHz, one band at a time, no 6 GHz AP. Linux driver in mainline from kernel 5.16; JetPack 7.2.1 uses 6.8 (ADR-0016), so RSK-14 is closed. **Fallback:** Intel AX210 (works on JetPack's kernel; hotspot limited to 2.4 GHz) |
 
 ## Consequences
 
