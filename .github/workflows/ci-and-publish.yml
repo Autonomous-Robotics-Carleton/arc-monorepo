@@ -6,37 +6,58 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
     permissions:
+      actions: read # nx-set-shas looks up the last successful run on main
       contents: read
       packages: write
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # nx affected needs history to diff against
 
-      - name: Use Node 20
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4 # version from packageManager in package.json
+
+      - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Enable corepack (pnpm)
-        run: corepack enable
+          node-version-file: .nvmrc
+          cache: pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: npx nx lint docs
+      - name: Set Nx base and head
+        uses: nrwl/nx-set-shas@v4
 
-      - name: Build
-        run: npx nx build docs
+      - name: List affected projects
+        id: affected
+        run: |
+          projects=$(npx nx show projects --affected | tr '\n' ' ')
+          echo "Affected: ${projects:-none}"
+          echo "projects= $projects" >> "$GITHUB_OUTPUT"
 
-      # Only publish Docker image on pushes to main (not PRs)
+      - name: Lint, check and build affected projects
+        run: npx nx affected -t lint check build
+
+      - name: Check HTML in systems/
+        if: contains(steps.affected.outputs.projects, ' systems ')
+        uses: anishathalye/proof-html@v1.1.0
+        with:
+          directory: ./systems
+
+      # Publish the docs image only on pushes to main that change the docs
       - name: Log in to GHCR
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && contains(steps.affected.outputs.projects, ' docs ')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -44,7 +65,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build & push Docker image
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && contains(steps.affected.outputs.projects, ' docs ')
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -53,10 +74,10 @@ jobs:
           tags: |
             ghcr.io/autonomous-robotics-carleton/2026:latest
             ghcr.io/autonomous-robotics-carleton/2026:${{ github.sha }}
-            
+
       - name: Trigger Watchtower Update
-        if: github.ref == 'refs/heads/main'
-        continue-on-error: true  #added to prevent workflow failure if the request fails
+        if: github.ref == 'refs/heads/main' && contains(steps.affected.outputs.projects, ' docs ')
+        continue-on-error: true # a failed deploy hook shouldn't fail CI
         uses: fjogeleit/http-request-action@v1
         with:
           url: 'https://api.mycses.ca/arcarleton/docs/update'
