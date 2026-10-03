@@ -4,7 +4,7 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 
 | ICD | Side A | Side B | Format | Status |
 | --- | --- | --- | --- | --- |
-| [corner-connector](corner-connector.md) | Corner VESC board | Chassis harness / sync board / e-stop | Markdown | Proposed (rev C) |
+| [corner-connector](corner-connector.md) | Corner VESC board | Chassis harness / sync board / e-stop | Markdown | Proposed (rev D) |
 | corner-mechanical | Corner (motor, gearbox, VESC) | Chassis | Markdown + CAD | TBD |
 | can-command | Sync MCU | Corner VESCs (classic CAN, ADR-0009) | `can-command.dbc` | TBD |
 | can-telemetry | Corner VESCs | Sync MCU (2 × CAN-FD, ADR-0011) | `can-telemetry.dbc` | TBD |

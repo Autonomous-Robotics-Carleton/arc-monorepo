@@ -1,6 +1,6 @@
 # ADR-0011: VESC telemetry on two CAN-FD buses; commands stay on one classic CAN bus
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0013 (daisy-chained FD buses, discrete MCP2518FD + SO-8 transceiver instead of the MCP251863, rework-only fallbacks)
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-05, SYS-06, SYS-19, SYS-24, SYS-25, RSK-02, RSK-03, RSK-12
