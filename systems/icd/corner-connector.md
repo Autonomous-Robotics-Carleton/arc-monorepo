@@ -6,7 +6,7 @@
 - **Side B:** chassis harness, sync board, power board e-stop circuit (owner TBD)
 - **Traces to:** SYS-05, SYS-13, SYS-25, ADR-0004, ADR-0006, ADR-0009, ADR-0011, ADR-0012, ADR-0013, RSK-03, RSK-05
 
-Each corner has two connectors to the chassis: power, and signal. The wheel encoder and suspension pot do **not** pass through this interface; they wire directly to the sync board (ADR-0008).
+Each corner has two connectors to the chassis: power, and signal. The steering VESC (ADR-0018) uses the same two connectors: its FD pins (4–7) are not connected on the board and are left unwired in the harness, and its ESTOP_EN timer is longer (T_drive + ~1 s). The wheel encoder and suspension pot do **not** pass through this interface; they wire directly to the sync board (ADR-0008).
 
 ## Power connector
 

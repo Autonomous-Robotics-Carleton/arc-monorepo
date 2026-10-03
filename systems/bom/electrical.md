@@ -39,7 +39,7 @@
 | E-25 | Ground-speed sensor: downward event camera | 1 | Decided: Prophesee GenX320 (ADR-0014) | Forward and sideways ground velocity at 0–12 m/s on the school floor; ~90° M12 lens, aperture ~f/8 for speckle; mounted inside the chassis looking through a floor window with a light shroud; scale from E-26 | Carrier CSI port 4; trigger/sync from E-30 | 3.3 V / 5 V | SYS-10, RSK-07 |
 | E-29 | Ground-speed illumination | 1 set | Decided (ADR-0014) | Three switchable modes: (1) cross-polarized LED ring, constant-current DC (no PWM); (2) grazing-angle LEDs; (3) off-the-shelf **certified IEC 60825-1 Class 1** IR VCSEL module with a hardware current limit, for laser speckle | E-30 GPIO (mode select) | 5 V via current-limited drivers | SYS-10, RSK-07 |
 | E-26 | Ride-height ToF sensor | 5 (4 corners + 1 beside E-25 for scale) | TBD: ToF (ADR-0007); laser triangulation considered and rejected on cost | Minimum range ≤ sensor-to-floor distance at full compression (recess the sensor if needed); works on glossy tile; individually addressable (I2C mux or one XSHUT line each) | E-30 (I2C) | 3.3 V | SYS-10, SYS-15, RSK-07 |
-| E-27 | Steering servo current sense | 1 | TBD (on power board servo rail) | Bandwidth high enough to see self-aligning torque changes (TBD) | E-30 (ADC) or E-41 monitor | — | SYS-10, mission 4 |
+| E-27 | *Deleted:* steering servo current sense. Steering torque comes from the steering VESC's current (ADR-0018) | — | — | — | — | — | — |
 | E-28 | Motor temperature NTC | 4 | Decided (spec) | Glued to motor can; matches VESC motor-temp input curve | E-50 | — | SYS-19 |
 
 **E-25 selection** is recorded in ADR-0014, including the rejected candidates (PMW3901 0.58 m/s, PAA5100JE 1.14 m/s, SparkFun OTOS 2.5 m/s, mouse chips, radar, Correvit). Fallback: the dead-wheel pod design in ADR-0014, with its underfloor space and sync-board channels reserved.
@@ -49,7 +49,7 @@
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-30 | Sync MCU board | 1 | Decided: STM32H723 (3 FDCAN, Ethernet MAC) + PHY (ADR-0011), firmware on Zephyr (ADR-0017); SO-8 CAN FD transceivers (SIC drop-in), unpopulated rework footprints, unpopulated MCP2518FD for extra FD buses (ADR-0013) | Owns the time base; timestamps every input at the pin; enforces the safety envelope and heartbeat watchdog in firmware, outside Linux; I/O per the tally below, plus one spare per channel type | E-06, E-02, all vehicle-state sensors, E-50 (CAN), E-60 | 3.3 V / 5 V | SYS-04, SYS-07, SYS-19, SYS-22 |
-| E-31 | Steering servo | 1 | TBD | Torque and speed TBD from steering geometry; signal driven by E-30 so the watchdog can act on it | E-30 (PWM) | Servo | SYS-01, SYS-22 |
+| E-31 | Steering actuator | 1 | Decided: gimbal-style brushless motor + ~4–6:1 belt reduction + AS5047 on the output + fifth VESC 6.4 fork in position mode (ADR-0018) | Lock to lock ≤ 0.1 s; ≥ 10 Hz position bandwidth; ≥ 1.5 N·m (TBC); backlash ≤ 0.1°; angle and current at ≥ 1 kHz; steering board variant: ~±10 A shunts/gain, no FD parts, e-stop timer T_drive + ~1 s; returns to centre at a limited rate on e-stop or command timeout | Command bus; ESTOP_EN; motor bus (XT60) | Motor bus | SYS-06, SYS-08, SYS-10, SYS-22 |
 | E-32 | Physical e-stop button | 1 | TBD | Latching; reachable on the car; drives ESTOP_EN low on all four VESCs in hardware | E-41 e-stop circuit | — | SYS-05 |
 | E-33 | Status LEDs | TBD | TBD | Show e-stop state, watchdog state, power-rail faults | E-30 GPIO | 3.3 V | SYS-19 |
 
@@ -57,7 +57,7 @@
 
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4. Commands on built-in CAN + TJA1051T/3; telemetry on an added MCP2518FD controller (SPI) + 40 MHz crystal + separate SO-8 CAN FD transceiver (SIC drop-in: TJA1462 / TCAN1462 class), full status at ≥ 1 kHz; FD pair daisy-chained through the board; unpopulated split termination, common-mode choke and TVS footprints (ADR-0011, ADR-0013) | E-51, E-28, command bus, FD telemetry bus, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
+| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4. Quantity 4 corners + 1 steering (variant, ADR-0018). Commands on built-in CAN + TJA1051T/3; telemetry on an added MCP2518FD controller (SPI) + 40 MHz crystal + separate SO-8 CAN FD transceiver (SIC drop-in: TJA1462 / TCAN1462 class), full status at ≥ 1 kHz; FD pair daisy-chained through the board; unpopulated split termination, common-mode choke and TVS footprints (ADR-0011, ADR-0013) | E-51, E-28, command bus, FD telemetry bus, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
 | E-51 | Drive motor | 4 | Decided: Castle 1010-4400kV sensored | 2S–4S; Hall sensored; 28 mm can | E-50 | — | SYS-01 |
 
 ## Power
@@ -78,7 +78,6 @@
 | Compute | E-01, E-02, E-03 (and E-04, E-05 via the carrier) | Fixed regulated voltage within the carrier's input range; current for NX Super mode plus carrier, NVMe and Wi-Fi |
 | Sensor | E-10 (and E-06 if powered here) | Voltage per the Hokuyo datasheet |
 | 5 V / 3.3 V | Cameras, E-30, vehicle-state sensors, E-29 | Low noise for the IMUs and ADC reference |
-| Servo | E-31 only | Voltage per servo; isolated so servo stall current can't brown out logic |
 
 Rail currents stay `TBD` until `budgets/power.csv` exists.
 
@@ -90,11 +89,11 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 | --- | --- | --- | --- |
 | SPI devices (chip-selects) | 2 IMUs, 4 wheel encoders, 4 suspension angle sensors, steering encoder | 11 | ≥ 1 |
 | Interrupt inputs (data-ready) | 2 IMUs | 2 | ≥ 1 |
-| ADC channels | Servo current, battery V, battery I | 3 | ≥ 1 |
+| ADC channels | Battery V, battery I | 2 | ≥ 1 |
 | I2C | 5 ride-height ToF (via mux or XSHUT) | 1 bus + mux, or 5 XSHUT GPIO | ≥ 1 |
 | Camera trigger outputs | Stereo kit, quad kit, forward event camera, downward event camera | 4 | ≥ 1 |
 | PPS / time-sync output | To Orin | 1 | — |
-| PWM output | Steering servo | 1 | ≥ 1 |
+| PWM output | None (steering moved to CAN, ADR-0018) | 0 | ≥ 1 |
 | CAN | Command bus (classic, 4 VESCs); telemetry front and rear (CAN-FD, 2 VESCs each) | 3 FDCAN (all used) | Add an external FD controller over SPI if a fourth bus is needed |
 | UART | Debug console | 1 | ≥ 1 |
 | Ethernet | Link to Orin via switch | 1 | — |
