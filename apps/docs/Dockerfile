@@ -20,6 +20,11 @@ RUN corepack enable
 
 COPY --from=deps /app ./
 COPY apps/docs ./apps/docs
+# Pages the site renders from elsewhere in the repo (see source.config.ts)
+COPY CONTRIBUTING.md ./
+COPY systems ./systems
+COPY platform/dev-kit ./platform/dev-kit
+COPY apps/web/docs ./apps/web/docs
 
 RUN pnpm --filter arc-docs build
 

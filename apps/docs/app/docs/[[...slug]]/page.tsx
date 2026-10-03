@@ -7,8 +7,11 @@ import {
 } from 'fumadocs-ui/page';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
+import defaultMdxComponents from 'fumadocs-ui/mdx';
+import { Card } from 'fumadocs-ui/components/card';
+import type { ComponentProps } from 'react';
 import { getMDXComponents } from '@/mdx-components';
+import { resolveHref } from '@/lib/links';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
@@ -16,6 +19,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   if (!page) notFound();
 
   const MDXContent = page.data.body;
+  const DefaultLink = defaultMdxComponents.a;
 
   return (
     <DocsPage toc={page.data.toc} full={page.data.full}>
@@ -24,8 +28,13 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
       <DocsBody>
         <MDXContent
           components={getMDXComponents({
-            // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
+            // links are written as file paths, so they also work on GitHub
+            a: (props: ComponentProps<'a'>) => (
+              <DefaultLink {...props} href={resolveHref(props.href, page.absolutePath)} />
+            ),
+            Card: (props: ComponentProps<typeof Card>) => (
+              <Card {...props} href={resolveHref(props.href, page.absolutePath)} />
+            ),
           })}
         />
       </DocsBody>

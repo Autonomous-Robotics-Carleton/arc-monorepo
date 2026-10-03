@@ -1,6 +1,11 @@
 ---
 title: Jetson Discord Notifier
+description: Discord notifications when the Orin Nano dev kit boots and when someone connects over SSH or VNC.
 ---
+
+<Callout type="info">
+This is for the team's **Orin Nano dev kit** used for bench work, not the car's Orin NX. The car's image is defined in `platform/` (ADR-0016).
+</Callout>
 
 This system sends Discord webhook notifications when your NVIDIA **Jetson Orin Nano** comes online and when someone connects or disconnects via **SSH** or **VNC** (noVNC + x11vnc).  
 It now runs via **cron @reboot**, tails your local VNC log files, and includes the Jetson's **172.17.x.x IP** at boot.

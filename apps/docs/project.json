@@ -16,6 +16,13 @@
       "options": {
         "cwd": "apps/docs"
       },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/CONTRIBUTING.md",
+        "{workspaceRoot}/platform/dev-kit/**/*",
+        "{workspaceRoot}/apps/web/docs/**/*"
+      ],
       "outputs": ["{projectRoot}/.next"]
     },
     "start": {
