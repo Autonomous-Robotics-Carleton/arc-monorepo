@@ -1,0 +1,63 @@
+name: Failure report (FRACAS)
+description: A hardware or firmware failure during a run. Every one gets a report, a root cause and a fix (SYS-18).
+title: "[FRACAS] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nothing is written off as a fluke. File this as soon as possible after the run, even if the cause isn't known yet. Fill in root cause and fix later by editing the issue.
+  - type: input
+    id: when
+    attributes:
+      label: When
+      description: Date and time of the run
+      placeholder: 2026-10-14 15:30
+    validations:
+      required: true
+  - type: dropdown
+    id: subsystem
+    attributes:
+      label: Subsystem
+      description: Best guess is fine
+      options:
+        - Drive (motor, gearbox, VESC)
+        - Steering
+        - Power (battery, power board, e-stop circuit)
+        - Sync MCU board
+        - Compute (Orin, carrier)
+        - Sensors
+        - Ground link
+        - Harness or connectors
+        - Mechanical
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What failed, and what the car did (stopped, coasted, kept driving, rebooted)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Where the run's logs or bag are, plus any error output. Paste short excerpts; link large files.
+    validations:
+      required: true
+  - type: textarea
+    id: conditions
+    attributes:
+      label: Conditions
+      description: Battery state, speed, what experiment was running, anything changed since the last good run
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root cause
+      description: Leave blank until it's known
+  - type: textarea
+    id: fix
+    attributes:
+      label: Fix
+      description: The change that fixes it (link the PR), and how it was verified
