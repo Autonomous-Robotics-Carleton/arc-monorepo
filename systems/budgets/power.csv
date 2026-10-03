@@ -20,3 +20,4 @@ lv_5v_3v3,AS5047 encoders (4 wheel + 4 suspension + 2 knuckle),E-22/E-23/E-24,10
 lv_5v_3v3,Ride-height ToF + I2C mux,E-26,5,3.3,0.05,0.1,sustained,,estimate,EE
 lv_5v_3v3,Ethernet switch (>= 5 ports),E-06,1,5 or 12,2,4,sustained,,estimate,EE
 lv_5v_3v3,Hotspot button LED + status LEDs,E-08/E-33,1,3.3,0.1,0.2,sustained,,estimate,EE
+lv_5v_3v3,Per-cell battery monitor,E-46,1,3.3,0.05,0.1,sustained,"taps must not drain the pack when the car is off",estimate,EE

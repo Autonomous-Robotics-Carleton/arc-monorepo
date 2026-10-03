@@ -70,6 +70,7 @@
 | E-43 | Bus clamp board | 1 | Custom | Comparator + MOSFET + power resistor; threshold just above 16.8 V (TBD); resistor and heatsink sized for worst-case regen from all four corners | Motor bus | Motor bus | SYS-14 |
 | E-44 | Wall supply | 1 | Planned: 19 V brick | Above full pack voltage, so OR-ing selects it; power ≥ total low-voltage peak load | E-41 | — | SYS-14 |
 | E-45 | Motor distribution | 1 | TBD: bus bar or heavy wire | Carries peak pack current; XT60 to each corner (ICD-corner-connector) | E-42 → E-50 ×4 | Motor bus | SYS-01 |
+| E-46 | Per-cell battery monitor | 1 | TBD (EE): on the power board | Measures each of the 4 cell voltages through the pack's balance lead: ≥ 100 Hz (TBC), ±10 mV; fused, high-impedance taps with negligible drain when the car is off; data to the sync MCU over the stacking header so it's timestamped and logged; lowest cell drives the low-battery warning and shutdown | Pack balance connector (ICD-battery-pack); E-41; E-30 | 3.3 V | SYS-19, SYS-30, SYS-32 |
 
 ### Low-voltage rails (E-41)
 

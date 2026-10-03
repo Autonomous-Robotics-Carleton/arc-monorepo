@@ -34,12 +34,14 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - E-stop circuit sourcing ESTOP_EN to the four corners (ADR-0012).
   - Switched, fused motor-bus output for steering, cut by a delayed e-stop line at T_drive + ~1 s (ADR-0019).
   - Bus clamp on the motor distribution bus.
-- **Requirements:** SYS-03, -05, -14, -19, -30, -31; RSK-06, RSK-11.
+  - Per-cell battery monitor through the balance lead, ≥ 100 Hz to ±10 mV, data to the sync MCU (SYS-32, E-46).
+- **Requirements:** SYS-03, -05, -14, -19, -30, -31, -32; RSK-06, RSK-11.
 - **Open:**
   - Rail current ratings and regulator choices (yours, from `power.csv`)
   - ESTOP_EN logic level, driver and current per corner
   - Bus clamp threshold and resistor sizing (~250 J, ~200 W peak estimate)
-  - Low-battery thresholds and the clean-shutdown signal to the Orin (SYS-30)
+  - Low-battery thresholds (on the lowest cell) and the clean-shutdown signal to the Orin (SYS-30)
+  - Cell-monitor part and balance-lead connection while the pack is installed (E-46)
   - Stacking-header pinout with the sync board (ICD power-sync-stack, not written yet)
   - Anti-spark / loop key and motor distribution parts (E-42, E-45)
   - Grounding strategy (shared with all boards; see Cross-cutting)
