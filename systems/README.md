@@ -12,6 +12,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `bom/` | Functional BOM: what each part must do and what it connects to | Markdown tables |
 | `verification/` | Verification plan: method, stage, rig and pass criterion for every requirement | Markdown |
 | `tests/` | Test procedures that verify requirements or retire risks, with results tables | Markdown |
+| `mechanical/` | Mechanical layout brief, envelopes, early mechanical decisions | Markdown (+ STEP exports per release) |
 | `handoff/` | Per-discipline handoff: what's decided, where it lives, what's open | Markdown |
 | `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
 | `reviews/` | Gate checklists and review records | Markdown |
