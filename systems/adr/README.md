@@ -17,5 +17,6 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted |
 | [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted |
 | [0011](0011-vesc-telemetry-link.md) | High-rate VESC telemetry link (UART vs CAN-FD) | Proposed, open |
+| [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Proposed |
 
 Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.

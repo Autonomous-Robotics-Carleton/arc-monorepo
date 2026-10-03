@@ -32,9 +32,12 @@ Connector: JST-GH 6-pin (GHR-06V-S housing on the harness side; board header TBC
 
 ### ESTOP_EN behaviour
 
-- **Fail-safe:** the VESC board pulls ESTOP_EN low on board. An unplugged connector, a broken wire or an unpowered e-stop circuit all disable the gate driver.
-- **Hardware path:** ESTOP_EN is ANDed with the MCU's gate-enable signal in hardware (e.g. into the DRV830x EN_GATE), never read and acted on by firmware alone. Firmware may also read it, for logging.
-- **Result when low:** gate drive off, so the motor coasts. Braking under e-stop isn't available, which affects stopping distance (SYS-04/05).
+Controlled braked stop, then a hardware torque cut (SYS-05, ADR-0012).
+
+- **Fail-safe:** the VESC board pulls ESTOP_EN low on board. An unplugged connector, a broken wire or an unpowered e-stop circuit all count as an e-stop.
+- **Stage 1, braking (firmware):** the VESC reads ESTOP_EN on a GPIO. When it's low, it ignores CAN commands and ramps brake current to the target deceleration until the wheel stops.
+- **Stage 2, torque cut (hardware):** a delay circuit on the VESC board ANDs the delayed ESTOP_EN into the DRV8301 EN_GATE. After T (TBC 3 s), gate drive is off whatever the firmware is doing.
+- **Release:** doesn't restart motion. The VESC re-initialises the DRV8301 and waits for fresh commands.
 
 ## Termination
 
@@ -46,5 +49,5 @@ No termination on corner boards. The 120 Ω terminators sit at the sync board an
 
 1. ESTOP_EN logic level and driver: who sources it (power board e-stop circuit), and the current per corner.
 2. Sync-board CAN ground and power-board ground both reach battery negative through motor power, which forms a loop. Settle this in the grounding strategy before harness layout.
-3. Confirm coast-on-e-stop meets SYS-05; if not, the e-stop needs a braking path.
+3. Brake ramp, target deceleration and delay T (ADR-0012).
 4. XT60 rating against final peak current.

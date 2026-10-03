@@ -33,7 +33,8 @@ IDs are never reused. A deleted requirement keeps its row with status `Deleted`.
 3. **Changes go through PRs.** A PR that changes a requirement, ICD or budget links the ADR or issue that justifies it. ICD changes need sign-off from the owners on both sides.
 4. **Unknown values are written as `TBD` (no value yet) or `TBC` (value proposed, not confirmed)**, never as "about" or "around".
 5. **Gate before spending.** Nothing is fabbed, machined or bought over the team's spending threshold until it passes `reviews/fab-gate.md`.
-6. **Releases are tags:** `sys-v1-srr` (requirements baselined), then one tag per gated build (e.g. `corner-board-r1`).
+6. **Failures get a record (FRACAS).** Every hardware or firmware failure during a run gets an issue with the log, root cause and fix (SYS-18). Nothing is written off as a fluke.
+7. **Releases are tags:** `sys-v1-srr` (requirements baselined), then one tag per gated build (e.g. `corner-board-r1`).
 
 ## Status values
 

@@ -35,8 +35,8 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-01 | Top speed on tile ≥ `TBD` m/s (spec gear table spans 8–12.5 m/s) | Racing (known user) | T | Draft |
 | SYS-02 | Wheelbase ≤ 324 mm and track ≤ 296 mm | Fair racing vs the Slash 4x4 (known user) | I | Draft |
 | SYS-03 | Run time ≥ 10 min of hard driving per pack | One session per pack | T | Draft |
-| SYS-04 | After loss of operator heartbeat, stop from top speed within `TBD` m | Safety; sets watchdog timeout and VESC brake config | T | Draft |
-| SYS-05 | A physical e-stop removes drive torque without depending on any software | Safety; covers a hung sync MCU | T + I | Draft |
+| SYS-04 | After loss of operator heartbeat, brake to a stop from top speed within `TBD` m, using the same controlled brake ramp as the e-stop | Safety; sets watchdog timeout and VESC brake config | T | Draft |
+| SYS-05 | A physical e-stop brings the car to a controlled, braked stop (ramped, not instantaneous; never free rolling), then removes drive torque in hardware within `TBC` 3 s, without depending on Orin or sync-board software (IEC 60204-1 stop category 1, ADR-0012) | Safety; covers a hung Orin or sync MCU | T + I | Draft |
 | SYS-06 | Vehicle-state estimate available to the controller at ≥ 200 Hz, age ≤ 5 ms p99 (sensor sample to estimate available); output rate configurable upward | Classical control and MPC (mission 1). Sets encoder/pot sample rates and VESC status rates (ADR-0008, ADR-0009). | T | Draft |
 | SYS-07 | All sensor samples carry timestamps on one time base, aligned to within `TBD` µs | Sensor fusion and MPC (mission 1); aligned training data (mission 2) | T | Draft |
 | SYS-08 | Onboard compute runs the classical stack at ≥ `TBD` Hz and a learned policy that fits in 16 GB alongside the platform software (ADR-0010) at ≥ `TBD` Hz | Missions 1 and 2; the parent for the compute module choice | T | Draft |
@@ -49,7 +49,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-15 | Reserve underfloor volume `TBD` and power `TBD` W for active aero | Active-aero capstone (known user) | I + A | Draft |
 | SYS-16 | Total mass ≤ `TBD` kg, CG height ≤ `TBD` mm | Handling, aero, top speed | A then I | Draft |
 | SYS-17 | v1 build cost ≤ `TBD` CAD | Team budget | A | Draft |
-| SYS-18 | Complete ≥ `TBD` hours of test runs with zero hardware-caused failures | Mission 3 | T | Draft |
+| SYS-18 | Goal: zero hardware- or firmware-caused failures. Every such failure is logged, root-caused and fixed (FRACAS). Acceptance for v1: ≥ 10 h of test runs with zero hardware- or firmware-caused failures | Mission 3 | T | Draft |
 | SYS-19 | Every hardware fault (brownout, rail overcurrent, bus error, sensor dropout, over-temperature, watchdog trip) is detected, timestamped and logged | Mission 3: a failed run can be attributed to hardware or ruled out | T + I | Draft |
 | SYS-20 | *Deleted:* payload ports. Hardware modularity moved to v2 | — | — | Deleted |
 | SYS-21 | An experiment process that crashes, hangs, or exhausts CPU, GPU, memory or disk cannot stop platform software from driving, logging or stopping | Platform vs experiment (missions 3, 4) | T | Draft |
