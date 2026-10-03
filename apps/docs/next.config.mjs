@@ -1,13 +1,15 @@
 import { createMDX } from 'fumadocs-mdx/next';
+import { PHASE_PRODUCTION_SERVER } from 'next/constants.js';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const withMDX = createMDX();
 
 /** @type {import('next').NextConfig} */
 const config = {
   reactStrictMode: true,
+  // workspace library shipped as TypeScript source; bundle it like app code
+  transpilePackages: ['@arc/systems-model'],
   turbopack: {
     root: resolve(__dirname, '../..'),
   },
@@ -58,4 +60,8 @@ const config = {
   },
 };
 
-export default withMDX(config);
+// `next start` serves the compiled build. Skipping fumadocs-mdx there stops it
+// recompiling source.config.ts, which needs sources the runtime image doesn't have.
+const nextConfig = (phase) => (phase === PHASE_PRODUCTION_SERVER ? config : createMDX()(config));
+
+export default nextConfig;
