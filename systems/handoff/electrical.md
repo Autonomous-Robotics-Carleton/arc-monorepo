@@ -44,8 +44,8 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Low-battery thresholds (on the lowest cell) and the clean-shutdown signal to the Orin (SYS-30)
   - Cell-monitor part and balance-lead connection while the pack is installed (E-46)
   - Stacking-header pinout with the sync board (ICD power-sync-stack, not written yet)
-  - Whether battery V/I, rail currents and cell voltages are digitised here and sent to the sync MCU over a bus, or read as analogue by the sync MCU's ADC (`bom/electrical.md` I/O tally)
-  - Whether this board or the sync MCU drives the clean-shutdown signal to the Orin (SYS-30)
+  - Whether battery V/I, rail currents and cell voltages are digitised here and sent to the sync MCU over a bus, or read as analogue by the sync MCU's ADC (`bom/electrical.md` I/O tally). **Recommendation in ADR-0022 (Proposed):** monitor ICs on this board, one dedicated I2C bus, fault pins as sync MCU interrupts, analog battery V/I as a rework fallback
+  - Whether this board or the sync MCU drives the clean-shutdown signal to the Orin (SYS-30). **Recommendation in ADR-0022 (Proposed):** two tiers. The sync MCU warns and requests the Orin shutdown; this board cuts the compute rail once the Orin has halted, plus an independent hardware undervoltage cutoff that protects the pack if software fails
   - Anti-spark / loop key and motor distribution parts (E-42, E-45)
   - Grounding strategy (shared with all boards; see Cross-cutting)
 
@@ -69,7 +69,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Connector map and pinouts for every sensor run
   - Camera-trigger connector to the carrier (ICD carrier-sync, not written yet)
   - Isolated vs non-isolated transceivers (follows the grounding decision)
-  - Ethernet path if the optional i210/i226 is fitted: point-to-point to the Orin instead of through the switch (ADR-0021)
+  - Ethernet path if the optional i210/i226 is fitted: point-to-point to the Orin instead of through the switch (ADR-0021). **Recommendation in ADR-0023 (Proposed):** don't fit it in v1; the sync MCU stays on the switch
   - Lighting driver design
 
 ### 3. VESC 6.4 fork (×4 corners + spares)
@@ -104,7 +104,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - **Requirements:** SYS-08, -26, -27, -29; RSK-01, -08, -13.
 - **Open:**
   - CSI lane mapping for the Arducam kits and both GenX320s
-  - Whether the Orin NX has a spare PCIe x1 lane for the optional i210/i226
+  - Whether the Orin NX has a spare PCIe x1 lane for the optional i210/i226 (not needed if ADR-0023, Proposed, is accepted)
   - Trigger connector pinout
   - Device tree on JetPack 7.2
   - Camera driver availability for 7.2 (RSK-01)
