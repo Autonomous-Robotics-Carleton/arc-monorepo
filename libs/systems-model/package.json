@@ -1,0 +1,10 @@
+{
+  "name": "@arc/systems-model",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Parses systems/: IDs, definitions, cross-references and ADRs, plus the checks behind `nx check systems`.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}
