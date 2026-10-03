@@ -1,4 +1,5 @@
 export { checkSystems, type Problem } from './checks.ts';
+export { parseCsv } from './csv.ts';
 export {
   canonicalId,
   idKinds,
