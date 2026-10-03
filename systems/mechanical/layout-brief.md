@@ -61,12 +61,20 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 8. **Access:** battery swap, NVMe swap, corner swap, buttons and ports.
 9. **First CG and mass estimate.**
 
-## First decisions (recommendations; TBC)
+## First decisions
 
-| # | Decision | Recommendation |
-| --- | --- | --- |
-| M1 | Base: fully custom, or custom chassis on off-the-shelf 1/10 suspension parts | **Custom chassis plates + off-the-shelf 1/10 arms, knuckles, hubs, shocks and wheels**, so effort goes into the drivetrain, steering and sensor packaging |
-| M2 | Wheelbase and track | Wheelbase ~**330–350 mm** so overall length clears 454 mm without long overhangs; track to suit the width box and steering lock. Confirm in the block layout |
-| M3 | Ride height / floor clearance | Set jointly with the aero capstone; it also fixes the ground-speed window distance and ToF minimum range |
-| M4 | Materials | Carbon or aluminium lower deck; aluminium motor mounts (FET heatsinks) and bearing plates; printed covers, mounts and shrouds |
-| M5 | CAD tool and storage | Fusion 360 (the docs site already has a Fusion setup guide); STEP exports committed per release |
+| # | Decision | Status | Choice |
+| --- | --- | --- | --- |
+| M1 | Base | **Decided** (2026-10-03) | Custom chassis on off-the-shelf 1/10 suspension parts (arms, knuckles, hubs, shocks, wheels) |
+| M2 | Wheelbase and track | Open: block layout | Start at ~330–350 mm wheelbase so overall length clears 454 mm; track to suit the width box and steering lock |
+| M3 | Ride height / floor clearance | Open: with the aero capstone | Also fixes the ground-speed window distance and ToF minimum range |
+| M4 | Materials | **Decided** (2026-10-03) | **3D-printed lower deck:** a CF-nylon (PA-CF / PA12-CF) ribbed tub, not a flat plate, with heat-set inserts. Built in: battery bay, ground-speed floor window and shroud, ToF pockets, cable channels. **Aluminium plates** bolted in wherever precision or heat matters: gearbox bearing plates, motor mounts (VESC FET heatsinks), steering mount. Upper deck: hole-grid plate (material TBD). Printed covers, sensor mounts, shrouds |
+| M5 | CAD | **Decided** (2026-10-03) | Fusion 360; STEP exports committed per release. Done by the systems lead and the mechanical engineers |
+
+## Printed-deck design rules
+
+- Stiffness from geometry (walls, ribs, a closed tub), not plate thickness.
+- No printed bearing bores or gear-mesh features; those live in aluminium.
+- Heat paths (FETs, Orin) stay in aluminium; nothing hot rests directly on the print.
+- Every threaded joint uses a heat-set insert with a wide washer; joints are checked after runs.
+- CF-nylon needs an enclosed printer, a hardened nozzle and dried filament.
