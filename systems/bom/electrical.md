@@ -35,7 +35,7 @@
 | E-21 | IMU, front axle | 1 | TBD (consumer grade) | SPI; ≥ 4 kHz; data-ready interrupt; vibration-isolated mount | E-30 (SPI + interrupt) | 3.3 V | SYS-06, mission 4 |
 | E-22 | Wheel encoder | 4 | Decided: AS5047 on wheel output shaft (ADR-0008) | Read over SPI as absolute angle; good to ≥ 3,700 rpm (peak wheel speed at 13.5:1) with margin | E-30 (SPI, one chip-select each) | 3.3 V | SYS-06, SYS-10 |
 | E-23 | Suspension angle sensor | 4 | Decided: contactless magnetic (AS5047 family) at each suspension pivot, replacing potentiometers | Covers full suspension travel; no wiper noise or wear; ≥ 2 kHz | E-30 (SPI, one chip-select each) | 3.3 V | SYS-06, SYS-18 |
-| E-24 | Steering encoder | 1 | TBD | On the steering knuckle; 14-bit absolute (no homing); also the absolute reference for the steering actuator at startup and a continuous cross-check (ADR-0019) | E-30 (SPI or encoder input) | 3.3 V | SYS-06 |
+| E-24 | Steering knuckle encoders | 2 (front left + front right) | Decided: AS5047, 14-bit absolute | One on each front knuckle (no homing): both wheel steer angles measured directly, toe change under load, real Ackermann geometry; absolute reference for the steering actuator at startup and a continuous cross-check against the actuator's own angle (ADR-0019) | E-30 (SPI, one chip-select each) | 3.3 V | SYS-06, SYS-19, SYS-24 |
 | E-25 | Ground-speed sensor: downward event camera | 1 | Decided: Prophesee GenX320 (ADR-0014) | Forward and sideways ground velocity at 0–12 m/s on the school floor; ~90° M12 lens, aperture ~f/8 for speckle; mounted inside the chassis looking through a floor window with a light shroud; scale from E-26 | Carrier CSI port 4; trigger/sync from E-30 | 3.3 V / 5 V | SYS-10, RSK-07 |
 | E-29 | Ground-speed illumination | 1 set | Decided (ADR-0014) | Three switchable modes: (1) cross-polarized LED ring, constant-current DC (no PWM); (2) grazing-angle LEDs; (3) off-the-shelf **certified IEC 60825-1 Class 1** IR VCSEL module with a hardware current limit, for laser speckle | E-30 GPIO (mode select) | 5 V via current-limited drivers | SYS-10, RSK-07 |
 | E-26 | Ride-height ToF sensor | 5 (4 corners + 1 beside E-25 for scale) | TBD: ToF (ADR-0007); laser triangulation considered and rejected on cost | Minimum range ≤ sensor-to-floor distance at full compression (recess the sensor if needed); works on glossy tile; individually addressable (I2C mux or one XSHUT line each) | E-30 (I2C) | 3.3 V | SYS-10, SYS-15, RSK-07 |
@@ -87,7 +87,7 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 
 | Interface | v1 users | Count | + Spare |
 | --- | --- | --- | --- |
-| SPI devices (chip-selects) | 2 IMUs, 4 wheel encoders, 4 suspension angle sensors, steering encoder | 11 | ≥ 1 |
+| SPI devices (chip-selects) | 2 IMUs, 4 wheel encoders, 4 suspension angle sensors, 2 steering knuckle encoders | 12 | ≥ 1 |
 | Interrupt inputs (data-ready) | 2 IMUs | 2 | ≥ 1 |
 | ADC channels | Battery V, battery I | 2 | ≥ 1 |
 | I2C | 5 ride-height ToF (via mux or XSHUT) | 1 bus + mux, or 5 XSHUT GPIO | ≥ 1 |
