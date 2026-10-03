@@ -46,8 +46,8 @@ jobs:
           echo "Affected: ${projects:-none}"
           echo "projects= $projects" >> "$GITHUB_OUTPUT"
 
-      - name: Lint, check and build affected projects
-        run: npx nx affected -t lint check build
+      - name: Lint, test, check and build affected projects
+        run: npx nx affected -t lint test check build
 
       - name: Check HTML in systems/
         if: contains(steps.affected.outputs.projects, ' systems ')

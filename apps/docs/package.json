@@ -11,6 +11,7 @@
     "clean": "rimraf node_modules .next .turbo"
   },
   "dependencies": {
+    "@arc/systems-model": "workspace:*",
     "fumadocs-core": "15.7.12",
     "fumadocs-docgen": "^3.0.1",
     "fumadocs-mdx": "11.10.0",

@@ -1,10 +1,11 @@
 {
   "name": "systems",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["systems-model"],
   "targets": {
     "check": {
-      "command": "node tools/check-systems.mjs systems",
-      "inputs": ["default", "{workspaceRoot}/tools/check-systems.mjs"]
+      "command": "node tools/check-systems.mts systems",
+      "inputs": ["default", "^default", "{workspaceRoot}/tools/check-systems.mts"]
     }
   }
 }

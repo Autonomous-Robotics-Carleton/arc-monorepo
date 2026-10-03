@@ -14,6 +14,9 @@ importers:
 
   apps/docs:
     dependencies:
+      '@arc/systems-model':
+        specifier: workspace:*
+        version: link:../../libs/systems-model
       fumadocs-core:
         specifier: 15.7.12
         version: 15.7.12(@types/react@19.1.13)(next@15.5.4(@babel/core@7.29.0)(react-dom@19.1.1(react@19.1.1))(react@19.1.1))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -124,6 +127,8 @@ importers:
       typescript:
         specifier: ^5.9.2
         version: 5.9.2
+
+  libs/systems-model: {}
 
 packages:
 
