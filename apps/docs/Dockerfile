@@ -6,9 +6,12 @@ RUN corepack enable
 
 # Copy workspace config + app manifest for install
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/docs/package.json apps/docs/source.config.ts ./apps/docs/
+COPY apps/docs/package.json ./apps/docs/
+COPY libs/systems-model/package.json ./libs/systems-model/
 
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts skips the docs postinstall (fumadocs-mdx), which needs the
+# full source; next build regenerates its output in the build stage.
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # --- Build stage ---
 FROM node:22-alpine AS builder
@@ -20,6 +23,7 @@ RUN corepack enable
 
 COPY --from=deps /app ./
 COPY apps/docs ./apps/docs
+COPY libs/systems-model ./libs/systems-model
 # Pages the site renders from elsewhere in the repo (see source.config.ts)
 COPY CONTRIBUTING.md ./
 COPY systems ./systems
@@ -43,10 +47,7 @@ ENV PORT=3000
 RUN addgroup -g 1001 nodejs \
   && adduser -u 1001 -G nodejs -s /bin/sh -D nextjs
 
-COPY --from=builder /deploy ./
-
-# fumadocs-mdx regenerates .source/ when `next start` runs
-RUN mkdir .source && chown nextjs:nodejs .source
+COPY --from=builder --chown=nextjs:nodejs /deploy ./
 
 USER nextjs
 EXPOSE 3000
