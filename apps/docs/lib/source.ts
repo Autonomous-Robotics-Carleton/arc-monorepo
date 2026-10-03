@@ -3,10 +3,11 @@ import { loader, type Source, type VirtualFile } from 'fumadocs-core/source';
 import { createMDXSource } from 'fumadocs-mdx';
 
 // Where single repo files appear in the sidebar, and their title there.
+// Keys are paths within their collection (.github/ for repoDocs, systems/ for systemsDocs).
 const repoPages: Record<string, { path: string; title: string }> = {
   'CONTRIBUTING.md': { path: 'handbook/contributing.md', title: 'Contributing' },
-  'systems/README.md': { path: 'how-these-docs-work.md', title: 'How these docs work' },
 };
+const systemsReadme = { path: 'how-these-docs-work.md', title: 'How these docs work' };
 
 // systems/ mounts at car/. Folder READMEs become folder index pages, and the
 // architecture overview is the section's landing page.
@@ -70,6 +71,7 @@ const files: VirtualFile[] = [
   ...mount('handbook/website', webDocs.toFumadocsSource()),
   ...mount('handbook/orin-dev-kit', devKitDocs.toFumadocsSource()),
   ...filesOf(createMDXSource(systemsDocs)).map((file) => {
+    if (file.path === 'README.md') return setTitle({ ...file, path: systemsReadme.path }, systemsReadme.title);
     const moved = { ...file, path: carPath(file.path) };
     return file.path === 'architecture.md' ? setTitle(moved, 'Overview') : moved;
   }),

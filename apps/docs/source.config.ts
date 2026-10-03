@@ -39,19 +39,20 @@ export const devKitDocs = defineDocs({
 });
 
 // The car's systems engineering docs, the source of truth (Markdown).
-// systems/README.md is mounted separately as "How these docs work".
+// systems/README.md becomes "How these docs work" (see lib/source.ts).
 export const systemsDocs = defineCollections({
   type: 'doc',
   dir: '../../systems',
-  files: ['**/*.md', '!README.md', '!adr/0000-template.md'],
+  files: ['**/*.md', '!adr/0000-template.md'],
   schema: pageSchema,
 });
 
-// Single Markdown files from the repo root.
+// The contributing guide. Collections are watched in dev, so none may be
+// rooted at the repo root: that would watch all of node_modules.
 export const repoDocs = defineCollections({
   type: 'doc',
-  dir: '../..',
-  files: ['CONTRIBUTING.md', 'systems/README.md'],
+  dir: '../../.github',
+  files: ['CONTRIBUTING.md'],
   schema: pageSchema,
 });
 
