@@ -41,7 +41,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-07 | All sensor samples carry timestamps on one time base, aligned to within `TBD` µs | Sensor fusion and MPC (mission 1); aligned training data (mission 2) | T | Draft |
 | SYS-08 | Onboard compute runs the classical stack at ≥ `TBD` Hz and a learned policy that fits in 16 GB alongside the platform software (ADR-0010) at ≥ `TBD` Hz | Missions 1 and 2; the parent for the compute module choice | T | Draft |
 | SYS-09 | All sensor streams are logged onboard for a full run (≥ SYS-03) | Training data (mission 2) and fault attribution (mission 3) | D | Draft |
-| SYS-10 | Measure ground speed and per-wheel speed well enough to estimate slip to within `TBD` % | MPC on a low-grip surface (mission 1) | T | Draft |
+| SYS-10 | Measure ground velocity directly, forward and sideways (ADR-0014), and per-wheel speed, well enough to estimate slip ratio and sideslip to within ±2% (TBC) | MPC on a low-grip surface (mission 1) | T | Draft |
 | SYS-11 | Manual teleop end-to-end latency ≤ `TBD` ms (p95) | Demonstration data quality (mission 2) | T | Draft |
 | SYS-12 | LiDAR and cameras survive a frontal impact at `TBD` m/s with no damage | Testing will crash the car | T | Draft |
 | SYS-13 | Swapping one corner (motor, gearbox, VESC) takes ≤ `TBD` min, with no code changes (config only) | Modularity, serviceability | D | Draft |
