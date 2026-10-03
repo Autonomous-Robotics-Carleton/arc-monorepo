@@ -56,7 +56,7 @@ Decide this before the sync board's I/O is frozen.
 
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-30 | Sync MCU board | 1 | Decided: STM32H7 class with Ethernet MAC + PHY | Owns the time base; timestamps every input at the pin; enforces the safety envelope and heartbeat watchdog in firmware, outside Linux; I/O per the tally below, plus one spare per channel type | E-06, E-02, all vehicle-state sensors, E-50 (CAN), E-60 | 3.3 V / 5 V | SYS-04, SYS-07, SYS-19, SYS-22 |
+| E-30 | Sync MCU board | 1 | Decided: STM32H723 (3 FDCAN, Ethernet MAC) + PHY (ADR-0011) | Owns the time base; timestamps every input at the pin; enforces the safety envelope and heartbeat watchdog in firmware, outside Linux; I/O per the tally below, plus one spare per channel type | E-06, E-02, all vehicle-state sensors, E-50 (CAN), E-60 | 3.3 V / 5 V | SYS-04, SYS-07, SYS-19, SYS-22 |
 | E-31 | Steering servo | 1 | TBD | Torque and speed TBD from steering geometry; signal driven by E-30 so the watchdog can act on it | E-30 (PWM) | Servo | SYS-01, SYS-22 |
 | E-32 | Physical e-stop button | 1 | TBD | Latching; reachable on the car; drives ESTOP_EN low on all four VESCs in hardware | E-41 e-stop circuit | — | SYS-05 |
 | E-33 | Status LEDs | TBD | TBD | Show e-stop state, watchdog state, power-rail faults | E-30 GPIO | 3.3 V | SYS-19 |
@@ -65,7 +65,7 @@ Decide this before the sync board's I/O is frozen.
 
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4 (proposed, ADR-0011). High-rate telemetry link pending ADR-0011 | E-51, E-28, CAN trunk, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
+| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4. Commands on built-in CAN + TJA1051T/3; telemetry on an added CAN-FD controller with integrated transceiver (MCP251863 class) + 40 MHz crystal, full status at ≥ 1 kHz (ADR-0011) | E-51, E-28, CAN trunk, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
 | E-51 | Drive motor | 4 | Decided: Castle 1010-4400kV sensored | 2S–4S; Hall sensored; 28 mm can | E-50 | — | SYS-01 |
 
 ## Power
@@ -103,7 +103,7 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 | Camera trigger outputs | Stereo kit, quad kit, event camera | 3 | ≥ 1 |
 | PPS / time-sync output | To Orin | 1 | — |
 | PWM output | Steering servo | 1 | ≥ 1 |
-| CAN (classic) | 4 VESCs | 1 bus | Second FD-capable controller unused |
+| CAN | Command bus (classic, 4 VESCs); telemetry front and rear (CAN-FD, 2 VESCs each) | 3 FDCAN (all used) | Add an external FD controller over SPI if a fourth bus is needed |
 | UART | ExpressLRS receiver (pending), optical flow sensor (if UART) | 1–2 | ≥ 1 |
 | Ethernet | Link to Orin via switch | 1 | — |
 | GPIO | E-stop status in, status LEDs | TBD | ≥ 2 |

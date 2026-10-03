@@ -1,6 +1,6 @@
 # ADR-0009: One classic CAN bus to the four corner VESCs
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0011 (this bus carries commands and health status only; telemetry moves to two CAN-FD buses)
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-06, RSK-03

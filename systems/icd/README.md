@@ -4,9 +4,10 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 
 | ICD | Side A | Side B | Format | Status |
 | --- | --- | --- | --- | --- |
-| [corner-connector](corner-connector.md) | Corner VESC board | Chassis harness / sync board / e-stop | Markdown | Proposed (rev B) |
+| [corner-connector](corner-connector.md) | Corner VESC board | Chassis harness / sync board / e-stop | Markdown | Proposed (rev C) |
 | corner-mechanical | Corner (motor, gearbox, VESC) | Chassis | Markdown + CAD | TBD |
-| can | Sync MCU | Corner VESCs (classic CAN, ADR-0009) | `can.dbc` | TBD |
+| can-command | Sync MCU | Corner VESCs (classic CAN, ADR-0009) | `can-command.dbc` | TBD |
+| can-telemetry | Corner VESCs | Sync MCU (2 × CAN-FD, ADR-0011) | `can-telemetry.dbc` | TBD |
 | power-rails | Power board | Every load | Markdown (voltage, current, sequencing, fusing) | TBD |
 | power-sync-stack | Power board | Sync board | Markdown (header pinout) | TBD |
 | carrier-sync | Orin carrier | Sync board | Markdown (triggers, PPS/PTP, Ethernet) | TBD |

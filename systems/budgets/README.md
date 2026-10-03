@@ -7,6 +7,6 @@ A budget "closes" when the total plus contingency is within its `SYS` limit.
 | --- | --- | --- |
 | `mass.csv` (mass and CG position) | SYS-16 | TBD |
 | `power.csv` (per rail: peak and continuous) | SYS-03, ICD power-rails | TBD |
-| `bus-load.csv` (both CAN buses, Ethernet) | SYS-06 | TBD |
+| [`bus-load.csv`](bus-load.csv) (command bus, two FD telemetry buses, Ethernet) | SYS-24 | Draft: all buses within ceiling |
 | `latency.csv` (sensor → estimate → command) | SYS-06, SYS-11 | TBD |
 | `cost.csv` | SYS-17 | TBD |
