@@ -15,7 +15,7 @@ jobs:
         uses: pozil/auto-assign-issue@v1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: anakafeel
+          assignees: HalfPast9
           numOfAssignee: 1
           allowSelfAssign: true
           abortIfPreviousAssignees: false

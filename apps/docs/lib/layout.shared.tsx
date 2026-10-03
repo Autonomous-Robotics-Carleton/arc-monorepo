@@ -21,7 +21,7 @@ export function baseOptions(): BaseLayoutProps {
       ),
       url: '/',
     },
-    githubUrl: 'https://github.com/Autonomous-Robotics-Carleton/2026',
+    githubUrl: 'https://github.com/Autonomous-Robotics-Carleton/arc-monorepo',
     links: [
       {
         type: 'icon',

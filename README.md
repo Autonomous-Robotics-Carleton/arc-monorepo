@@ -1,10 +1,10 @@
 # 🚗 ARC — Autonomous Robotics Carleton  
 
 <p align="center">
-  <img src="https://img.shields.io/github/last-commit/Autonomous-Robotics-Carleton/2026?color=blue&style=for-the-badge" />
-  <img src="https://img.shields.io/github/contributors/Autonomous-Robotics-Carleton/2026?color=green&style=for-the-badge" />
-  <img src="https://img.shields.io/github/issues/Autonomous-Robotics-Carleton/2026?color=orange&style=for-the-badge" />
-  <img src="https://img.shields.io/github/issues-pr/Autonomous-Robotics-Carleton/2026?color=purple&style=for-the-badge" />
+  <img src="https://img.shields.io/github/last-commit/Autonomous-Robotics-Carleton/arc-monorepo?color=blue&style=for-the-badge" />
+  <img src="https://img.shields.io/github/contributors/Autonomous-Robotics-Carleton/arc-monorepo?color=green&style=for-the-badge" />
+  <img src="https://img.shields.io/github/issues/Autonomous-Robotics-Carleton/arc-monorepo?color=orange&style=for-the-badge" />
+  <img src="https://img.shields.io/github/issues-pr/Autonomous-Robotics-Carleton/arc-monorepo?color=purple&style=for-the-badge" />
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" />
 </p>
 
@@ -46,8 +46,8 @@ The technical docs site built with **Fumadocs** + **Next.js**.
 
 1. Clone this repository:  
    ```bash
-   git clone https://github.com/Autonomous-Robotics-Carleton/2026.git
-   cd 2026
+   git clone https://github.com/Autonomous-Robotics-Carleton/arc-monorepo.git
+   cd arc-monorepo
 ---
 
 This is an **Nx monorepo**. Documentation source code lives in **`apps/docs/`**.
@@ -165,7 +165,7 @@ Contributors never touch Docker.
 # 🏗 Project Structure
 
 ```
-2026/                             # Nx monorepo root
+arc-monorepo/                     # Nx monorepo root
 ├── apps/
 │   ├── docs/                 # Fumadocs / Next.js docs app
 │   │   ├── app/              # Next.js App Router

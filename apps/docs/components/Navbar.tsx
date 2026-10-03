@@ -10,7 +10,7 @@ const navLinks = [{ href: "/docs", label: "Docs" }];
 
 const externalLinks = [
   {
-    href: "https://github.com/Autonomous-Robotics-Carleton/2026",
+    href: "https://github.com/Autonomous-Robotics-Carleton/arc-monorepo",
     label: "GitHub",
     icon: (
       <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
