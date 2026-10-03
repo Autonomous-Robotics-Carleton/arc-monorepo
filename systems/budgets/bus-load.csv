@@ -1,7 +1,9 @@
 bus,bitrate,traffic,frames_per_s,time_per_frame_us,load_pct,ceiling_pct,source,owner
 command (classic CAN),1 Mbit/s,motor commands 4 VESCs @ 500 Hz,2000,120,24,70,"estimate: extended ID, 4-byte payload, worst-case stuffing (ADR-0011)",TBD
 command (classic CAN),1 Mbit/s,health status 4 VESCs @ 50 Hz,200,130,2.6,70,estimate,TBD
-command (classic CAN),1 Mbit/s,TOTAL,,,26.6,70,,TBD
+command (classic CAN),1 Mbit/s,steering commands @ 500 Hz,500,120,6,70,estimate (ADR-0018),TBD
+command (classic CAN),1 Mbit/s,steering status (2 stock VESC frames) @ 1 kHz,2000,130,26,70,estimate (ADR-0018),TBD
+command (classic CAN),1 Mbit/s,TOTAL,,,58.6,70,,TBD
 telemetry front (CAN-FD),1 / 5 Mbit/s,full status FL + FR @ 1 kHz (2 x 64-byte frames each),4000,150,60,70,"estimate: ~30 us arbitration + ~120 us data phase per 64-byte frame (ADR-0011)",TBD
 telemetry rear (CAN-FD),1 / 5 Mbit/s,full status RL + RR @ 1 kHz (2 x 64-byte frames each),4000,150,60,70,estimate,TBD
 sync MCU to Orin (Ethernet),100 Mbit/s,all sync-board sensors at full rate + VESC telemetry,,,<10,50,estimate: < 1 MB/s total,TBD

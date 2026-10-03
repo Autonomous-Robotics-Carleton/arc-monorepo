@@ -4,6 +4,7 @@
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-05, ICD-corner-connector, RSK-11
+- **Amended by:** ADR-0018 (the steering VESC returns to centre and is cut after the drive corners)
 
 ## Context
 
