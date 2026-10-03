@@ -16,6 +16,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
 | `reviews/` | Gate checklists and review records | Markdown |
 | `architecture.md` | Narrative overview of the whole car | Markdown |
+| `topology.html` | Interface topology diagram, sync board I/O and stop sequence (source of the shared topology page) | HTML |
 
 ## IDs
 
