@@ -8,4 +8,5 @@ Event cameras (forward + ground speed),< 0.15 pixel,1-5 driver batching,2,5,no,g
 Ride-height ToF,10-20 per measurement,1,10,20,yes,accepted: aero and slow pitch/heave only; laser triangulation rejected 2026-10-03
 2D LiDAR Hokuyo (40 Hz),0-25 within a scan,1,13,25,yes,inherent to a 40 Hz scanner; deskew with per-point timing + IMU
 Frame cameras (AR0234 / OV9281),1-2 frames,negligible,20,40,yes,inherent to frame cameras; minimal buffering + raw V4L2 capture
-Steering actuator (actuation),see ADR on steering,,,,yes until steering upgrade,hobby servo ~40-100 ms per 60 degrees
+Steering angle and torque (moteus-c1 telemetry),<= 1 frame period (>= 1 kHz),0.3-0.5,1.5,2.5,no,"estimate: CAN-FD steering bus + sync MCU forwarding, same path as VESC telemetry (ADR-0019)"
+Steering actuator (actuation),lock to lock <= 100 (target),<= 1 (commands at 1 kHz),,,yes,"ADR-0019 targets: lock to lock <= 0.1 s, >= 10 Hz position bandwidth; replaces the hobby servo (~40-100 ms per 60 degrees)"
