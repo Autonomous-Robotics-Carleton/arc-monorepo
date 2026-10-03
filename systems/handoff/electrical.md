@@ -51,6 +51,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 
 - **Decided:**
   - STM32H723 + Ethernet PHY (ADR-0011); firmware on Zephyr (ADR-0017).
+  - Time sync: PTP grandmaster with hardware timestamping through a PTP-aware switch; PPS kept as a cross-check (ADR-0020).
   - Buses: one classic command CAN bus, two CAN-FD telemetry buses (front, rear), and a CAN-FD steering bus via a populated MCP2518FD (ADR-0011, ADR-0019).
   - SO-8 CAN transceivers with SIC drop-in; unpopulated split termination, common-mode choke and TVS footprints (ADR-0013).
   - I/O per the tally in `bom/electrical.md`:
@@ -62,7 +63,6 @@ The starting point for the electrical engineer. It collects, per board, what's d
     - status LEDs
 - **Requirements:** SYS-04, -07, -19, -22, -24, -25, -29.
 - **Open:**
-  - **PPS vs PTP** for time sync to the Orin (Zephyr supports PTP natively)
   - Package and pin-mux check for 12 SPI chip-selects + 3 FDCAN + Ethernet + triggers
   - Connector map and pinouts for every sensor run
   - Camera-trigger connector to the carrier (ICD carrier-sync, not written yet)
@@ -120,7 +120,6 @@ The starting point for the electrical engineer. It collects, per board, what's d
 | Question | Who decides | Blocks |
 | --- | --- | --- |
 | **Grounding strategy:** motor ground vs logic ground vs CAN/FD returns; isolated transceivers or a single-point ground | EE, with the systems lead | Harness, transceiver choice, all boards |
-| **PPS vs PTP** time sync | EE + software | Sync board, carrier |
 | **Mass and CG** (SYS-16) | Mechanical | Power scenarios, bus clamp, pack choice |
 | Steering motor peak current | Mechanical (actuator design) | Steering switched output |
 | Aero fan power (SYS-15) | Capstone | Motor bus reserve |

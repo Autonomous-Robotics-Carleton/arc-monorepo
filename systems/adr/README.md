@@ -25,5 +25,6 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0017](0017-sync-mcu-rtos.md) | Sync MCU firmware on Zephyr | Accepted |
 | [0018](0018-steering-actuator.md) | Steering: VESC-driven brushless actuator, belt reduction, return-to-centre on e-stop | Superseded by 0019 |
 | [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted |
+| [0020](0020-time-sync-ptp.md) | Time sync: PTP with hardware timestamping through a PTP-aware switch | Accepted |
 
 Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.
