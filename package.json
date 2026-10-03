@@ -6,14 +6,6 @@
   "engines": {
     "node": ">=20"
   },
-  "scripts": {
-    "dev:docs": "pnpm --filter arc-docs dev",
-    "build:docs": "pnpm --filter arc-docs build",
-    "lint:docs": "pnpm --filter arc-docs lint",
-    "dev:web": "pnpm --filter arc-web dev",
-    "build:web": "pnpm --filter arc-web build",
-    "lint:web": "pnpm --filter arc-web lint"
-  },
   "devDependencies": {
     "nx": "^22.4.5"
   }
