@@ -1,0 +1,56 @@
+name: Discord Notifications
+
+# Posts pushes to main, PR activity and issue activity to the team Discord.
+# Event fields (titles, names) are untrusted: they reach the script only
+# through env vars and jq, never through ${{ }} inside `run`.
+
+on:
+  push:
+    branches: [main]
+  pull_request_target: # not pull_request, so PRs from forks can read the webhook secret; no code is checked out
+    branches: [main]
+    types: [opened, reopened, ready_for_review, closed]
+  issues:
+    types: [opened, reopened, closed]
+
+permissions: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          MERGED: ${{ github.event.pull_request.merged }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+          TITLE: ${{ github.event.issue.title || github.event.pull_request.title || github.event.head_commit.message }}
+          URL: ${{ github.event.issue.html_url || github.event.pull_request.html_url || github.event.head_commit.url }}
+          AUTHOR: ${{ github.event.issue.user.login || github.event.pull_request.user.login || github.event.head_commit.author.username || github.event.head_commit.author.name }}
+          TIMESTAMP: ${{ github.event.issue.updated_at || github.event.pull_request.updated_at || github.event.head_commit.timestamp }}
+        run: |
+          case "$EVENT/$ACTION" in
+            push/*)
+              status="📦 New push to **main**"; color=3447003 ;;
+            pull_request_target/closed)
+              if [ "$MERGED" = true ]; then status="🎉 PR merged"; color=5763719
+              else status="❌ PR closed"; color=15548997; fi ;;
+            pull_request_target/ready_for_review)
+              status="👀 PR ready for review"; color=3447003 ;;
+            pull_request_target/*)
+              status="📬 PR $ACTION"; color=16776960 ;;
+            issues/*)
+              status="🐛 Issue $ACTION"; color=15105570 ;;
+          esac
+
+          title=$(printf '%s' "$TITLE" | head -n 1 | cut -c 1-256)
+          description="**Author:** [$AUTHOR](https://github.com/$AUTHOR)"
+          if [ -n "$BASE" ]; then description="$description"$'\n'"**Target:** $BASE"; fi
+
+          jq -n \
+            --arg content "$status" --arg title "$title" --arg url "$URL" \
+            --arg timestamp "$TIMESTAMP" --arg description "$description" --argjson color "$color" \
+            '{content: $content, embeds: [{title: $title, url: $url, timestamp: $timestamp, color: $color, description: $description}]}' \
+          | curl -sSf -H "Content-Type: application/json" -d @- "$WEBHOOK"
