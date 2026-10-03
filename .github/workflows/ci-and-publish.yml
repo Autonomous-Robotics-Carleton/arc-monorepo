@@ -54,6 +54,11 @@ jobs:
         uses: anishathalye/proof-html@v1.1.0
         with:
           directory: ./systems
+          check_favicon: false # standalone pages, not a site
+          # rel="preconnect" hints: the bare origins return 404 by design
+          url_ignore: |
+            https://fonts.googleapis.com
+            https://fonts.gstatic.com
 
       # Publish the docs image only on pushes to main that change the docs
       - name: Log in to GHCR
