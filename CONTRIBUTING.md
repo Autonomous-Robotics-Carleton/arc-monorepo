@@ -2,7 +2,7 @@
 
 Thanks for helping build the car. This page covers how to set up the repo, how to get a change merged, and the rules that keep the car's documentation trustworthy.
 
-Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report unacceptable behaviour to `devlead@arcarleton.mycses.ca`.
+Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report unacceptable behaviour to `devlead@arcarleton.ca` or `financeadmin@arcarleton.ca`.
 
 ## Where things live
 
