@@ -1,0 +1,11 @@
+sensor,internal_latency_ms,transport_ms,total_ms_low,total_ms_high,hardware_limited,notes
+IMU at CG (navigation grade) and front IMU (4 kHz),0.25 sample + 0.2-1 filter,0.5-1,1,2,no,sync MCU forwards every <= 1 ms
+Wheel encoders AS5047,0.1,0.5-1,1,1.5,no,
+Suspension angle sensors (magnetic),0.1,0.5-1,1,1.5,no,replaced pots (2026-10-03)
+Steering encoder,0.1,0.5-1,1,1.5,no,
+VESC telemetry (>= 1 kHz),<= 1 frame period,0.3-0.5,1.5,2.5,no,CAN-FD + sync MCU forwarding
+Event cameras (forward + ground speed),< 0.15 pixel,1-5 driver batching,2,5,no,ground-speed adds flow computation on the Orin
+Ride-height ToF,10-20 per measurement,1,10,20,yes,accepted: aero and slow pitch/heave only; laser triangulation rejected 2026-10-03
+2D LiDAR Hokuyo (40 Hz),0-25 within a scan,1,13,25,yes,inherent to a 40 Hz scanner; deskew with per-point timing + IMU
+Frame cameras (AR0234 / OV9281),1-2 frames,negligible,20,40,yes,inherent to frame cameras; minimal buffering + raw V4L2 capture
+Steering actuator (actuation),see ADR on steering,,,,yes until steering upgrade,hobby servo ~40-100 ms per 60 degrees
