@@ -61,6 +61,8 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-27 | The car is reachable with no outside network present: over the team router network, through a button-activated car hotspot, or through a wired service Ethernet port (ADR-0015) | The car must never be unreachable because of building Wi-Fi | D | Draft |
 | SYS-28 | The car gets internet through the team network when a ground-station laptop or the router's phone link provides it; control traffic (teleop, heartbeat) has priority, and bulk transfers run only while the car is parked | Updates and package installs without risking the driving link | T | Draft |
 | SYS-29 | Sync-board sensors and VESC telemetry reach the Orin, timestamped, within ≤ 2 ms of sampling; frame cameras within ≤ 1 frame + 5 ms; every message carries its sample time (`budgets/latency.csv`) | Hardware latency must not limit what software can do (mission 4) | T | Draft |
+| SYS-30 | On low battery the car warns, then shuts the Orin down cleanly before the pack reaches its low-voltage cutoff; the NVMe never loses power mid-write | Protect logs and the filesystem (SYS-09) | T | Draft |
+| SYS-31 | Battery voltage sag at peak current never resets the Orin, the sync board or any sensor | A brownout must not look like a software failure (mission 3) | T | Draft |
 
 ## Spec items with no parent yet
 
