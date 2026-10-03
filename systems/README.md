@@ -10,6 +10,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `adr/` | Architecture decision records | One Markdown file per decision |
 | `budgets/` | Mass/CG, power per rail, bus load, latency, cost | CSV (one file per budget) |
 | `bom/` | Functional BOM: what each part must do and what it connects to | Markdown tables |
+| `verification/` | Verification plan: method, stage, rig and pass criterion for every requirement | Markdown |
 | `tests/` | Test procedures that verify requirements or retire risks, with results tables | Markdown |
 | `handoff/` | Per-discipline handoff: what's decided, where it lives, what's open | Markdown |
 | `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
@@ -25,6 +26,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `ICD-<name>` | Interface control document | ICD-corner-connector |
 | `ADR-nnnn` | Decision record | ADR-0002 |
 | `RSK-nn` | Risk | RSK-01 |
+| `LIM-nn` | Accepted limit (hardware deliberately limiting software) | LIM-01 |
 
 IDs are never reused. A deleted requirement keeps its row with status `Deleted`.
 

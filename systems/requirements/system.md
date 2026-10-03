@@ -65,6 +65,21 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-31 | Battery voltage sag at peak current never resets the Orin, the sync board or any sensor | A brownout must not look like a software failure (mission 3) | T | Draft |
 | SYS-32 | Every cell voltage in the pack is measured, timestamped and logged at ≥ 100 Hz (TBC) to ±10 mV, without draining the pack when the car is off | Catch a weak or sagging cell before it looks like a random brownout (mission 3) | T | Draft |
 
+## Accepted limits
+
+Places where v1 hardware deliberately limits what software can do. Each was chosen knowingly; revisit in v2.
+
+| ID | Limit | Why accepted | Decided in | Revisit |
+| --- | --- | --- | --- | --- |
+| LIM-01 | Onboard models must fit in the Orin NX's 16 GB alongside the platform software; 7B-class VLAs are out | Carrier, power and cost for v1; the classical stack comes first | ADR-0010 | v2 compute (Thor T4000 class) |
+| LIM-02 | 2D LiDAR: one plane, 40 Hz, 10 m, ±40 mm | Standard for 1/10 racing; 3D scanners are slower and bigger | ADR-0001 | v2 if 3D perception becomes a goal |
+| LIM-03 | Event cameras are 320 × 320 | Only small, low-power MIPI event sensor | ADR-0014 | Higher-resolution event sensors in v2 |
+| LIM-04 | Ride height from ToF: ~10–20 ms per reading, mm-level noise | Laser triangulation rejected on cost | ADR-0007, BOM E-26 | If aero needs µm-level ride height |
+| LIM-05 | No room to add hardware without a change: all four CSI ports used; all CAN controllers used | Tight integration in v1; modularity is a v2 goal | ADR-0014, ADR-0019 | v2 modular car |
+| LIM-06 | The sync MCU is a single point of failure: if it dies, data stops, steering holds, and the VESCs time out and brake | Fails safe; redundancy isn't worth the complexity in v1 | ADR-0017, ADR-0019 | If S5 shows sync-MCU failures |
+| LIM-07 | Wheel forces and tire temperature aren't measured directly (forces are estimated from suspension angle × spring rate and motor current; tire temperature dropped) | No requirement needed them in v1 | ADR-0006 | If vehicle-dynamics research needs them |
+| LIM-08 | Raw data from a full run can't be streamed live over Wi-Fi; it comes off on the swappable NVMe | Wi-Fi bandwidth; everything is still logged onboard at full rate | ADR-0015 | — |
+
 ## Spec items with no parent yet
 
 Mission 4 (sensors already there) gives the sensor suite a parent. The rule still applies: each payload sensor names at least one experiment someone wants to run with it, so the suite is chosen, not just accumulated.
