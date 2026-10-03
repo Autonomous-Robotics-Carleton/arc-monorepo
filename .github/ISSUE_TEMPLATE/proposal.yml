@@ -1,0 +1,28 @@
+name: Proposal
+description: A new feature, or a change to a requirement, interface or decision
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What's missing or wrong today, and who it affects
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What you'd change. For a significant design choice, the outcome will be an ADR in systems/adr/.
+    validations:
+      required: true
+  - type: input
+    id: traces
+    attributes:
+      label: Traces to
+      description: Requirements, decisions, interfaces or risks this touches, or "none"
+      placeholder: SYS-04, ADR-0012, RSK-11
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

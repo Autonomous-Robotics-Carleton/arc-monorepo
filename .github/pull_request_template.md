@@ -1,26 +1,19 @@
-# Description
+## What and why
 
-Please include a summary of the changes and the related issue. Please also include relevant motivation and context. List any dependencies that are required for this change.
+<!-- What this changes and why. Link the issue it closes: "Closes #123". -->
 
-Fixes # (issue)
+## Traces to
 
-## Type of change
+<!-- IDs this PR implements or changes: SYS-nn, ADR-nnnn, ICD-<name>, RSK-nn. Write "none" for work that isn't on the car (website, tooling). -->
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
+## How it was tested
 
-# How Has This Been Tested?
+<!-- Commands you ran, bench results, screenshots for UI changes. -->
 
-# Checklist:
+## Checklist
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
-
+- [ ] `npx nx affected -t lint check build` passes locally
+- [ ] Docs updated if behaviour, setup or interfaces changed
+- [ ] Changes a requirement, ICD or budget: links the ADR or issue that justifies it
+- [ ] Changes an ICD: the owners on both sides have approved
+- [ ] Touches a safety function (e-stop, watchdog, safety envelope): has its own tests and a second reviewer
