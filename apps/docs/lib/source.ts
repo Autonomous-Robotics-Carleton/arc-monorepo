@@ -1,4 +1,4 @@
-import { devKitDocs, docs, repoDocs, webDocs } from '@/.source';
+import { devKitDocs, docs, repoDocs, systemsDocs, webDocs } from '@/.source';
 import { loader, type Source, type VirtualFile } from 'fumadocs-core/source';
 import { createMDXSource } from 'fumadocs-mdx';
 
@@ -7,6 +7,35 @@ const repoPages: Record<string, { path: string; title: string }> = {
   'CONTRIBUTING.md': { path: 'handbook/contributing.md', title: 'Contributing' },
   'systems/README.md': { path: 'how-these-docs-work.md', title: 'How these docs work' },
 };
+
+// systems/ mounts at car/. Folder READMEs become folder index pages, and the
+// architecture overview is the section's landing page.
+function carPath(path: string): string {
+  if (path === 'architecture.md') return 'car/index.md';
+  return `car/${path.replace(/(^|\/)README\.md$/, '$1index.md')}`;
+}
+
+// Sidebar for car/, kept here so systems/ holds no site config. Folders with
+// a single page are flattened ("...folder"); "..." picks up new files.
+const carSidebar: Record<string, { title: string; pages?: string[] }> = {
+  car: {
+    title: 'The car',
+    pages: [
+      'index', 'topology', '...requirements', '...verification', 'adr', 'icd', 'budgets',
+      '...bom', 'risks', 'tests', '...mechanical', '...handoff', '...reviews', '...',
+    ],
+  },
+  'car/adr': { title: 'Decisions' },
+  'car/icd': { title: 'Interfaces' },
+  'car/budgets': { title: 'Budgets' },
+  'car/tests': { title: 'Tests' },
+};
+
+const carMeta: VirtualFile[] = Object.entries(carSidebar).map(([folder, data]) => ({
+  type: 'meta',
+  path: `${folder}/meta.json`,
+  data,
+}));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySource = Source<any>;
@@ -40,6 +69,11 @@ const files: VirtualFile[] = [
   ...filesOf(handbook),
   ...mount('handbook/website', webDocs.toFumadocsSource()),
   ...mount('handbook/orin-dev-kit', devKitDocs.toFumadocsSource()),
+  ...filesOf(createMDXSource(systemsDocs)).map((file) => {
+    const moved = { ...file, path: carPath(file.path) };
+    return file.path === 'architecture.md' ? setTitle(moved, 'Overview') : moved;
+  }),
+  ...carMeta,
   ...filesOf(createMDXSource(repoDocs)).map((file) => {
     const page = repoPages[file.path];
     return page ? setTitle({ ...file, path: page.path }, page.title) : file;

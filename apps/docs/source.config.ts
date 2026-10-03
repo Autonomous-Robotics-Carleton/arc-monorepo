@@ -36,6 +36,15 @@ export const devKitDocs = defineDocs({
   meta: { schema: metaSchema },
 });
 
+// The car's systems engineering docs, the source of truth (Markdown).
+// systems/README.md is mounted separately as "How these docs work".
+export const systemsDocs = defineCollections({
+  type: 'doc',
+  dir: '../../systems',
+  files: ['**/*.md', '!README.md', '!adr/0000-template.md'],
+  schema: pageSchema,
+});
+
 // Single Markdown files from the repo root.
 export const repoDocs = defineCollections({
   type: 'doc',
