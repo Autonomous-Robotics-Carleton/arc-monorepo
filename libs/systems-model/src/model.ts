@@ -153,3 +153,28 @@ export function referencedBy(model: SystemsModel, id: string): string[] {
   const files = model.references.filter((ref) => ref.id === id && ref.file !== home).map((ref) => ref.file);
   return [...new Set(files)].sort();
 }
+
+export interface IdEntry {
+  id: string;
+  kind: IdKind;
+  title: string;
+  status?: string;
+  /** Repo-relative path and line of the definition, e.g. systems/risks.md:5 */
+  definedAt: string;
+  /** Repo-relative paths of the other files that mention it. */
+  referencedBy: string[];
+}
+
+/** One entry per defined ID, in ID order. `prefix` is systems/ relative to the repo root. */
+export function idIndex(model: SystemsModel, prefix = 'systems'): IdEntry[] {
+  return [...model.definitions.values()]
+    .sort((a, b) => a.id.localeCompare(b.id, 'en', { numeric: true }))
+    .map((def) => ({
+      id: def.id,
+      kind: def.kind,
+      title: def.title,
+      ...(def.status ? { status: def.status } : {}),
+      definedAt: `${prefix}/${def.file}:${def.line}`,
+      referencedBy: referencedBy(model, def.id).map((file) => `${prefix}/${file}`),
+    }));
+}

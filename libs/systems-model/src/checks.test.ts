@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { checkSystems, loadSystems, parseCsv } from './index.ts';
+import { checkSystems, idIndex, loadSystems, parseCsv } from './index.ts';
 
 const requirements = `# System Requirements
 
@@ -135,4 +135,20 @@ test('parseCsv handles quotes, commas and newlines', () => {
 test('IDs in budget CSVs are checked too', () => {
   const problems = fixture({ 'budgets/power.csv': 'rail,bom_id\nmotor,E-99\n' });
   assert.deepEqual(problems, ["budgets/power.csv: E-99 isn't defined (Electrical BOM items live in bom/electrical.md)"]);
+});
+
+test('idIndex lists definitions with where they are defined and used', () => {
+  const root = mkdtempSync(join(tmpdir(), 'systems-'));
+  mkdirSync(join(root, 'requirements'));
+  writeFileSync(join(root, 'requirements/system.md'), requirements);
+  writeFileSync(join(root, 'risks.md'), '# Risks\n\nSee SYS-02.\n');
+  const sys02 = idIndex(loadSystems(root)).find((e) => e.id === 'SYS-02');
+  assert.deepEqual(sys02, {
+    id: 'SYS-02',
+    kind: 'SYS',
+    title: 'Stop',
+    status: 'Draft',
+    definedAt: 'systems/requirements/system.md:6',
+    referencedBy: ['systems/risks.md'],
+  });
 });
