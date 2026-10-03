@@ -65,7 +65,7 @@ Decide this before the sync board's I/O is frozen.
 
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4. Commands on built-in CAN + TJA1051T/3; telemetry on an added CAN-FD controller with integrated transceiver (MCP251863 class) + 40 MHz crystal, full status at ≥ 1 kHz (ADR-0011) | E-51, E-28, CAN trunk, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
+| E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4. Commands on built-in CAN + TJA1051T/3; telemetry on an added CAN-FD controller with integrated transceiver (MCP251863 class) + 40 MHz crystal, full status at ≥ 1 kHz (ADR-0011) | E-51, E-28, command bus, FD telemetry bus, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13 |
 | E-51 | Drive motor | 4 | Decided: Castle 1010-4400kV sensored | 2S–4S; Hall sensored; 28 mm can | E-50 | — | SYS-01 |
 
 ## Power
