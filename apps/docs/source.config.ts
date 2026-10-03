@@ -50,8 +50,8 @@ export const systemsDocs = defineCollections({
 // Single Markdown files from the repo root.
 export const repoDocs = defineCollections({
   type: 'doc',
-  dir: '../..',
-  files: ['CONTRIBUTING.md', 'systems/README.md'],
+  dir: '../../.github',
+  files: ['CONTRIBUTING.md'],
   schema: pageSchema,
 });
 

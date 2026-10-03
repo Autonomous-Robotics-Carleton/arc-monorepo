@@ -25,7 +25,7 @@ COPY --from=deps /app ./
 COPY apps/docs ./apps/docs
 COPY libs/systems-model ./libs/systems-model
 # Pages the site renders from elsewhere in the repo (see source.config.ts)
-COPY CONTRIBUTING.md ./
+COPY .github/CONTRIBUTING.md ./.github/
 COPY systems ./systems
 COPY platform/dev-kit ./platform/dev-kit
 COPY apps/web/docs ./apps/web/docs

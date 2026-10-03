@@ -19,7 +19,7 @@ export function baseOptions(): BaseLayoutProps {
           Arc Docs
         </>
       ),
-      url: '/',
+      url: '/docs',
     },
     githubUrl: 'https://github.com/Autonomous-Robotics-Carleton/arc-monorepo',
     links: [
