@@ -61,7 +61,7 @@ npx nx dev docs        # Docs site → http://localhost:3000
 npx nx dev web         # Website  → http://localhost:3001
 ```
 
-Requires Node.js 22 (`.nvmrc`). Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](CONTRIBUTING.md)**.
+Requires Node.js 22 (`.nvmrc`). Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](.github/CONTRIBUTING.md)**.
 
 ---
 

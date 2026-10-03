@@ -19,7 +19,7 @@
       "inputs": [
         "default",
         "^default",
-        "{workspaceRoot}/CONTRIBUTING.md",
+        "{workspaceRoot}/.github/CONTRIBUTING.md",
         "{workspaceRoot}/platform/dev-kit/**/*",
         "{workspaceRoot}/apps/web/docs/**/*"
       ],

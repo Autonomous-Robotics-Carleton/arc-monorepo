@@ -2,13 +2,13 @@
 
 Thanks for helping build the car. This page covers how to set up the repo, how to get a change merged, and the rules that keep the car's documentation trustworthy.
 
-Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md). Report unacceptable behaviour to `devlead@arcarleton.ca` or `financeadmin@arcarleton.ca`.
+Everyone taking part follows the [Code of Conduct](../CODE_OF_CONDUCT.md). Report unacceptable behaviour to `devlead@arcarleton.ca` or `financeadmin@arcarleton.ca`.
 
 ## Where things live
 
 | Folder | What |
 | --- | --- |
-| `systems/` | Source of truth for the car: requirements, decisions (ADRs), interfaces (ICDs), budgets, risks. Read [`systems/README.md`](systems/README.md) before changing anything here. |
+| `systems/` | Source of truth for the car: requirements, decisions (ADRs), interfaces (ICDs), budgets, risks. Read [`systems/README.md`](../systems/README.md) before changing anything here. |
 | `ros/` | ROS 2 workspace for the Orin |
 | `firmware/` | Sync MCU (Zephyr) and VESC firmware |
 | `hardware/` | Board designs and mechanical exports |
@@ -56,7 +56,7 @@ npx nx affected -t lint check build   # what CI runs, for whatever you changed
 ## How PRs are accepted
 
 - CI passes.
-- A code owner approves (see [`.github/CODEOWNERS`](.github/CODEOWNERS)).
+- A code owner approves (see [`.github/CODEOWNERS`](CODEOWNERS)).
 - A change to a requirement, ICD or budget links the ADR or issue that justifies it.
 - A change to an ICD is approved by the owners on both sides of the interface.
 - A change to a safety function (e-stop, watchdog, safety envelope) has its own tests and a second reviewer.
@@ -65,7 +65,7 @@ The maintainer merges with **Rebase and merge** when every commit is a clean, me
 
 ## Rules for `systems/`
 
-The full rules are in [`systems/README.md`](systems/README.md). The short version:
+The full rules are in [`systems/README.md`](../systems/README.md). The short version:
 
 - Every number has a parent requirement. Unknown values are `TBD` (no value yet) or `TBC` (proposed, not confirmed), never "about".
 - IDs (`SYS-nn`, `ADR-nnnn`, `RSK-nn`, …) are never reused.
@@ -74,4 +74,4 @@ The full rules are in [`systems/README.md`](systems/README.md). The short versio
 
 ## Security
 
-Don't open a public issue for a vulnerability. See [`SECURITY.md`](SECURITY.md).
+Don't open a public issue for a vulnerability. See [`SECURITY.md`](../SECURITY.md).

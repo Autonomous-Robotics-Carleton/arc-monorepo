@@ -5,5 +5,6 @@ node_modules
 .gitignore
 LICENSE
 .github
+!.github/CONTRIBUTING.md
 .claude
 .DS_Store
