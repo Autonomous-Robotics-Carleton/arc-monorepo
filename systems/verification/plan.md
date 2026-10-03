@@ -33,8 +33,8 @@
 
 | Req | Method | Stage | Rig / procedure | Pass criterion | Status |
 | --- | --- | --- | --- | --- | --- |
-| SYS-01 Top speed | A, T | S0, S4 | Gearing/power analysis; then timed runs between markers | ≥ SYS-01 value on tile | Not started |
-| SYS-02 Footprint | I | S0 (CAD), S3 | Measure | Wheelbase ≤ 324 mm, track ≤ 296 mm | Not started |
+| SYS-01 Top speed | A, T | S0, S4 | Gearing/power analysis; then timed runs between markers | ≥ 12 m/s on tile | Not started |
+| SYS-02 Footprint | I | S0 (CAD), S3 | Measure | Width 238–341 mm, length 454–654 mm | Not started |
 | SYS-03 Run time | A, T | S0, S4 | `budgets/power-scenarios.md`; then a hard-driving run to the low-battery warning | ≥ 10 min | Not started |
 | SYS-04 Heartbeat stop | T | S2, S4 | R1: cut the heartbeat, measure watchdog reaction. R7: cut heartbeat at speed, measure roll before braking and stop distance | Watchdog ≤ ~150 ms; ≤ 2 m rolled before braking at top speed; same brake ramp as e-stop | Not started |
 | SYS-05 E-stop | T, I | S2, S3, S4 | R2: press e-stop; scope the brake current and EN_GATE; repeat with the VESC firmware halted. R7 at speed | Ramped brake, no free rolling; gate drive off by T ≈ 3 s whatever the firmware does; steering returns to centre, power cut ~1 s later | Not started |
@@ -48,8 +48,8 @@
 | SYS-13 Corner swap | D | S3 | Time a swap, config change only | ≤ SYS-13 minutes; no code change | Not started |
 | SYS-14 Wall/battery handover | T | S1, S3 | R4: unplug and replug the wall supply under full LV load | No reset anywhere | Not started |
 | SYS-15 Aero reserve | I, A | S0 | CAD volume check; motor-bus power reserve | Volume and power reserved | Not started |
-| SYS-16 Mass and CG | A, I | S0, S3 | Mass budget, then weigh and balance | ≤ SYS-16 limits | Not started |
-| SYS-17 Cost | A | S0 | `budgets/cost.csv` against the budget | ≤ SYS-17 | Not started |
+| SYS-16 Mass and CG | A, I | S0, S3 | Mass budget, then weigh and balance | Tracked and recorded (no limit) | Not started |
+| SYS-17 Cost | A | S0 | `budgets/cost.csv` | Every purchase request justified from the budget file | Not started |
 | SYS-18 Reliability | T | S5 | 10 h of runs; every hardware/firmware failure goes through FRACAS | 10 h with zero hardware/firmware-caused failures | Not started |
 | SYS-19 Fault detection | T, I | S2 | R1/R4 fault injection: brownout, rail short, bus short, pulled sensor, over-temperature (heat gun), watchdog trip | Each injected fault detected, timestamped and logged | Not started |
 | SYS-21 Platform isolation | T | S3 | R8: run the broken experiment container (crash, hang, CPU/GPU/memory/disk hogs) while driving on the stand | Platform keeps driving, logging and can stop | Not started |

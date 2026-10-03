@@ -32,8 +32,8 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 
 | ID | Requirement | Rationale | Verif. | Status |
 | --- | --- | --- | --- | --- |
-| SYS-01 | Top speed on tile ≥ `TBD` m/s (spec gear table spans 8–12.5 m/s) | Racing (known user) | T | Draft |
-| SYS-02 | Wheelbase ≤ 324 mm and track ≤ 296 mm | Fair racing vs the Slash 4x4 (known user) | I | Draft |
+| SYS-01 | Top speed on tile ≥ 12 m/s (the fastest gearing in `architecture.md`) | F1TENTH/Roboracer sets no speed cap; racing and limit-handling research. Practical limits are the track and grip | T | Draft |
+| SYS-02 | Overall width 238–341 mm and length 454–654 mm (F1TENTH/Roboracer rule 2.1.3: within 15% of Traxxas). **To check in CAD:** a 1/10 touring layout (~310 mm wheelbase) may come in under the 454 mm minimum length (RSK-16) | Eligible to race F1TENTH/Roboracer. The head-to-head presence rule and the power-equivalence and single-motor rules are deliberately not followed. LiDAR (≤ UST-30LX equivalent) and battery (≤ 4S) already comply | I | Draft |
 | SYS-03 | Run time ≥ 10 min of hard driving per pack | One session per pack | T | Draft |
 | SYS-04 | After loss of operator heartbeat, the car rolls ≤ 2 m before braking starts (≤ ~150 ms watchdog timeout at 12 m/s), then brakes to a stop using the same controlled brake ramp as the e-stop. Expected total from 12 m/s at ~5 m/s²: ~17 m | Safety; sets watchdog timeout and VESC brake config | T | Draft |
 | SYS-05 | A physical e-stop brings the car to a controlled, braked stop (ramped, not instantaneous; never free rolling), then removes drive torque in hardware within `TBC` 3 s, without depending on Orin or sync-board software (IEC 60204-1 stop category 1, ADR-0012) | Safety; covers a hung Orin or sync MCU | T + I | Draft |
@@ -47,8 +47,8 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-13 | Swapping one corner (motor, gearbox, VESC) takes ≤ `TBD` min, with no code changes (config only) | Modularity, serviceability | D | Draft |
 | SYS-14 | Low-voltage systems run from wall power or battery, switching over without reboot | Bench work without cycling LiPos | T | Draft |
 | SYS-15 | Reserve underfloor volume `TBD` and power `TBD` W for active aero | Active-aero capstone (known user) | I + A | Draft |
-| SYS-16 | Total mass ≤ `TBD` kg, CG height ≤ `TBD` mm | Handling, aero, top speed | A then I | Draft |
-| SYS-17 | v1 build cost ≤ `TBD` CAD | Team budget | A | Draft |
+| SYS-16 | Mass and CG are not limited; they are tracked (mass budget, CG estimate) for handling, power and braking estimates | Mass isn't a design driver for v1 | A then I | Draft |
+| SYS-17 | No fixed cost cap: funding is approved per request, so every purchase request is justified from `budgets/cost.csv` | How the team's funding works | A | Draft |
 | SYS-18 | Goal: zero hardware- or firmware-caused failures. Every such failure is logged, root-caused and fixed (FRACAS). Acceptance for v1: ≥ 10 h of test runs with zero hardware- or firmware-caused failures | Mission 3 | T | Draft |
 | SYS-19 | Every hardware fault (brownout, rail overcurrent, bus error, sensor dropout, over-temperature, watchdog trip) is detected, timestamped and logged | Mission 3: a failed run can be attributed to hardware or ruled out | T + I | Draft |
 | SYS-20 | *Deleted:* payload ports. Hardware modularity moved to v2 | — | — | Deleted |
