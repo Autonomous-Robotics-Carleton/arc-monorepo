@@ -1,0 +1,31 @@
+name: Auto Assign
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target: # no code is checked out
+    types: [opened, ready_for_review, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+    steps:
+      - name: Assign new issues to the maintainer
+        if: github.event_name == 'issues'
+        env:
+          NUMBER: ${{ github.event.issue.number }}
+        run: gh issue edit "$NUMBER" --repo "$REPO" --add-assignee HalfPast9
+
+      - name: Assign PRs to their author
+        if: github.event_name == 'pull_request_target'
+        env:
+          NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: gh pr edit "$NUMBER" --repo "$REPO" --add-assignee "$AUTHOR"
