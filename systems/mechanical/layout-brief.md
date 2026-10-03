@@ -68,7 +68,7 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | M1 | Base | **Decided** (2026-10-03) | Custom chassis on off-the-shelf 1/10 suspension parts (arms, knuckles, hubs, shocks, wheels) |
 | M2 | Wheelbase and track | Open: block layout | Start at ~330–350 mm wheelbase so overall length clears 454 mm; track to suit the width box and steering lock |
 | M3 | Ride height / floor clearance | Open: with the aero capstone | Also fixes the ground-speed window distance and ToF minimum range |
-| M4 | Materials | **Decided** (2026-10-03) | **3D-printed lower deck:** a CF-nylon (PA-CF / PA12-CF) ribbed tub, not a flat plate, with heat-set inserts. Built in: battery bay, ground-speed floor window and shroud, ToF pockets, cable channels. **Aluminium plates** bolted in wherever precision or heat matters: gearbox bearing plates, motor mounts (VESC FET heatsinks), steering mount. Upper deck: hole-grid plate (material TBD). Printed covers, sensor mounts, shrouds |
+| M4 | Materials | **Decided** (2026-10-03) | **3D-printed lower deck:** a **PAHT-CF** (high-temperature CF nylon) ribbed tub, not a flat plate, with heat-set inserts. Material may change once the printers are known (see open questions). Built in: battery bay, ground-speed floor window and shroud, ToF pockets, cable channels. **Aluminium plates** bolted in wherever precision or heat matters: gearbox bearing plates, motor mounts (VESC FET heatsinks), steering mount. Upper deck: hole-grid plate (material TBD). Printed covers, sensor mounts, shrouds |
 | M5 | CAD | **Decided** (2026-10-03) | Fusion 360; STEP exports committed per release. Done by the systems lead and the mechanical engineers |
 
 ## Printed-deck design rules
@@ -77,4 +77,14 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 - No printed bearing bores or gear-mesh features; those live in aluminium.
 - Heat paths (FETs, Orin) stay in aluminium; nothing hot rests directly on the print.
 - Every threaded joint uses a heat-set insert with a wide washer; joints are checked after runs.
-- CF-nylon needs an enclosed printer, a hardened nozzle and dried filament.
+- PAHT-CF needs an enclosed (ideally heated) chamber, a hardened nozzle and dried filament.
+- The tub will be ~400+ mm long (car ≥ 454 mm overall), longer than most print beds. Unless a large-format printer is available, split it into 2–3 sections joined with bolted aluminium splice plates (which can double as motor-mount plates), with the split planned from the start.
+
+## Open questions
+
+| # | Question | Blocks |
+| --- | --- | --- |
+| MQ-1 | **Which printers are available?** Model, bed size, maximum nozzle and chamber temperatures, continuous-fibre capability | Final tub material and whether the tub is split. If continuous fibre is available: Onyx + continuous carbon. If PPS-CF is printable: PPS-CF tub with tough PA-CF bumpers. Otherwise: PAHT-CF (current) |
+| MQ-2 | Ride height / floor clearance (M3) | Ground-speed window distance, ToF minimum range, aero floor. Placeholder ~10–15 mm |
+| MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
+| MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
