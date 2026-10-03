@@ -13,6 +13,8 @@ import type { ComponentProps } from 'react';
 import { getMDXComponents } from '@/mdx-components';
 import { resolveHref } from '@/lib/links';
 import { adrBacklinks } from '@/lib/systems';
+import { markdownUrl } from '@/lib/page-markdown';
+import { PageMarkdownActions } from '@/components/PageMarkdownActions';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
@@ -27,6 +29,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     <DocsPage toc={page.data.toc} full={page.data.full}>
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
+      <PageMarkdownActions markdownUrl={markdownUrl(page.url)} />
       <DocsBody>
         <MDXContent
           components={getMDXComponents({
