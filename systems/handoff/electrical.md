@@ -51,7 +51,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 
 - **Decided:**
   - STM32H723 + Ethernet PHY (ADR-0011); firmware on Zephyr (ADR-0017).
-  - Time sync: PTP grandmaster with hardware timestamping through a PTP-aware switch; PPS kept as a cross-check (ADR-0020).
+  - Time sync: µs-critical sensors timestamped in the sync MCU's clock; camera triggers and periodic pulses to each GenX320's Trigger In; Orin synced in software, PPS to an Orin GPIO as cross-check (ADR-0021).
   - Buses: one classic command CAN bus, two CAN-FD telemetry buses (front, rear), and a CAN-FD steering bus via a populated MCP2518FD (ADR-0011, ADR-0019).
   - SO-8 CAN transceivers with SIC drop-in; unpopulated split termination, common-mode choke and TVS footprints (ADR-0013).
   - I/O per the tally in `bom/electrical.md`:
@@ -96,10 +96,12 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - M.2 key M (NVMe, swappable) and key E (MT7922 Wi-Fi).
   - GbE.
   - Expansion-header GPIO for the hotspot button and LED.
+  - Optional: Intel i210/i226 NIC on a spare PCIe x1 lane, point-to-point to the sync MCU (ADR-0021).
   - JetPack 7.2.1.
 - **Requirements:** SYS-08, -26, -27, -29; RSK-01, -08, -13.
 - **Open:**
   - CSI lane mapping for the Arducam kits and both GenX320s
+  - Whether the Orin NX has a spare PCIe x1 lane for the optional i210/i226
   - Trigger connector pinout
   - Device tree on JetPack 7.2
   - Camera driver availability for 7.2 (RSK-01)

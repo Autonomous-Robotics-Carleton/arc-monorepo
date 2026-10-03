@@ -1,6 +1,6 @@
 # ADR-0020: Time sync between the sync MCU and the Orin uses PTP with hardware timestamping
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0021 (the Orin NX has no PTP hardware timestamping, RSK-15)
 - **Date:** 2026-10-03
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-07, SYS-29, ADR-0016, ADR-0017
