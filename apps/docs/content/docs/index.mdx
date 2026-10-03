@@ -1,18 +1,28 @@
 ---
-title: Welcome to Arc
-description: ARC (Autonomous Robotics Carleton) is a new club established at Carleton University, Ottawa, Canada in 2025. The club focuses on engineering an autonomous RC car, and having it compete in races against other autonomous RC cars.
+title: Welcome to ARC
+description: Autonomous Robotics Carleton builds a 1/10-scale autonomous race car at Carleton University, Ottawa.
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+![ARC banner](/images/arcbanner.png)
 
-![Image](/images/arcbanner.png)
+The car is a 4WD autonomy research platform: a sandbox where the team's engineers try ideas in software without building hardware first. Classical autonomy comes first (state estimation, localization, planning, MPC), then learned and embodied-AI policies. It's sized to race under F1TENTH/Roboracer rules.
 
-## Team Calendar
-Below is the ARC dev session google Calendar. 
-This will keep everyone up to date with our dev sessions. 
-Any changes to dates and times can also be seen in this calendar.
+Everything about the car is decided and recorded in [`systems/`](../../../../systems/README.md). Start with the [architecture overview](../../../../systems/architecture.md), and read [How these docs work](../../../../systems/README.md) to make sense of the IDs (`SYS-05`, `ADR-0012`, …) you'll see everywhere.
 
-[View the calendar in Google Calendar](https://calendar.google.com/calendar/embed?src=devlead%40arcarleton.ca&ctz=America%2FToronto)
+## Where to start
+
+<Cards>
+  <Card title="New to the team" href="./handbook/dev-setup.mdx" description="Set up your machine, then read Contributing before your first change." />
+  <Card title="Software" href="../../../../ros/README.md" description="The ROS 2 workspace on the Orin, and the platform it runs on (ADR-0016)." />
+  <Card title="Firmware" href="../../../../firmware/README.md" description="Sync MCU on Zephyr and the VESC fork: time base, safety functions, CAN buses." />
+  <Card title="Electrical" href="../../../../systems/handoff/electrical.md" description="Per-board handoff: what's decided, where the details live, what's open." />
+  <Card title="Mechanical" href="../../../../systems/mechanical/layout-brief.md" description="Layout brief for the CAD block layout. Set up Fusion from the Handbook." />
+  <Card title="Website" href="../../../web/docs/overview.mdx" description="How the club website is built and how to update its content." />
+</Cards>
+
+## Team calendar
+
+Dev sessions and any changes to them are on the team calendar. [Open it in Google Calendar](https://calendar.google.com/calendar/embed?src=devlead%40arcarleton.ca&ctz=America%2FToronto).
 
 <div className="calendar-embed">
 <iframe
@@ -24,31 +34,3 @@ Any changes to dates and times can also be seen in this calendar.
   scrolling="no"
 />
 </div>
-
-
-## Getting Started
-
-<Callout title="New to ARC?" type="info">
-  Check out the [Installation Guide](/docs/installation) to set up your development environment.
-</Callout>
-
-<Steps>
-  <Step>
-    ### Join the Team
-    Get added to the GitHub organization and Discord server.
-  </Step>
-  <Step>
-    ### Set Up Your Environment
-    Follow the installation guide to configure your dev tools.
-  </Step>
-  <Step>
-    ### Start Contributing
-    Pick an issue and submit your first pull request!
-  </Step>
-</Steps>
-
-## What is Next?
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.vercel.app" />
-</Cards>

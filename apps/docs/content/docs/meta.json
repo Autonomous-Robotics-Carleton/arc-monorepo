@@ -1,40 +1,10 @@
 {
   "root": true,
   "pages": [
-    "--- Showcase ---",
+    "---Start here---",
     "index",
-    "installation",
-
-
-    "--- Contribution Guidelines ---",
-    "get-started",
-    "conventional-branch",
-    "conventional-commits",
-    "pull-request",
-
-    "--- Mech Onboarding ---",
-    "fusion-setup",
-
-    "--- ROS tutorials ---",
-    "tutorial-1",
-    "tutorial-2",
-    "tutorial-3",
-
-    
-    "--- Scripts ---",
-    "jetson_discord_notifier",
-    "StartVNC_mdx_fixed",
-
-    "--- Reference ---",
-    "knowledge-base",
-    "linux-cheat",
-
-    "--- Website ---",
-    "website-overview",
-    "website-structure",
-    "website-design-system",
-    "website-components",
-    "website-content",
-    "website-instagram"
+    "how-these-docs-work",
+    "---Handbook---",
+    "...handbook"
   ]
 }

@@ -1,0 +1,208 @@
+---
+title: Dev setup
+description: From a fresh machine to running the docs site and website locally.
+icon: SquareTerminal
+---
+
+You'll set up Linux (Windows only), Git and GitHub, Node.js, then clone the repo and run it. Once it works, read [Contributing](../../../../../CONTRIBUTING.md) before your first change.
+
+## 1. Linux on Windows (WSL)
+
+<Callout type="info" title="macOS and Linux users can skip this section">
+Go straight to [Git and GitHub](#2-git-and-github).
+</Callout>
+
+[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) runs a real Linux kernel inside Windows. Everything in the repo assumes a Linux or macOS shell.
+
+<Steps>
+<Step>
+### Enable Windows features
+
+Press <kbd>Win+R</kbd>, run `optionalfeatures`, and turn on these features:
+
+![Windows Features dialog](/images/windowsfeatures.png)
+
+Restart, then open the Microsoft Store, search for "Linux" and install **Ubuntu**.
+
+![Ubuntu in the Microsoft Store](/images/storedistro.png)
+</Step>
+
+<Step>
+### Create your Linux account
+
+Ubuntu asks for a username and password on first launch. Keep the password simple: you'll type it for every `sudo`.
+
+<Callout type="warn" title="Don't forget them">
+If you lose your Linux username or password, you have to reinstall WSL.
+</Callout>
+</Step>
+
+<Step>
+### Make Ubuntu the default terminal
+
+In Windows Terminal, press <kbd>Ctrl+,</kbd> and set the default profile to Ubuntu.
+
+![Windows Terminal settings](/images/wslsettings.png)
+
+Reopen the terminal (<kbd>Win+X</kbd>, <kbd>I</kbd>) and update the system:
+
+```sh title="Terminal"
+sudo apt update && sudo apt upgrade -y
+```
+
+Clone the repo inside Linux (e.g. `~/code`), not on the Windows drive. It's much faster.
+</Step>
+</Steps>
+
+## 2. Git and GitHub
+
+<Steps>
+<Step>
+### Install Git and the GitHub CLI
+
+<Tabs items={['Ubuntu (WSL)', 'macOS']}>
+<Tab value="Ubuntu (WSL)">
+```sh title="Terminal"
+sudo apt install git gh -y
+```
+</Tab>
+<Tab value="macOS">
+```sh title="Terminal"
+brew install git gh
+```
+</Tab>
+</Tabs>
+</Step>
+
+<Step>
+### Log in to GitHub
+
+[Create a GitHub account](https://github.com/signup) if you don't have one, then:
+
+```sh title="Terminal"
+gh auth login
+```
+
+![gh auth login prompts](/images/ghauth.png)
+
+Answer **Yes** to "Authenticate Git with your GitHub credentials", open the link it shows and enter the one-time code.
+
+![Entering the one-time code](/images/ghotp.png)
+
+You're done when the terminal shows `✔ Logged in as <your-username>`.
+
+![GitHub confirmation](/images/githubconfirm.png)
+</Step>
+
+<Step>
+### Set your Git identity
+
+Every commit carries your name and email:
+
+```sh title="Terminal"
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+<Callout type="info" title="Keep your email private">
+Use your GitHub "noreply" address from [GitHub email settings](https://github.com/settings/emails) if you don't want your real email in public commits.
+</Callout>
+</Step>
+
+<Step>
+### Add an SSH key
+
+`gh` handles its own login, but `git push` over SSH needs a key:
+
+```sh title="Terminal"
+ssh-keygen -t ed25519 -C "you@example.com"   # accept the default file name
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub   # copy all of this
+```
+
+Paste it into **GitHub → Settings → SSH and GPG keys → New SSH key**:
+
+![Adding an SSH key on GitHub](/images/addsshkey.png)
+
+Then test it:
+
+```sh title="Terminal"
+ssh -T git@github.com   # "Hi <username>! You've successfully authenticated"
+```
+</Step>
+
+<Step>
+### Optional: lazygit
+
+[lazygit](https://github.com/jesseduffield/lazygit) is a terminal UI for Git that makes staging, rebasing and resolving conflicts much easier. Install it with `brew install lazygit` (macOS) or from its [releases page](https://github.com/jesseduffield/lazygit/releases).
+
+![lazygit](/images/lazygit.png)
+</Step>
+</Steps>
+
+## 3. Node.js and pnpm
+
+The repo pins its Node.js version in `.nvmrc` and its pnpm version in `package.json`. Use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating) to install Node, then let corepack provide pnpm:
+
+```sh title="Terminal"
+# after installing nvm (see the link above), from inside the repo:
+nvm install      # installs the version in .nvmrc
+nvm use
+corepack enable  # provides the pinned pnpm
+```
+
+<Callout type="warn" title="Don't install pnpm separately">
+A pnpm installed with apt, brew or npm can be a different version from the one the repo pins. `corepack enable` gives you the right one automatically.
+</Callout>
+
+## 4. Clone and run
+
+```sh title="Terminal"
+git clone git@github.com:Autonomous-Robotics-Carleton/arc-monorepo.git
+cd arc-monorepo
+nvm use && corepack enable
+pnpm install
+npx nx dev docs   # docs site → http://localhost:3000
+npx nx dev web    # website   → http://localhost:3001
+```
+
+Open the repo in your editor (`code .` for VS Code) and install the recommended extensions when prompted.
+
+The repo is an [Nx](https://nx.dev) workspace, so every project is run through `npx nx`:
+
+| Command | What it does |
+| --- | --- |
+| `npx nx show projects` | List the projects |
+| `npx nx graph` | Show how projects depend on each other |
+| `npx nx check systems` | Check links and IDs in `systems/` |
+| `npx nx affected -t lint check build` | What CI runs, for whatever you changed |
+
+## 5. Check your setup
+
+```sh title="Terminal"
+git config --global --get user.name   # your name
+ssh -T git@github.com                 # "Hi <username>!"
+node -v                               # matches .nvmrc
+pnpm -v                               # matches packageManager in package.json
+```
+
+## Troubleshooting
+
+<Accordions>
+<Accordion title="Permission denied (publickey)">
+Git can't authenticate over SSH.
+
+1. Check your key is loaded: `ssh-add -l`. If it says "no identities", run `eval "$(ssh-agent -s)" && ssh-add ~/.ssh/id_ed25519`.
+2. Check GitHub has the key: compare `cat ~/.ssh/id_ed25519.pub` with **GitHub → Settings → SSH and GPG keys**.
+3. Check the remote uses SSH: `git remote -v`. If it shows `https://`, run `git remote set-url origin git@github.com:Autonomous-Robotics-Carleton/arc-monorepo.git`.
+</Accordion>
+
+<Accordion title="Author identity unknown">
+Git doesn't know who you are. Set your identity as in [step 2](#set-your-git-identity).
+</Accordion>
+
+<Accordion title="Wrong Node or pnpm version">
+Run `nvm use` and `corepack enable` from the repo root. If `pnpm -v` still shows the wrong version, a separately installed pnpm is earlier on your `PATH`: remove it (`which pnpm` shows where it is).
+</Accordion>
+</Accordions>

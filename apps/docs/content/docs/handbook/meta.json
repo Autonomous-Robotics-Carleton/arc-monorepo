@@ -1,0 +1,4 @@
+{
+  "title": "Handbook",
+  "pages": ["dev-setup", "contributing", "fusion-setup", "orin-dev-kit", "website"]
+}
