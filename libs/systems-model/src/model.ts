@@ -50,6 +50,8 @@ export interface SystemsModel {
   root: string;
   /** Markdown files, relative to root. */
   files: string[];
+  /** CSV data files (budgets), relative to root. */
+  dataFiles: string[];
   definitions: Map<string, Definition>;
   /** Definitions of an ID that was already defined. */
   duplicates: Definition[];
@@ -58,11 +60,11 @@ export interface SystemsModel {
   read(file: string): string;
 }
 
-function markdownFiles(root: string, dir = root): string[] {
+function filesWith(extension: string, root: string, dir = root): string[] {
   return readdirSync(dir).flatMap((name) => {
     const path = join(dir, name);
-    if (statSync(path).isDirectory()) return markdownFiles(root, path);
-    return name.endsWith('.md') ? [relative(root, path)] : [];
+    if (statSync(path).isDirectory()) return filesWith(extension, root, path);
+    return name.endsWith(extension) ? [relative(root, path)] : [];
   });
 }
 
@@ -93,7 +95,8 @@ function parseAdr(file: string, source: string): Adr | undefined {
 }
 
 export function loadSystems(root: string): SystemsModel {
-  const files = markdownFiles(root).sort();
+  const files = filesWith('.md', root).sort();
+  const dataFiles = filesWith('.csv', root).sort();
   const cache = new Map<string, string>();
   const read = (file: string) => {
     if (!cache.has(file)) cache.set(file, readFileSync(join(root, file), 'utf8'));
@@ -130,9 +133,9 @@ export function loadSystems(root: string): SystemsModel {
   adrs.forEach(define);
 
   const references: Reference[] = [];
-  for (const file of files) {
+  for (const file of [...files, ...dataFiles]) {
     const source = read(file);
-    const code = codeLines(source);
+    const code = file.endsWith('.md') ? codeLines(source) : new Set<number>();
     source.split('\n').forEach((text, i) => {
       if (code.has(i + 1)) return;
       for (const match of text.matchAll(idPattern)) {
@@ -141,7 +144,7 @@ export function loadSystems(root: string): SystemsModel {
     });
   }
 
-  return { root, files, definitions, duplicates, references, adrs, read };
+  return { root, files, dataFiles, definitions, duplicates, references, adrs, read };
 }
 
 /** Files (other than the definition's own) that mention each ID. */

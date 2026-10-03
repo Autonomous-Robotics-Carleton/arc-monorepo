@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
-import { checkSystems, loadSystems } from './index.ts';
+import { checkSystems, loadSystems, parseCsv } from './index.ts';
 
 const requirements = `# System Requirements
 
@@ -122,4 +122,17 @@ test('ADR ranges that stop short of the latest ADR', () => {
   assert.deepEqual(fixture({ 'handoff.md': '# Handoff\n\nDecisions (ADRs 0001–0001).\n' }), [
     'handoff.md: "ADRs 0001–0001" stops short of the latest ADR (0002)',
   ]);
+});
+
+test('parseCsv handles quotes, commas and newlines', () => {
+  assert.deepEqual(parseCsv('a,b,c\n1,"x, y","say ""hi"""\n2,"two\nlines",\n'), [
+    ['a', 'b', 'c'],
+    ['1', 'x, y', 'say "hi"'],
+    ['2', 'two\nlines', ''],
+  ]);
+});
+
+test('IDs in budget CSVs are checked too', () => {
+  const problems = fixture({ 'budgets/power.csv': 'rail,bom_id\nmotor,E-99\n' });
+  assert.deepEqual(problems, ["budgets/power.csv: E-99 isn't defined (Electrical BOM items live in bom/electrical.md)"]);
 });
