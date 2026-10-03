@@ -17,7 +17,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted, amended by 0011 |
 | [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted |
 | [0011](0011-vesc-telemetry-link.md) | VESC 6.4 fork; telemetry on two CAN-FD buses, commands on the classic bus | Accepted, amended by 0013 |
-| [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Proposed |
+| [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Accepted, amended by 0019 |
 | [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Accepted |
 | [0014](0014-ground-speed-event-camera.md) | Ground speed: downward event camera with three lighting modes; dead-wheel pod as fallback | Accepted |
 | [0015](0015-ground-link.md) | Ground link: team router (Flint 3), laptop gateway, button hotspot, wired service port | Accepted |

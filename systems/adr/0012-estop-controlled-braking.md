@@ -1,6 +1,6 @@
 # ADR-0012: E-stop is a controlled braked stop, then a hardware torque cut
 
-- **Status:** Proposed (mechanism); the requirement itself is decided
+- **Status:** Accepted (2026-10-03). Values TBC on the R2 motor bench: ~5 m/s² deceleration, ~150 ms brake ramp, ~3 s hardware cut
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-05, ICD-corner-connector, RSK-11
