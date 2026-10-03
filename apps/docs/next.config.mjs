@@ -36,11 +36,15 @@ const config = {
       'knowledge-base': '',
       'linux-cheat': '',
     };
-    return Object.entries(moved).map(([from, to]) => ({
-      source: `/docs/${from}`,
-      destination: to ? `/docs/${to}` : '/docs',
-      permanent: true,
-    }));
+    return [
+      // the site is all docs for now; not permanent, so / can become a landing page later
+      { source: '/', destination: '/docs', permanent: false },
+      ...Object.entries(moved).map(([from, to]) => ({
+        source: `/docs/${from}`,
+        destination: to ? `/docs/${to}` : '/docs',
+        permanent: true,
+      })),
+    ];
   },
   images: {
     remotePatterns: [
