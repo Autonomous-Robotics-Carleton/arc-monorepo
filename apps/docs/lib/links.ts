@@ -1,4 +1,4 @@
-import { dirname, relative, resolve } from 'node:path';
+import { basename, dirname, relative, resolve } from 'node:path';
 import { source } from '@/lib/source';
 
 const repoBlob = 'https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/blob/main/';
@@ -27,5 +27,10 @@ export function resolveHref(href: string | undefined, fromFile: string | undefin
   if (pageUrl) return pageUrl + suffix;
 
   const repoPath = relative(repoRoot, target);
+  // budget CSVs have generated pages (app/docs/car/budgets/data/[name])
+  if (/^systems\/budgets\/[^/]+\.csv$/.test(repoPath)) {
+    return `/docs/car/budgets/data/${basename(repoPath, '.csv')}${suffix}`;
+  }
+
   return repoPath.startsWith('..') ? href : repoBlob + repoPath + suffix;
 }
