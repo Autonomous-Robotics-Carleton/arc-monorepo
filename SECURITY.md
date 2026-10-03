@@ -10,7 +10,7 @@ If you discover a security issue in this repository or the systems described by 
 
 Preferred contact methods:
 
-- Email: `devlead@arcarleton.mycses.ca`
+- Email: `devlead@arcarleton.ca` or `financeadmin@arcarleton.ca`
 - GitHub: **Report a vulnerability** on the repository's Security tab (private vulnerability reporting). Public issues are visible to everyone, so never use them for security reports.
 
 When reporting, please include:
@@ -113,7 +113,8 @@ If you’re unsure whether something is in scope, send us the report privately a
 
 Maintainership and contact details should be kept up to date in the repo. Suggested canonical contact:
 
-- `devlead@arcarleton.mycses.ca`
+- `devlead@arcarleton.ca`
+- `financeadmin@arcarleton.ca`
 - GitHub: private vulnerability reporting on the Security tab.
 
 ---
