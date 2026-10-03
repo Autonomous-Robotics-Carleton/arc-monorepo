@@ -16,7 +16,8 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0008](0008-corner-sensors-to-sync-board.md) | Wheel encoders and suspension pots wire directly to the sync board | Accepted |
 | [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted, amended by 0011 |
 | [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted |
-| [0011](0011-vesc-telemetry-link.md) | VESC 6.4 fork; telemetry on two CAN-FD buses, commands on the classic bus | Accepted |
+| [0011](0011-vesc-telemetry-link.md) | VESC 6.4 fork; telemetry on two CAN-FD buses, commands on the classic bus | Accepted, amended by 0013 |
 | [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Proposed |
+| [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Accepted |
 
 Decisions still to record: PPS vs PTP time sync (the sync MCU is already on Ethernet), forking the Antmicro carrier, staggered transverse motors.
