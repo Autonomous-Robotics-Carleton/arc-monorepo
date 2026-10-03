@@ -4,7 +4,7 @@ compute,Carrier board (Antmicro fork) fab + assembly + parts,1 build (several bo
 compute,NVMe SSD 4 TB swappable,1,250,450,estimate,
 compute,Wi-Fi card MT7922 + antennas,1,25,50,estimate,ADR-0015
 compute,Cooling (heatsink + fan),1,30,60,estimate,
-compute,Ethernet switch (>= 5 ports; PTP transparent clock),1,150,400,estimate,ADR-0020
+compute,Ethernet switch (>= 5 ports; unmanaged),1,40,150,estimate,ADR-0021
 perception,Arducam AR0234 stereo kit,1,260,260,"Arducam list $259.99",
 perception,Arducam quad OV9281 kit,1,300,450,estimate,
 perception,Prophesee GenX320 (forward + ground speed),2,600,800,"OpenMV module $300-400 each; Jetson-ready version needs a quote",ADR-0014
