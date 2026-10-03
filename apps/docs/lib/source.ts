@@ -38,35 +38,6 @@ const carMeta: VirtualFile[] = Object.entries(carSidebar).map(([folder, data]) =
   data,
 }));
 
-// systems/ mounts at car/. Folder READMEs become folder index pages, and the
-// architecture overview is the section's landing page.
-function carPath(path: string): string {
-  if (path === 'architecture.md') return 'car/index.md';
-  return `car/${path.replace(/(^|\/)README\.md$/, '$1index.md')}`;
-}
-
-// Sidebar for car/, kept here so systems/ holds no site config. Folders with
-// a single page are flattened ("...folder"); "..." picks up new files.
-const carSidebar: Record<string, { title: string; pages?: string[] }> = {
-  car: {
-    title: 'The car',
-    pages: [
-      'index', 'topology', '...requirements', '...verification', 'adr', 'icd', 'budgets',
-      '...bom', 'risks', 'tests', '...mechanical', '...handoff', '...reviews', '...',
-    ],
-  },
-  'car/adr': { title: 'Decisions' },
-  'car/icd': { title: 'Interfaces' },
-  'car/budgets': { title: 'Budgets' },
-  'car/tests': { title: 'Tests' },
-};
-
-const carMeta: VirtualFile[] = Object.entries(carSidebar).map(([folder, data]) => ({
-  type: 'meta',
-  path: `${folder}/meta.json`,
-  data,
-}));
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySource = Source<any>;
 
@@ -100,6 +71,7 @@ const files: VirtualFile[] = [
   ...mount('handbook/website', webDocs.toFumadocsSource()),
   ...mount('handbook/orin-dev-kit', devKitDocs.toFumadocsSource()),
   ...filesOf(createMDXSource(systemsDocs)).map((file) => {
+    if (file.path === 'README.md') return setTitle({ ...file, path: systemsReadme.path }, systemsReadme.title);
     const moved = { ...file, path: carPath(file.path) };
     return file.path === 'architecture.md' ? setTitle(moved, 'Overview') : moved;
   }),
