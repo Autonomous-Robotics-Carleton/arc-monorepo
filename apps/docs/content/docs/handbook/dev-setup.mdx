@@ -169,6 +169,10 @@ npx nx dev web    # website   → http://localhost:3001
 
 Open the repo in your editor (`code .` for VS Code) and install the recommended extensions when prompted.
 
+<Callout type="info" title="Working on hardware or CAD exports?">
+STEP, gerber and PDF files under `hardware/` go through [git LFS](https://git-lfs.com). Install it (`sudo apt install git-lfs` or `brew install git-lfs`) and run `git lfs install` once before committing any.
+</Callout>
+
 The repo is an [Nx](https://nx.dev) workspace, so every project is run through `npx nx`:
 
 | Command | What it does |
