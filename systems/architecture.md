@@ -10,10 +10,10 @@ v1 is tightly integrated; modular hardware is a v2 goal. The car runs on an indo
 
 | Area | v1 | Decided in |
 | --- | --- | --- |
-| Drive | 4× Castle 1010-4400kV, one per wheel, two-stage gearbox, CVDs | Original spec |
+| Drive | 4× Castle 1010-4400kV, one per wheel, two-stage gearbox, CVDs | ADR-0026 |
 | Motor control | 4× custom VESC 6.4 fork | ADR-0006, ADR-0011, ADR-0013 |
 | Steering | Gimbal brushless motor + belt, driven by a moteus-c1 | ADR-0019 |
-| Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard; JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016 |
+| Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard; JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016, ADR-0025 |
 | Sync and sensor hub | STM32H723 on Zephyr: owns the time base, safety envelope and watchdog | ADR-0011, ADR-0017, ADR-0021 |
 | Power | 4S LiPo; power board with LV rails, monitoring and e-stop circuit; bus clamp | ADR-0012, `budgets/power-scenarios.md` |
 | Ground link | Team router (GL.iNet Flint 3, 6 GHz), laptop gateway, button hotspot, service port | ADR-0015 |
