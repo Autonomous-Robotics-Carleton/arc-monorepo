@@ -88,6 +88,8 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - ESTOP_EN level; final delay T and brake-ramp values
   - Confirm the DRV8301 re-init behaviour after EN_GATE low
   - Size target (~30 × 40 mm from the original spec) against reality; FET thermal path to the motor mount
+  - **Pin map for the CAN-FD controller.** It needs an SPI bus (SCK, MISO, MOSI), a chip-select and an interrupt line, and the stock VESC 6 MK5's STM32F405 (LQFP64) has no free pins. Likely source: SPI1 on PA5–PA7 (today the comm header's SPI/ADC pins), with chip-select and interrupt from pins freed by leaving off the radio module and onboard IMU (PA4, PB12, PA15, PB2). SPI1 can run ≥ 20 MHz (ADR-0011)
+  - **Which revision to fork.** ADR-0011 names the VESC 6.4; the current published hardware is the VESC 6 MK5 (STM32F405, DRV8301, TJA1051T/3, but an nRF51822 radio and a BMI160 IMU rather than an NRF24 and MPU9150). Confirm the base and which parts are left off
 
 ### 4. Orin carrier (fork of Antmicro's baseboard)
 
