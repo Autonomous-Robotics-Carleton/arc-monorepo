@@ -89,4 +89,4 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | MQ-2 | Ride height / floor clearance (M3) | Ground-speed window distance, ToF minimum range, aero floor. Placeholder ~10–15 mm |
 | MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
 | MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
-| MQ-5 | **Which off-the-shelf suspension family?** M1 says off-the-shelf arms, knuckles, hubs, shocks and wheels, but not which platform's | Layout step 1 (track, wheel offset), the knuckle envelope for steering and encoders (RSK-04), CVD choice, shock mounts |
+| MQ-5 | **Which off-the-shelf suspension family?** M1 says off-the-shelf arms, knuckles, hubs, shocks and wheels, but not which platform's. **Recommendation in ADR-0027 (Proposed):** competition touring car parts (XRAY X4 family), Tamiya TB-05/TRF as the fallback | Layout step 1 (track, wheel offset), the knuckle envelope for steering and encoders (RSK-04), CVD choice, shock mounts |
