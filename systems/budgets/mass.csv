@@ -1,0 +1,19 @@
+item,bom_id,qty,mass_each_g,mass_total_g,x_mm,y_mm,z_mm,source,owner
+4S LiPo hardcase (~5000 mAh),E-40,1,450-550,450-550,TBD,TBD,TBD,estimate (layout-brief.md),mech
+Castle 1010-4400kV motor,E-51,4,146.5,586,TBD,TBD,TBD,datasheet (architecture.md),mech
+Gearbox + CVD per corner,,4,TBD,TBD,TBD,TBD,TBD,from CAD,mech
+VESC 6.4 fork,E-50,4,TBD,TBD,TBD,TBD,TBD,from the EE,EE
+Steering actuator (motor + belt + moteus-c1),E-31,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech
+Orin NX + carrier + heatsink/fan,E-01/E-02/E-03,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
+Sync board + power board (stacked),E-30/E-41,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
+Bus clamp board + resistor,E-43,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
+Ethernet switch,E-06,1,TBD,TBD,TBD,TBD,TBD,datasheet,EE
+Hokuyo UST-10LX,E-10,1,130,130,TBD,TBD,TBD,estimate (check datasheet),mech
+Cameras (stereo + quad + 2 event) and mounts,E-11/E-12/E-13/E-25,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech
+IMUs + encoders + ToF + magnets,E-20/E-21/E-22/E-23/E-24/E-26,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech
+Suspension + wheels + tires (MQ-5),,1 set,TBD,TBD,TBD,TBD,TBD,vendor,mech
+Lower tub (printed PAHT-CF),,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech
+Upper deck + sensor mounts + crash guard (printed),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
+Aluminium plates (gearbox + motor mounts + splices),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
+Harness + connectors,,1,TBD,TBD,TBD,TBD,TBD,estimate,EE
+Fasteners + inserts,,1,TBD,TBD,TBD,TBD,TBD,estimate,mech

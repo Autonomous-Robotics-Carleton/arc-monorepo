@@ -1,6 +1,7 @@
 # Mechanical layout brief (v1)
 
 - **Status:** Draft; mechanical design starting 2026-10-03
+- **How the work is done:** [`cad-workflow.md`](cad-workflow.md) (Fusion hub structure, parameters, releases). Parts: [`bom/mechanical.md`](../bom/mechanical.md). Mass: [`budgets/mass.csv`](../budgets/mass.csv)
 - **Goal of the first pass:** a **CAD block layout**: every component as a simple envelope box, placed in the car. It settles wheelbase, track and length (RSK-16), front-corner fit (RSK-04), the battery and compute bays, deck heights, and a first CG estimate, before any part is designed in detail.
 
 ## Requirements that drive the mechanics
@@ -88,3 +89,4 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | MQ-2 | Ride height / floor clearance (M3) | Ground-speed window distance, ToF minimum range, aero floor. Placeholder ~10–15 mm |
 | MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
 | MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
+| MQ-5 | **Which off-the-shelf suspension family?** M1 says off-the-shelf arms, knuckles, hubs, shocks and wheels, but not which platform's | Layout step 1 (track, wheel offset), the knuckle envelope for steering and encoders (RSK-04), CVD choice, shock mounts |
