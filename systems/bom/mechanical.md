@@ -7,6 +7,8 @@
 
 ## Suspension, steering and wheels (off the shelf, M1)
 
+Family recommended in ADR-0027 (Proposed): XRAY X4 parts, with crash spares in the order.
+
 | Item | Qty | How | Selection | Requirements | Traces to |
 | --- | --- | --- | --- | --- | --- |
 | Suspension arms, upper and lower | 4 corners | Buy | TBD: suspension family (MQ-5) | Fit the track set by M2; mount to the tub through ICD-corner-mechanical | SYS-02, SYS-13 |
