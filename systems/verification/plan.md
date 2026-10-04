@@ -60,7 +60,7 @@
 | SYS-26 Laptop internet | D | S1 | R6: laptop wired to the router keeps internet; other devices get no gateway | Pass on Linux and macOS | Not started |
 | SYS-27 Reachability | D | S3 | R6: reach the car via router, button hotspot, and service port, each with no outside network | All three paths work | Not started |
 | SYS-28 Car internet | T | S3 | R6: bulk download during teleop; check control-traffic priority and the parked-only rule | No teleop degradation; bulk only while parked | Not started |
-| SYS-29 Latency | T | S2 | R5: event → timestamped on the Orin, per sensor (`budgets/latency.csv`) | ≤ 2 ms sync-board/VESC; ≤ 1 frame + 5 ms cameras | Not started |
+| SYS-29 Latency | T | S2 | R5: event → timestamped in the sync-MCU driver process on the Orin, per sensor, all sensors at full rate (`budgets/latency.csv`) | p99 ≤ 2 ms sync-board/VESC/steering; p99 ≤ 1 frame + 5 ms cameras | Not started |
 | SYS-30 Low battery | T | S2 | R4: ramp the "pack" down; lower one cell via a cell simulator | Warning, then clean Orin shutdown before cutoff; triggered by the lowest cell | Not started |
 | SYS-31 Brownout immunity | T | S2 | R4: step the pack voltage down by the peak-current sag and beyond | No resets at the expected sag | Not started |
 | SYS-32 Cell monitoring | T | S1, S2 | Cell simulator: known voltages; measure the off-state drain | ±10 mV at ≥ 100 Hz; negligible drain when off | Not started |
