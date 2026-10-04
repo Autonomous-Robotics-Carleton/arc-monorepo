@@ -30,5 +30,6 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0022](0022-power-board-telemetry-and-shutdown.md) | Power-board data to the sync MCU over I2C with fault interrupts; two-tier low-battery shutdown | Proposed (recommendation) |
 | [0023](0023-no-orin-i210-nic.md) | No i210/i226 network card on the Orin carrier in v1; sync MCU stays on the switch | Proposed (recommendation) |
 | [0024](0024-telemetry-latency.md) | Telemetry stamped at sampling, forwarded within 0.25 ms; SYS-29 measured at the driver process, p99 | Accepted |
+| [0025](0025-orin-carrier-antmicro-fork.md) | Orin carrier is a fork of Antmicro's open Jetson baseboard | Accepted (backfilled) |
+| [0026](0026-staggered-transverse-motors.md) | One motor per wheel; transverse, inboard, staggered fore and aft | Accepted (backfilled) |
 
-Decisions still to record: forking the Antmicro carrier, staggered transverse motors.

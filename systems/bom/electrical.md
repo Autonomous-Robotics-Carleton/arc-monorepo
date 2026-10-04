@@ -9,7 +9,7 @@
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-01 | Compute module | 1 | Decided: Jetson Orin NX 16GB (ADR-0010) | Runs the classical stack plus a learned policy that fits in 16 GB; sustained load with no thermal throttling | Carrier | Compute | SYS-08, RSK-08 |
-| E-02 | Carrier board | 1 | Decided: fork of Antmicro Orin baseboard | 4× 22-pin CSI ports; camera trigger connector to sync board; input from fixed compute rail; M.2 key M and key E; GbE; optional Intel i210/i226 NIC on a spare PCIe x1 lane, point-to-point to the sync MCU (ADR-0021) | E-01, cameras, E-04, E-05, E-06 | Compute | SYS-08, RSK-01 |
+| E-02 | Carrier board | 1 | Decided: fork of Antmicro Orin baseboard (ADR-0025) | 4× 22-pin CSI ports; camera trigger connector to sync board; input from fixed compute rail; M.2 key M and key E; GbE; optional Intel i210/i226 NIC on a spare PCIe x1 lane, point-to-point to the sync MCU (ADR-0021) | E-01, cameras, E-04, E-05, E-06 | Compute | SYS-08, RSK-01 |
 | E-03 | Compute cooling (heatsink + fan) | 1 | TBD | Holds full NX power (~25 W, ~40 W Super mode) inside the enclosure without throttling | Carrier fan header | Compute | RSK-08 |
 | E-04 | NVMe SSD | 1 | Planned: 4 TB, swappable | Sustained write ≥ total log rate (TBD, dominated by cameras) with margin; capacity ≥ `TBD` runs of ≥ 10 min | Carrier M.2 key M | Compute | SYS-09, SYS-23 |
 | E-05 | Wi-Fi card + antennas | 1 | Decided: MediaTek MT7922 (Filogic 330), M.2 2230 key E; fallback Intel AX210 (ADR-0015) | Wi-Fi 6E client on the team router's 6 GHz band; hotspot (AP) mode on 5 GHz for the button hotspot; driver in mainline on JetPack 7.2.1's kernel 6.8 (ADR-0016); power saving off; antennas mounted high, away from motors and carbon-filled parts | Carrier M.2 key E | Compute | SYS-11, SYS-27, RSK-09, RSK-14 |
@@ -58,7 +58,7 @@
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | E-50 | Motor controller | 4 | Decided: fork of VESC 6 open hardware (ADR-0006) | Single motor; classic CAN at 1 Mbit/s (ADR-0009); ESTOP_EN: GPIO read for the firmware brake ramp, plus an on-board hardware delay (T ≈ 3 s TBC) into DRV8301 EN_GATE, fail-safe pull-down (ADR-0012, ICD-corner-connector); command timeout; motor and FET temperature logged; phase current ≥ motor peak (TBD). Fork base: VESC 6.4. Quantity 4 corners (steering uses a moteus-c1, ADR-0019). Commands on built-in CAN + TJA1051T/3; telemetry on an added MCP2518FD controller (SPI) + 40 MHz crystal + separate SO-8 CAN FD transceiver (SIC drop-in: TJA1462 / TCAN1462 class), full status at ≥ 1 kHz; FD pair daisy-chained through the board; unpopulated split termination, common-mode choke and TVS footprints (ADR-0011, ADR-0013) | E-51, E-28, command bus, FD telemetry bus, ESTOP_EN | Motor bus | SYS-01, SYS-05, SYS-13, SYS-24, SYS-25, RSK-02, RSK-03, RSK-11, RSK-12 |
-| E-51 | Drive motor | 4 | Decided: Castle 1010-4400kV sensored | 2S–4S; Hall sensored; 28 mm can | E-50 | — | SYS-01 |
+| E-51 | Drive motor | 4 | Decided: Castle 1010-4400kV sensored, one per wheel (ADR-0026) | 2S–4S; Hall sensored; 28 mm can | E-50 | — | SYS-01 |
 
 ## Power
 
