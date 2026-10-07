@@ -83,7 +83,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 | # | Question | Blocks |
 | --- | --- | --- |
 | SQ-1 | ~~Zephyr version to pin~~ **Answered:** v4.4.2 with SDK 1.0.1 (newest stable; supports the NUCLEO-H723ZG). The 3.7 LTS is two years older and its 4.4 release notes list fixes not backported to it. Revisit when a 4.x LTS appears | Phase 1 |
-| SQ-2 | Sync-link encoding (fixed-layout binary generated from a schema, CBOR, protobuf, …) | Phase 3 |
+| SQ-2 | Sync-link encoding. **Recommendation in ADR-0031 (Proposed):** MAVLink 2 with our own message set | Phase 3 |
 | SQ-3 | VESC firmware release branch to start from (also picks the Arm toolchain: GCC 7 for release branches, Arm GNU 14.3 for master) | Phase 4 |
 | SQ-4 | Simulator for the platform backend | Phase 5 |
 | SQ-5 | Development boards: buy a NUCLEO-H723ZG (and a stock VESC 6) before the order, or wait for it? | Testing the development-hardware targets |
