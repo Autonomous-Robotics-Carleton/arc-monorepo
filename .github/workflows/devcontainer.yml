@@ -1,0 +1,53 @@
+name: Dev container
+
+# Builds the dev container (ADR-0029) whenever its definition or the Zephyr
+# pin changes, and runs the smoke test inside it. Pushes to main publish it
+# to GHCR, where devcontainer.json and CI pull its layers from.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .devcontainer/**
+      - firmware/sync-mcu/west.yml
+      - .github/workflows/devcontainer.yml
+  push:
+    branches: [main]
+    paths:
+      - .devcontainer/**
+      - firmware/sync-mcu/west.yml
+      - .github/workflows/devcontainer.yml
+  workflow_dispatch:
+
+concurrency:
+  group: devcontainer-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build the dev container and run the smoke test in it
+        uses: devcontainers/ci@v0.3
+        with:
+          imageName: ghcr.io/autonomous-robotics-carleton/arc-dev
+          imageTag: latest,${{ github.sha }}
+          cacheFrom: ghcr.io/autonomous-robotics-carleton/arc-dev:latest
+          platform: linux/amd64
+          runCmd: .devcontainer/smoke-test.sh
+          # publish only from main
+          refFilterForPush: refs/heads/main
+          eventFilterForPush: push,workflow_dispatch
