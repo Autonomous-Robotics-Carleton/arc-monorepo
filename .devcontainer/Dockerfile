@@ -53,6 +53,9 @@ RUN cd /opt/zephyr-ws \
          -r zephyr/scripts/requirements-build-test.txt \
     && chown -R ubuntu:ubuntu /opt/zephyr-ws
 
-# The image's own user (uid 1000); devcontainers remap it to the host user on Linux
-RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu
+# The image's own user (uid 1000); devcontainers remap it to the host user on Linux.
+# CI and rootless Docker run as root instead: without safe.directory, git
+# refuses the ubuntu-owned Zephyr repos and west loses its build commands.
+RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \
+    && git config --system --add safe.directory '*'
 USER ubuntu
