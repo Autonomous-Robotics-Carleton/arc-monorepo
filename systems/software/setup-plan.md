@@ -58,15 +58,13 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 ## Phase 5: Platform software scaffold
 
-- [ ] ROS 2 Jazzy added to the dev container
-- [ ] Colcon workspace in `ros/`: `arc_msgs` (car interface), `arc_bringup` (launch with `target:=sim | replay | car` and `sim:=gazebo | webots | gym`), backend skeletons:
-  - simulators: one package each for Gazebo Harmonic, Webots and the F1TENTH gym (ADR-0032, Proposed)
-  - replay: MCAP
-  - car: sync MCU bridge
+- [x] ROS 2 Jazzy added to the dev container (ros-base, colcon, rosdep, MCAP storage, launch_testing)
+- [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_sim`, `arc_backend_replay`, `arc_backend_car`
+- [ ] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym, once ADR-0032 (Proposed) is accepted
 - [ ] `arc_description`: one URDF of the car, the source for every simulator's model
 - [ ] Sensor profiles per launch (`sensors:=lidar | stereo | all`)
 - [ ] Benchmark one scene (LiDAR + stereo) per backend, per OS, before accepting ADR-0032
-- [ ] `colcon build` and `colcon test` as Nx targets in CI
+- [x] `colcon build` and `colcon test` as Nx targets (`nx build ros`, `nx test ros`), run by CI's dev-container job (tag `env:dev-container`)
 
 ## Phase 6: Firmware in the loop
 
@@ -75,7 +73,8 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 ## Phase 7: Experiments scaffold
 
-- [ ] `experiments/` with a template experiment, its container definition and resource limits (SYS-21), commanding only the classical layer (SYS-22)
+- [x] `experiments/` with a template experiment and its container definition
+- [ ] Resource limits (SYS-21), container runtime and the classical-layer interface (SYS-22): TBD, listed in `experiments/README.md`
 
 ## Later (not in this plan)
 
