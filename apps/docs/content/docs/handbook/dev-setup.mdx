@@ -182,9 +182,9 @@ The repo is an [Nx](https://nx.dev) workspace, so every project is run through `
 | `npx nx check systems` | Check links and IDs in `systems/` |
 | `npx nx affected -t lint check build` | What CI runs, for whatever you changed |
 
-## 5. Firmware: the dev container
+## 5. Firmware and ROS: the dev container
 
-Firmware (and later the ROS 2 software) is built inside one dev container with every toolchain at pinned versions, the same on Linux, macOS and Windows and the same one CI uses ([ADR-0029](../../../../../systems/adr/0029-dev-environment.md)).
+Firmware and the ROS 2 software are built inside one dev container with every toolchain at pinned versions, the same on Linux, macOS and Windows and the same one CI uses ([ADR-0029](../../../../../systems/adr/0029-dev-environment.md)).
 
 <Steps>
 <Step>
@@ -219,6 +219,23 @@ The first open builds the image, or pulls its layers once CI has published it: s
 ### Install probe-rs on your computer (for flashing)
 
 Containers can't reach USB on macOS and Windows, so boards are flashed from your own computer: build in the container, flash from the host. Install [probe-rs](https://probe.rs/docs/getting-started/installation/) on the host; it works with ST-Link probes on all three systems. VESCs are flashed with VESC Tool.
+</Step>
+
+<Step>
+### Build and test
+
+Each project builds for every target from the same source ([ADR-0028](../../../../../systems/adr/0028-software-targets.md)):
+
+```sh title="Terminal (in the container)"
+npx nx build sync-mcu    # sync MCU firmware: native_sim, NUCLEO-H723ZG, the car's board
+npx nx test sync-mcu     # its tests, on native_sim
+npx nx build ros         # the ROS 2 workspace (colcon)
+npx nx test ros          # its launch tests
+source ros/install/setup.bash
+ros2 launch arc_bringup platform.launch.py target:=sim   # or replay, car
+```
+
+Everything is scaffolding so far: it builds and starts, but does nothing yet.
 </Step>
 </Steps>
 
