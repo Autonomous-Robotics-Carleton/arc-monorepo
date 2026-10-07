@@ -1,6 +1,23 @@
 {
   "name": "ros",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "tags": ["env:dev-container"],
   "implicitDependencies": ["systems"],
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "ros",
+        "command": ". /opt/ros/jazzy/setup.sh && colcon build --symlink-install --event-handlers console_cohesion+"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "cwd": "ros",
+        "command": ". /opt/ros/jazzy/setup.sh && colcon test --event-handlers console_cohesion+ && colcon test-result --verbose"
+      }
+    }
+  }
 }
