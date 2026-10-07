@@ -1,0 +1,49 @@
+/*
+ * ARC sync board (E-30): STM32H723 (ADR-0011, ADR-0017).
+ *
+ * Skeleton. What's still TBD comes from the electrical engineer
+ * (systems/handoff/electrical.md, sync MCU board):
+ *   - package: assumed LQFP144 (ZG, as on the NUCLEO-H723ZG) until the
+ *     pin-mux check settles it
+ *   - crystal: until it's chosen, the core runs from the internal 64 MHz
+ *     HSI with no PLL, so this builds but is far below the 550 MHz target
+ *   - core supply: LDO for now
+ *   - every peripheral and pin: console UART, Ethernet RMII, FDCAN1-3,
+ *     the SPI buses and chip-selects, camera triggers, PPS, LEDs
+ */
+
+/dts-v1/;
+#include <st/h7/stm32h723Xg.dtsi>
+#include <st/h7/stm32h723zgtx-pinctrl.dtsi>
+
+/ {
+	model = "ARC sync board";
+	compatible = "arc,arc-sync";
+
+	chosen {
+		zephyr,dtcm = &dtcm;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+	};
+};
+
+/* Core supply: LDO, as on the NUCLEO-H723ZG. TBD from the EE's power design. */
+&pwr {
+	power-supply = "ldo";
+};
+
+&clk_hsi {
+	hsi-div = <1>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&clk_hsi>;
+	clock-frequency = <DT_FREQ_M(64)>;
+	d1cpre = <1>;
+	hpre = <1>;
+	d1ppre = <1>;
+	d2ppre1 = <1>;
+	d2ppre2 = <1>;
+	d3ppre = <1>;
+};

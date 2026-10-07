@@ -1,0 +1,7 @@
+tests:
+  sync_mcu.safety:
+    tags: safety
+    platform_allow:
+      - native_sim
+    integration_platforms:
+      - native_sim

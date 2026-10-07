@@ -21,3 +21,6 @@ node_modules
 .github/agents/
 .github/prompts/
 .github/skills/
+
+# firmware build output (west, twister)
+firmware/**/build/

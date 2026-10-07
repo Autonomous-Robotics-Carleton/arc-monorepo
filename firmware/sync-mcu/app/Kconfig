@@ -1,0 +1,10 @@
+mainmenu "ARC sync MCU"
+
+config ARC_HEARTBEAT_TIMEOUT_MS
+	int "Operator heartbeat timeout (ms)"
+	default 150
+	help
+	  Time without an operator heartbeat before the car starts braking
+	  (SYS-04: rolls <= 2 m first, so ~150 ms at 12 m/s; TBC).
+
+source "Kconfig.zephyr"

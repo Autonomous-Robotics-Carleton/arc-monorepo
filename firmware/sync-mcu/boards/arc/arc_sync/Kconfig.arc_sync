@@ -1,0 +1,4 @@
+# ARC sync board (E-30): STM32H723 (ADR-0011, ADR-0017)
+
+config BOARD_ARC_SYNC
+	select SOC_STM32H723XX
