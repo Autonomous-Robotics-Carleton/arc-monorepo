@@ -41,7 +41,9 @@ jobs:
           imageName: ghcr.io/autonomous-robotics-carleton/arc-dev
           imageTag: latest,${{ github.sha }}
           cacheFrom: ghcr.io/autonomous-robotics-carleton/arc-dev:latest
-          platform: linux/amd64
+          # no `platform:` here: it makes the action export an OCI tarball,
+          # which can't run the smoke test; the runner and devcontainer.json
+          # are amd64 already
           runCmd: .devcontainer/smoke-test.sh
           # publish only from main
           refFilterForPush: refs/heads/main
