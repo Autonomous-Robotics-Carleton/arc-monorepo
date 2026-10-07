@@ -19,3 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Exception: everything under firmware/vesc/ is the VESC firmware
+(https://github.com/vedderb/bldc) and our changes to it, licensed under the
+GNU General Public License v3.0 or later, as upstream is. See
+systems/adr/0033-vesc-firmware-vendored.md.
