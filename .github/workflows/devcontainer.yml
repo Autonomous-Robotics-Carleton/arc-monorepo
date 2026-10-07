@@ -4,15 +4,10 @@ name: Dev container
 # pin changes, and runs the smoke test inside it. Pushes to main publish it
 # to GHCR, where devcontainer.json and CI pull its layers from.
 
+# Runs on pushes to any branch (a PR shows the result), and publishes from
+# main only (refFilterForPush below).
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - .devcontainer/**
-      - firmware/sync-mcu/west.yml
-      - .github/workflows/devcontainer.yml
   push:
-    branches: [main]
     paths:
       - .devcontainer/**
       - firmware/sync-mcu/west.yml
@@ -21,7 +16,7 @@ on:
 
 concurrency:
   group: devcontainer-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
