@@ -23,13 +23,14 @@ const carSidebar: Record<string, { title: string; pages?: string[] }> = {
     title: 'The car',
     pages: [
       'index', 'topology', '...requirements', '...verification', 'adr', 'icd', 'budgets',
-      '...bom', 'risks', 'tests', '...mechanical', '...handoff', '...reviews', '...',
+      '...bom', 'risks', 'tests', '...mechanical', 'software', '...handoff', '...reviews', '...',
     ],
   },
   'car/adr': { title: 'Decisions' },
   'car/icd': { title: 'Interfaces' },
   'car/budgets': { title: 'Budgets' },
   'car/tests': { title: 'Tests' },
+  'car/software': { title: 'Software', pages: ['architecture', 'setup-plan'] },
 };
 
 const carMeta: VirtualFile[] = Object.entries(carSidebar).map(([folder, data]) => ({
