@@ -1,0 +1,24 @@
+# West manifest for the sync MCU firmware: pins Zephyr and the modules it needs.
+#
+# The dev container bakes this workspace into the image at /opt/zephyr-ws
+# (ADR-0029), so nobody runs `west update` by hand. Changing this file
+# rebuilds the image in CI.
+#
+# Zephyr v4.4.2 needs Zephyr SDK 1.0.1 (.devcontainer/Dockerfile).
+# Version choice: setup-plan.md, SQ-1.
+
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.4.2
+      import:
+        # only the modules the sync MCU's targets use: STM32 HAL and CMSIS
+        name-allowlist:
+          - cmsis
+          - cmsis_6
+          - hal_stm32

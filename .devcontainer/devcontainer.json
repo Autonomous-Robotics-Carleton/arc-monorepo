@@ -1,0 +1,26 @@
+{
+  // ARC dev container (ADR-0029). Open the repo in VS Code ("Reopen in
+  // Container"), a JetBrains IDE, or run `devcontainer up`. Needs Docker
+  // Desktop, Podman or WSL 2. Boards are flashed from the host, not from here.
+  "name": "ARC dev",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    // CI publishes the image; pulling its layers saves building from scratch
+    "cacheFrom": "ghcr.io/autonomous-robotics-carleton/arc-dev:latest",
+    // amd64 only: Zephyr's native_sim needs 32-bit host libraries
+    "options": ["--platform=linux/amd64"]
+  },
+  "runArgs": ["--platform=linux/amd64"],
+  "remoteUser": "ubuntu",
+  "postCreateCommand": "pnpm install --frozen-lockfile",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "nrwl.angular-console"
+      ]
+    }
+  }
+}

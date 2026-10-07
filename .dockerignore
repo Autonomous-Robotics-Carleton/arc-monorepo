@@ -1,6 +1,7 @@
-node_modules
-.next
-.nx
+**/node_modules
+**/.next
+**/.nx
+**/build
 .git
 .gitignore
 LICENSE
