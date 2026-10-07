@@ -1,6 +1,6 @@
 # ADR-0030: The VESC firmware fork lives in this repo as a git subtree of upstream
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0033 (the mechanism: a subtree can't coexist with rebase-only merging; the goal and the GPL boundary carry over)
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-05, SYS-24, SYS-33, ADR-0011, ADR-0012, ADR-0024, ADR-0028, RSK-12

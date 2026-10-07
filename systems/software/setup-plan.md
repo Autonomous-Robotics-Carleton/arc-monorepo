@@ -3,7 +3,7 @@
 - **Status:** Draft (2026-10-07). Phase 0 done; phase 1 in progress.
 - **Goal:** the repo ready for software work: every component scaffolded, building and tested in CI for its targets, before the hardware arrives. Writing the drivers, estimator and controllers comes after this plan.
 - **Order:** firmware first (current focus), then interfaces, then platform software.
-- **How it's built:** [`architecture.md`](architecture.md), ADR-0028, ADR-0029, ADR-0030.
+- **How it's built:** [`architecture.md`](architecture.md), ADR-0028, ADR-0029, ADR-0033.
 
 Each phase ends with something that builds and passes CI. Tick items as they land.
 
@@ -47,7 +47,9 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 ## Phase 4: VESC firmware fork
 
-- [ ] `vedderb/bldc` as a squashed subtree at `firmware/vesc/bldc/`, on a chosen release branch
+- [x] ADR-0033: vendored snapshot plus an update script, replacing ADR-0030's subtree (a subtree needs merge commits; this repo rebase-merges)
+- [x] `tools/vesc-upstream.sh` (import and three-way update), tested in a scratch repo: 6.06 → 7.00 applies cleanly with a local change kept; a conflicting change is reported and marked. Skips lispBM's test reports, REPL, docs and examples (153 MB → 22 MB)
+- [ ] Upstream `vedderb/bldc` imported into `firmware/vesc/bldc/` at the ref chosen in SQ-3, recorded in `firmware/vesc/UPSTREAM`
 - [ ] The VESC's Arm toolchain in the dev container: GCC 7 (2018-q2) for the upstream release branches, Arm GNU 14.3 for upstream master; follows SQ-3
 - [ ] Licence boundary written into the root README and `LICENSE` (GPL-3.0 for `firmware/vesc/`)
 - [ ] ARC hardware config skeleton (pins TBD; VESC 6 MK5 vs 6.4 base is open in the electrical handoff)
