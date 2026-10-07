@@ -1,7 +1,7 @@
 {
   "name": "sync-mcu",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "tags": ["type:firmware"],
+  "tags": ["env:dev-container"],
   "implicitDependencies": ["systems"],
   "targets": {
     "build": {
