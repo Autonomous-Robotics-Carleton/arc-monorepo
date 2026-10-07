@@ -1,11 +1,13 @@
 name: Dev container
 
-# Builds the dev container (ADR-0029) whenever its definition or the Zephyr
-# pin changes, and runs the smoke test inside it. Pushes to main publish it
+# Builds the dev container image (ADR-0029) whenever its definition or the
+# Zephyr pin changes, and runs the smoke test inside it. Runs on pushes to
+# any branch (a PR shows the result); pushes to main also publish the image
 # to GHCR, where devcontainer.json and CI pull its layers from.
+#
+# On failure, the end of the build or test log is posted as an annotation,
+# so it can be read without opening the job log.
 
-# Runs on pushes to any branch (a PR shows the result), and publishes from
-# main only (refFilterForPush below).
 on:
   push:
     paths:
@@ -17,6 +19,9 @@ on:
 concurrency:
   group: devcontainer-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  IMAGE: ghcr.io/autonomous-robotics-carleton/arc-dev
 
 jobs:
   build:
@@ -35,16 +40,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build the dev container and run the smoke test in it
-        uses: devcontainers/ci@v0.3
-        with:
-          imageName: ghcr.io/autonomous-robotics-carleton/arc-dev
-          imageTag: latest,${{ github.sha }}
-          cacheFrom: ghcr.io/autonomous-robotics-carleton/arc-dev:latest
-          # no `platform:` here: it makes the action export an OCI tarball,
-          # which can't run the smoke test; the runner and devcontainer.json
-          # are amd64 already
-          runCmd: .devcontainer/smoke-test.sh
-          # publish only from main
-          refFilterForPush: refs/heads/main
-          eventFilterForPush: push,workflow_dispatch
+      - name: Build the image
+        run: |
+          set -o pipefail
+          docker buildx build --platform linux/amd64 --load \
+            --cache-from "$IMAGE:latest" --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -f .devcontainer/Dockerfile -t "$IMAGE:latest" -t "$IMAGE:${{ github.sha }}" . \
+            2>&1 | tee build.log
+
+      - name: Smoke test in the image
+        run: |
+          set -o pipefail
+          docker run --rm -v "$PWD:/workspaces/arc-monorepo" -w /workspaces/arc-monorepo \
+            "$IMAGE:latest" .devcontainer/smoke-test.sh 2>&1 | tee smoke.log
+
+      - name: Post the end of the log as an annotation
+        if: failure()
+        run: |
+          for log in build.log smoke.log; do
+            [ -s "$log" ] || continue
+            echo "::error title=$log (last 40 lines)::$(tail -n 40 "$log" | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+          done
+
+      - name: Publish to GHCR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:${{ github.sha }}"
