@@ -30,6 +30,7 @@ We’re keeping this project **fully open source**, so current and future member
 | [`systems/`](systems/README.md) | Source of truth for the car: requirements, decisions (ADRs), interfaces, budgets, risks |
 | [`ros/`](ros/README.md) | ROS 2 workspace for the Jetson Orin NX |
 | [`firmware/`](firmware/README.md) | Sync MCU (Zephyr) and VESC firmware |
+| [`experiments/`](experiments/README.md) | Team experiments, run in containers beside the platform |
 | [`hardware/`](hardware/README.md) | Board designs and mechanical exports |
 | [`platform/`](platform/README.md) | Jetson image, kernel, containers, system services |
 | [`tools/`](tools/README.md) | Developer scripts |
@@ -86,6 +87,7 @@ arc-monorepo/                 # Nx monorepo root
 ├── systems/                  # Requirements, ADRs, ICDs, budgets, risks
 ├── ros/                      # ROS 2 workspace (Orin)
 ├── firmware/                 # Sync MCU and VESC firmware
+├── experiments/              # Team experiments (containers)
 ├── hardware/                 # Board designs, mechanical exports
 ├── platform/                 # Jetson image and services
 ├── tools/                    # Repo scripts (systems/ checker, ID lookup)
