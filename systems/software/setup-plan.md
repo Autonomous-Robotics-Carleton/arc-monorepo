@@ -42,7 +42,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 - [ ] ICD-sync-link: what the sync MCU sends the Orin and back, framing, versioning, timing (ADR-0024)
 - [ ] Decision on the sync-link encoding, written as a recommendation ADR first
-- [ ] `can-command.dbc` and `can-telemetry.dbc` skeletons, plus code generation (e.g. `cantools`) into the sync MCU and VESC firmware
+- [ ] `can-command.dbc` and `can-telemetry.dbc` skeletons, plus code generation (e.g. `cantools`) into the sync MCU and VESC firmware (file split: SQ-6)
 - [ ] CI fails if generated code doesn't match its source
 
 ## Phase 4: VESC firmware fork
@@ -51,7 +51,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 - [x] `tools/vesc-upstream.sh` (import and three-way update), tested in a scratch repo: 6.06 → 7.00 applies cleanly with a local change kept; a conflicting change is reported and marked. Skips lispBM's test reports, REPL, docs and examples (153 MB → 22 MB)
 - [ ] Upstream `vedderb/bldc` imported into `firmware/vesc/bldc/` at the ref chosen in SQ-3, recorded in `firmware/vesc/UPSTREAM`
 - [ ] The VESC's Arm toolchain in the dev container: GCC 7 (2018-q2) for the upstream release branches, Arm GNU 14.3 for upstream master; follows SQ-3
-- [ ] Licence boundary written into the root README and `LICENSE` (GPL-3.0 for `firmware/vesc/`)
+- [x] Licence boundary written into the root README and `LICENSE` (GPL-3.0 for `firmware/vesc/`)
 - [ ] ARC hardware config skeleton (pins TBD; VESC 6 MK5 vs 6.4 base is open in the electrical handoff)
 - [ ] Stubs for the e-stop brake routine and FD telemetry, with host unit tests
 - [ ] Nx targets; CI builds the stock VESC 6 config and ours
@@ -90,3 +90,4 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 | SQ-3 | VESC firmware release branch to start from. **Recommendation:** `release_7_00` (firmware 7.00, the current stable release, maintained; `master` is 7.01 test builds). It builds with GCC 7 (2018-q2) | Phase 4 |
 | SQ-4 | Simulators. **Recommendation in ADR-0032 (Proposed):** pluggable backends: Gazebo Harmonic (full sensors, event cameras), Webots (native GPU on macOS and Windows), F1TENTH gym (fast, CI) | Phase 5 |
 | SQ-5 | Development boards: buy a NUCLEO-H723ZG (and a stock VESC 6) before the order, or wait for it? | Testing the development-hardware targets |
+| SQ-6 | CAN `.dbc` files: ADR-0009 names one `icd/can.dbc`; ADR-0011 says each FD bus gets its own; the ICD README lists `can-command.dbc` and one `can-telemetry.dbc`. **Recommendation:** the ICD README's two files (front and rear FD buses carry the same frames), and a note on ADR-0009 and ADR-0011 pointing to it | The `.dbc` skeletons and code generation (phase 3) |
