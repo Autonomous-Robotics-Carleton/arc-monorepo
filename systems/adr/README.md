@@ -37,4 +37,5 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0029](0029-dev-environment.md) | One dev container for every toolchain; boards flashed from the host | Accepted |
 | [0030](0030-vesc-firmware-in-repo.md) | VESC firmware fork in this repo as a git subtree of upstream (GPL-3.0 subdirectory) | Accepted |
 | [0031](0031-sync-link-encoding.md) | Sync link encoded as MAVLink 2 with our own message set | Proposed (recommendation) |
+| [0032](0032-simulator.md) | Gazebo Harmonic as the simulator for the platform software | Proposed (recommendation) |
 
