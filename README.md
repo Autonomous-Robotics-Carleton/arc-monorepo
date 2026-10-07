@@ -220,7 +220,7 @@ import { something } from '@arc/config';
 
 # 📘 License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the **MIT License**, except `firmware/vesc/`: the VESC firmware is upstream's GPL-3.0, and so are our changes to it (ADR-0033). Don't copy code from there into the rest of the repo.
 
 ---
 
