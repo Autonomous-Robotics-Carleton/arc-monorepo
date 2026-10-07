@@ -10,3 +10,5 @@ Code that runs on the car's microcontrollers.
 The steering controller (moteus-c1) runs mjbots' firmware, not ours. Its configuration (timeout mode, limits, belt ratio) will be kept here too (ADR-0019).
 
 Safety functions live only on the sync MCU and the VESCs, never on the Orin (ADR-0017). Changes to them get extra review.
+
+Each firmware builds for simulation, development hardware and the car from the same source (ADR-0028); the toolchains come in the dev container (ADR-0029). How it all fits: `systems/software/architecture.md`; what's being set up and in what order: `systems/software/setup-plan.md`.

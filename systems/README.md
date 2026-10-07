@@ -13,6 +13,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `verification/` | Verification plan: method, stage, rig and pass criterion for every requirement | Markdown |
 | `tests/` | Test procedures that verify requirements or retire risks, with results tables | Markdown |
 | `mechanical/` | Mechanical layout brief, envelopes, early mechanical decisions | Markdown (+ STEP exports per release) |
+| `software/` | Software architecture (components, layers, targets) and the repo setup plan | Markdown |
 | `handoff/` | Per-discipline handoff: what's decided, where it lives, what's open | Markdown |
 | `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
 | `reviews/` | Gate checklists and review records | Markdown |

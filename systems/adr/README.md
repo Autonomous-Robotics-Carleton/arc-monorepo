@@ -33,4 +33,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0025](0025-orin-carrier-antmicro-fork.md) | Orin carrier is a fork of Antmicro's open Jetson baseboard | Accepted (backfilled) |
 | [0026](0026-staggered-transverse-motors.md) | One motor per wheel; transverse, inboard, staggered fore and aft | Accepted (backfilled) |
 | [0027](0027-suspension-family.md) | Suspension, steering and wheel parts from a competition touring car (XRAY X4 family) | Proposed (recommendation) |
+| [0028](0028-software-targets.md) | Every software component builds for simulation, development hardware and the car, from one source | Accepted |
+| [0029](0029-dev-environment.md) | One dev container for every toolchain; boards flashed from the host | Accepted |
+| [0030](0030-vesc-firmware-in-repo.md) | VESC firmware fork in this repo as a git subtree of upstream (GPL-3.0 subdirectory) | Accepted |
 

@@ -64,6 +64,7 @@
 | SYS-30 Low battery | T | S2 | R4: ramp the "pack" down; lower one cell via a cell simulator | Warning, then clean Orin shutdown before cutoff; triggered by the lowest cell | Not started |
 | SYS-31 Brownout immunity | T | S2 | R4: step the pack voltage down by the peak-current sag and beyond | No resets at the expected sag | Not started |
 | SYS-32 Cell monitoring | T | S1, S2 | Cell simulator: known voltages; measure the off-state drain | ±10 mV at ≥ 100 Hz; negligible drain when off | Not started |
+| SYS-33 Software targets | D, T | S0, S3 | CI builds every component for every target and runs the simulation tests; the platform stack runs unchanged against the simulator, log replay and the car (R8) | All targets build; simulation tests pass; same launch on every target except the target argument | Not started |
 
 ## Before the order (S0 checklist)
 

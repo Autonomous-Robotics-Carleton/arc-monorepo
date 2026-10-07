@@ -64,6 +64,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-30 | On low battery, judged on the lowest cell (SYS-32), the car warns, then shuts the Orin down cleanly before the pack reaches its low-voltage cutoff; the NVMe never loses power mid-write | Protect logs and the filesystem (SYS-09) | T | Draft |
 | SYS-31 | Battery voltage sag at peak current never resets the Orin, the sync board or any sensor | A brownout must not look like a software failure (mission 3) | T | Draft |
 | SYS-32 | Every cell voltage in the pack is measured, timestamped and logged at ≥ 100 Hz (TBC) to ±10 mV, without draining the pack when the car is off | Catch a weak or sagging cell before it looks like a random brownout (mission 3) | T | Draft |
+| SYS-33 | Every software component (sync MCU firmware, VESC firmware, platform software) builds and runs from the same source on three kinds of target: simulation, off-the-shelf development hardware, and the car's own hardware. Target-specific code is limited to board configuration and drivers (ADR-0028) | Hardware arrives in one order, so software is written and tested before it exists; experiments move between simulation and the car without changes (mission 4) | D + T | Draft |
 
 ## Accepted limits
 
