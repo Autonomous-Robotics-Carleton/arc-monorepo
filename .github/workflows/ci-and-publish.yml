@@ -47,8 +47,8 @@ jobs:
           echo "projects= $projects" >> "$GITHUB_OUTPUT"
 
       - name: Lint, test, check and build affected projects
-        # firmware needs the dev container's toolchains: the firmware job below
-        run: npx nx affected -t lint test check build --exclude='tag:type:firmware'
+        # firmware and ROS need the dev container's toolchains: the dev-container job below
+        run: npx nx affected -t lint test check build --exclude='tag:env:dev-container'
 
       - name: Check HTML in systems/
         if: contains(steps.affected.outputs.projects, ' systems ')
@@ -91,9 +91,10 @@ jobs:
           timeout: 60000 # 60 seconds
           customHeaders: '{"Authorization": "Bearer ${{ secrets.WATCHTOWER_TOKEN }}"}'
 
-  firmware:
-    # Firmware builds and tests run inside the dev container image (ADR-0029),
-    # published from main by the "Dev container" workflow.
+  dev-container:
+    # Projects that need the firmware or ROS toolchains (tag env:dev-container)
+    # build and test inside the dev container image (ADR-0029), published from
+    # main by the "Dev container" workflow.
     runs-on: ubuntu-latest
     permissions:
       actions: read # nx-set-shas
@@ -120,6 +121,6 @@ jobs:
       - name: Set Nx base and head
         uses: nrwl/nx-set-shas@v5
 
-      - name: Build and test affected firmware
-        # `nx affected` has no --projects: exclude everything that isn't firmware
-        run: npx nx affected -t build test --exclude='*,!tag:type:firmware'
+      - name: Build and test affected firmware and ROS
+        # `nx affected` has no --projects: exclude everything without the tag
+        run: npx nx affected -t build test --exclude='*,!tag:env:dev-container'
