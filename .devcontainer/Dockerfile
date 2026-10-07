@@ -27,7 +27,8 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
       | tar -xJ -C /usr/local --strip-components=1 \
     && corepack enable
 
-# Python tools in one venv: west now, Zephyr's requirements below
+# Python tools in one venv: west now, Zephyr's requirements below (base,
+# build-test, and run-test, which twister needs)
 ENV VIRTUAL_ENV=/opt/venv \
     PATH=/opt/venv/bin:$PATH
 RUN python3 -m venv /opt/venv && pip install --no-cache-dir west
@@ -51,6 +52,7 @@ RUN cd /opt/zephyr-ws \
     && pip install --no-cache-dir \
          -r zephyr/scripts/requirements-base.txt \
          -r zephyr/scripts/requirements-build-test.txt \
+         -r zephyr/scripts/requirements-run-test.txt \
     && chown -R ubuntu:ubuntu /opt/zephyr-ws
 
 # The image's own user (uid 1000); devcontainers remap it to the host user on Linux.
