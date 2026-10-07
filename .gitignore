@@ -24,3 +24,8 @@ node_modules
 
 # firmware build output (west, twister)
 firmware/**/build/
+
+# ROS workspace output (colcon)
+ros/build/
+ros/install/
+ros/log/

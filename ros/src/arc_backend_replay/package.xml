@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>arc_backend_replay</name>
+  <version>0.0.0</version>
+  <description>Log-replay backend of the car interface: plays MCAP logs back as if they were the car (ADR-0028). Stub.</description>
+  <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>arc_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
