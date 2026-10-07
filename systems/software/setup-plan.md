@@ -1,6 +1,6 @@
 # Software setup plan (v1)
 
-- **Status:** Draft (2026-10-07). Phase 0 in progress.
+- **Status:** Draft (2026-10-07). Phase 0 done; phase 1 in progress.
 - **Goal:** the repo ready for software work: every component scaffolded, building and tested in CI for its targets, before the hardware arrives. Writing the drivers, estimator and controllers comes after this plan.
 - **Order:** firmware first (current focus), then interfaces, then platform software.
 - **How it's built:** [`architecture.md`](architecture.md), ADR-0028, ADR-0029, ADR-0030.
@@ -9,20 +9,22 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 ## Phase 0: Decisions and docs
 
-- [ ] SYS-33: every component runs on simulation, development hardware and the car
-- [ ] ADR-0028 targets, ADR-0029 dev environment, ADR-0030 VESC firmware in this repo
-- [ ] [`architecture.md`](architecture.md) and this plan
+- [x] SYS-33: every component runs on simulation, development hardware and the car
+- [x] ADR-0028 targets, ADR-0029 dev environment, ADR-0030 VESC firmware in this repo
+- [x] [`architecture.md`](architecture.md) and this plan
 
 ## Phase 1: Dev environment
 
-- [ ] `.devcontainer/` image with pinned Zephyr SDK and west, Arm GNU toolchain, Node and pnpm (ROS 2 Jazzy added in phase 5, to keep the first image small)
-- [ ] CI builds the image, publishes it to GHCR, and runs firmware jobs in it
+- [x] `.devcontainer/` image: Zephyr SDK 1.0.1 (Arm toolchain only), west, Zephyr v4.4.2 and its STM32/CMSIS modules baked in from `firmware/sync-mcu/west.yml`, Node 22 and pnpm. ROS 2 Jazzy comes in phase 5 and the VESC toolchain in phase 4, to keep the first image small
+- [x] `smoke-test.sh`: builds and runs hello_world on `native_sim`, builds it for `nucleo_h723zg`
+- [ ] CI builds the image, runs the smoke test in it, and publishes it to GHCR from main
+- [ ] Make the GHCR package public, so teammates pull its layers without logging in
 - [ ] Verify on Linux, macOS (Intel and Apple Silicon) and Windows (WSL 2): open the repo in the container and build
-- [ ] Handbook: a firmware section in Dev setup (Docker, opening the container, `probe-rs` on the host)
+- [x] Handbook: a firmware section in Dev setup (Docker, opening the container, `probe-rs` on the host)
 
 ## Phase 2: Sync MCU firmware scaffold
 
-- [ ] West workspace: a manifest pinning the Zephyr version; Zephyr pulled by `west update`, not committed
+- [x] West manifest pinning Zephyr and its modules (`firmware/sync-mcu/west.yml`); the dev container bakes the workspace in at `/opt/zephyr-ws`, so nothing is committed or fetched by hand
 - [ ] Application skeleton, one module per job, as stubs:
   - time base
   - sensor sampling
@@ -46,6 +48,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 ## Phase 4: VESC firmware fork
 
 - [ ] `vedderb/bldc` as a squashed subtree at `firmware/vesc/bldc/`, on a chosen release branch
+- [ ] The VESC's Arm toolchain in the dev container: GCC 7 (2018-q2) for the upstream release branches, Arm GNU 14.3 for upstream master; follows SQ-3
 - [ ] Licence boundary written into the root README and `LICENSE` (GPL-3.0 for `firmware/vesc/`)
 - [ ] ARC hardware config skeleton (pins TBD; VESC 6 MK5 vs 6.4 base is open in the electrical handoff)
 - [ ] Stubs for the e-stop brake routine and FD telemetry, with host unit tests
@@ -79,8 +82,8 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 | # | Question | Blocks |
 | --- | --- | --- |
-| SQ-1 | Zephyr version to pin | Phase 2 |
+| SQ-1 | ~~Zephyr version to pin~~ **Answered:** v4.4.2 with SDK 1.0.1 (newest stable; supports the NUCLEO-H723ZG). The 3.7 LTS is two years older and its 4.4 release notes list fixes not backported to it. Revisit when a 4.x LTS appears | Phase 1 |
 | SQ-2 | Sync-link encoding (fixed-layout binary generated from a schema, CBOR, protobuf, …) | Phase 3 |
-| SQ-3 | VESC firmware release branch to start from | Phase 4 |
+| SQ-3 | VESC firmware release branch to start from (also picks the Arm toolchain: GCC 7 for release branches, Arm GNU 14.3 for master) | Phase 4 |
 | SQ-4 | Simulator for the platform backend | Phase 5 |
 | SQ-5 | Development boards: buy a NUCLEO-H723ZG (and a stock VESC 6) before the order, or wait for it? | Testing the development-hardware targets |

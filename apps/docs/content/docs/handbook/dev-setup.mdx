@@ -182,7 +182,47 @@ The repo is an [Nx](https://nx.dev) workspace, so every project is run through `
 | `npx nx check systems` | Check links and IDs in `systems/` |
 | `npx nx affected -t lint check build` | What CI runs, for whatever you changed |
 
-## 5. Check your setup
+## 5. Firmware: the dev container
+
+Firmware (and later the ROS 2 software) is built inside one dev container with every toolchain at pinned versions, the same on Linux, macOS and Windows and the same one CI uses ([ADR-0029](../../../../../systems/adr/0029-dev-environment.md)).
+
+<Steps>
+<Step>
+### Install a container runtime
+
+<Tabs items={['Linux', 'macOS', 'Windows']}>
+<Tab value="Linux">
+Docker Engine ([install guide](https://docs.docker.com/engine/install/ubuntu/)), then add yourself to the `docker` group: `sudo usermod -aG docker $USER` and log out and back in.
+</Tab>
+<Tab value="macOS">
+[Docker Desktop](https://www.docker.com/products/docker-desktop/). On Apple Silicon, turn on **Settings → General → Use Rosetta for x86_64/amd64 emulation**: the image is amd64 only, because Zephyr's `native_sim` needs 32-bit host libraries.
+</Tab>
+<Tab value="Windows">
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) with the **WSL 2 backend**. Clone the repo **inside WSL** (e.g. `~/code` in Ubuntu), not on `C:`: builds are much faster.
+</Tab>
+</Tabs>
+</Step>
+
+<Step>
+### Open the repo in the container
+
+In VS Code, install the **Dev Containers** extension, open the repo and run **Dev Containers: Reopen in Container**. JetBrains IDEs and the `devcontainer` CLI work too.
+
+The first open builds the image, or pulls its layers once CI has published it: several GB, so give it time. Then check it inside the container:
+
+```sh title="Terminal (in the container)"
+.devcontainer/smoke-test.sh   # ends with "dev container OK"
+```
+</Step>
+
+<Step>
+### Install probe-rs on your computer (for flashing)
+
+Containers can't reach USB on macOS and Windows, so boards are flashed from your own computer: build in the container, flash from the host. Install [probe-rs](https://probe.rs/docs/getting-started/installation/) on the host; it works with ST-Link probes on all three systems. VESCs are flashed with VESC Tool.
+</Step>
+</Steps>
+
+## 6. Check your setup
 
 ```sh title="Terminal"
 git config --global --get user.name   # your name
