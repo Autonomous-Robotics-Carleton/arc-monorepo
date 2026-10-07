@@ -1,4 +1,5 @@
-# ARC dev container (ADR-0029): every toolchain the repo needs, at pinned versions.
+# ARC dev container (ADR-0029): every toolchain the repo needs, at pinned versions:
+# Zephyr (firmware), ROS 2 Jazzy (platform software), Node (docs, tooling).
 # Used by VS Code / JetBrains / the devcontainer CLI on Linux, macOS and
 # Windows, and by CI. Built for linux/amd64 only: Zephyr's native_sim needs
 # 32-bit host libraries (gcc-multilib) that don't exist on arm64. Apple
@@ -28,10 +29,12 @@ RUN curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-l
     && corepack enable
 
 # Python tools in one venv: west now, Zephyr's requirements below (base,
-# build-test, and run-test, which twister needs)
+# build-test, and run-test, which twister needs). It sees the system site
+# packages, so ROS's Python libraries (rclpy, launch, the rosidl
+# generators) still import from it.
 ENV VIRTUAL_ENV=/opt/venv \
     PATH=/opt/venv/bin:$PATH
-RUN python3 -m venv /opt/venv && pip install --no-cache-dir west
+RUN python3 -m venv --system-site-packages /opt/venv && pip install --no-cache-dir west
 
 # Zephyr SDK: the minimal package plus only the Arm toolchain
 ENV ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk-${ZEPHYR_SDK_VERSION}
@@ -55,9 +58,22 @@ RUN cd /opt/zephyr-ws \
          -r zephyr/scripts/requirements-run-test.txt \
     && chown -R ubuntu:ubuntu /opt/zephyr-ws
 
+# ROS 2 Jazzy (ADR-0016): the base install, the build tools (colcon, rosdep),
+# MCAP bags for log replay, and launch_testing. The simulators come later
+# (ADR-0032, phase 5). Near the end so changing it doesn't rebuild Zephyr.
+ARG ROS_APT_SOURCE_VERSION=1.3.0
+RUN curl -fsSL -o /tmp/ros2-apt-source.deb \
+      "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.noble_all.deb" \
+    && dpkg -i /tmp/ros2-apt-source.deb && rm /tmp/ros2-apt-source.deb \
+    && apt-get update && apt-get install -y --no-install-recommends \
+      ros-jazzy-ros-base ros-dev-tools \
+      ros-jazzy-rosbag2-storage-mcap ros-jazzy-launch-testing-ament-cmake \
+    && rm -rf /var/lib/apt/lists/*
+
 # The image's own user (uid 1000); devcontainers remap it to the host user on Linux.
 # CI and rootless Docker run as root instead: without safe.directory, git
 # refuses the ubuntu-owned Zephyr repos and west loses its build commands.
 RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ubuntu \
-    && git config --system --add safe.directory '*'
+    && git config --system --add safe.directory '*' \
+    && echo 'source /opt/ros/jazzy/setup.bash' >> /home/ubuntu/.bashrc
 USER ubuntu

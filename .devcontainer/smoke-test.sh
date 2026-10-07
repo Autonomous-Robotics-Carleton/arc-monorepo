@@ -24,4 +24,11 @@ echo "== nucleo_h723zg: build (Arm toolchain, STM32 HAL)"
 west build -p always -b nucleo_h723zg "$sample" -d "$out/nucleo_h723zg"
 test -f "$out/nucleo_h723zg/zephyr/zephyr.elf"
 
+echo "== ROS 2 Jazzy"
+# setup.bash reads unset variables, so relax -u while sourcing it
+set +u; source /opt/ros/jazzy/setup.bash; set -u
+ros2 pkg prefix rclcpp > /dev/null
+colcon --help > /dev/null
+python3 -c "import rclpy, launch_testing"
+
 echo "== dev container OK"
