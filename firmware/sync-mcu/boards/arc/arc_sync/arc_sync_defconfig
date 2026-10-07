@@ -1,0 +1,11 @@
+# ARC sync board defaults.
+
+CONFIG_ARM_MPU=y
+CONFIG_HW_STACK_PROTECTION=y
+CONFIG_GPIO=y
+
+# No console yet: its UART and pins aren't assigned (handoff/electrical.md,
+# sync MCU board, connector map). Turn it on with the pin map.
+CONFIG_CONSOLE=n
+CONFIG_UART_CONSOLE=n
+CONFIG_SERIAL=n

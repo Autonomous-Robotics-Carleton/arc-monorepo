@@ -1,6 +1,26 @@
 {
   "name": "sync-mcu",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "tags": ["type:firmware"],
   "implicitDependencies": ["systems"],
-  "targets": {}
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "west build -p auto -b native_sim firmware/sync-mcu/app -d firmware/sync-mcu/build/native_sim",
+          "west build -p auto -b nucleo_h723zg firmware/sync-mcu/app -d firmware/sync-mcu/build/nucleo_h723zg",
+          "west build -p auto -b arc_sync firmware/sync-mcu/app -d firmware/sync-mcu/build/arc_sync"
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "command": "west twister -T firmware/sync-mcu/tests -p native_sim --outdir firmware/sync-mcu/build/twister --inline-logs"
+      }
+    }
+  }
 }

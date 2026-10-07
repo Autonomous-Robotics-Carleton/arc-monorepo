@@ -47,7 +47,8 @@ jobs:
           echo "projects= $projects" >> "$GITHUB_OUTPUT"
 
       - name: Lint, test, check and build affected projects
-        run: npx nx affected -t lint test check build
+        # firmware needs the dev container's toolchains: the firmware job below
+        run: npx nx affected -t lint test check build --exclude='tag:type:firmware'
 
       - name: Check HTML in systems/
         if: contains(steps.affected.outputs.projects, ' systems ')
@@ -89,3 +90,36 @@ jobs:
           method: 'GET'
           timeout: 60000 # 60 seconds
           customHeaders: '{"Authorization": "Bearer ${{ secrets.WATCHTOWER_TOKEN }}"}'
+
+  firmware:
+    # Firmware builds and tests run inside the dev container image (ADR-0029),
+    # published from main by the "Dev container" workflow.
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read # nx-set-shas
+      contents: read
+      packages: read
+    container:
+      image: ghcr.io/autonomous-robotics-carleton/arc-dev:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      options: --user root # the runner's workspace isn't writable by the image's user
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install deps
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          pnpm install --frozen-lockfile
+
+      - name: Set Nx base and head
+        uses: nrwl/nx-set-shas@v5
+
+      - name: Build and test affected firmware
+        # `nx affected` has no --projects: exclude everything that isn't firmware
+        run: npx nx affected -t build test --exclude='*,!tag:type:firmware'

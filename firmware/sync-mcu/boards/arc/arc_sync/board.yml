@@ -1,0 +1,5 @@
+board:
+  name: arc_sync
+  full_name: ARC sync board
+  socs:
+    - name: stm32h723xx
