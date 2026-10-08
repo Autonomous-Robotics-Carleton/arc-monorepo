@@ -4,16 +4,18 @@ Guidance for AI coding agents (and people) working in this repo. Human-facing se
 
 ## What this repo is
 
-The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy research car. It holds the car's systems engineering, the code that will run on it, its hardware designs, the docs site and the club website. It's public and MIT licensed.
+The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy research car. It holds the car's systems engineering, the code that will run on it, its hardware designs, the docs site and the club website. It's public and MIT licensed, except `firmware/vesc/` (GPL-3.0, the vendored VESC firmware).
 
 | Path | What | Format |
 | --- | --- | --- |
 | `systems/` | **Source of truth for the car**: requirements, decisions (ADRs), interfaces (ICDs), budgets, risks, BOM, verification. Read [`systems/README.md`](systems/README.md) first | Markdown + CSV |
-| `ros/` | ROS 2 Jazzy workspace for the Orin NX (empty so far) | colcon |
-| `firmware/` | `sync-mcu/` (Zephyr) and `vesc/` firmware (empty so far) | west / VESC |
+| `ros/` | ROS 2 Jazzy workspace for the Orin NX: the car interface, a backend per target (Gazebo, Webots, gym, replay, car) and `arc_bringup` (`target:=`, `sim:=`) | colcon |
+| `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west / make |
+| `experiments/` | Team experiments and their template (scaffold) | |
+| `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
 | `hardware/` | Board designs and mechanical exports (empty so far) | |
 | `platform/` | Jetson image and services; `dev-kit/` has Orin Nano bench notes | |
-| `tools/` | Repo scripts, e.g. the `systems/` checker and ID lookup | Node (TypeScript) |
+| `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, the firmware-in-the-loop test | Node, Bash |
 | `libs/systems-model/` | Parser for `systems/`: IDs, definitions, references, ADRs, checks | TypeScript |
 | `apps/docs/` | Docs site (Fumadocs on Next.js), docs.arcarleton.ca | MDX |
 | `apps/web/` | Club website (Next.js); its docs are in `apps/web/docs/` | |
@@ -24,12 +26,22 @@ Node 22 (`.nvmrc`); pnpm via `corepack enable`. It's an Nx workspace: run things
 
 ```bash
 pnpm install
-npx nx show projects                     # docs, web, systems, systems-model, ros, sync-mcu
+npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop
 npx nx affected -t lint test check build # what CI runs, for your changes
 npx nx check systems                     # validate systems/ (links, IDs, ADRs, verification)
 npx nx test systems-model
 npx nx dev docs                          # http://localhost:3000
 node tools/systems-ids.mts SYS-04 ADR-0012   # look up IDs (or a kind: RSK)
+```
+
+Firmware and ROS build only inside the dev container (`.devcontainer/`, ADR-0029):
+
+```bash
+npx nx build sync-mcu && npx nx test sync-mcu   # three targets; twister on native_sim
+npx nx build vesc && npx nx test vesc           # A50S firmware; host tests for vesc/arc/
+npx nx build ros && npx nx test ros             # colcon; launch tests per backend
+npx nx test firmware-in-loop                    # native_sim firmware and ROS link up over UDP
+tools/gen-interfaces.sh                         # regenerate code from systems/icd/ (--check in CI)
 ```
 
 ## Rules for `systems/`
@@ -40,6 +52,17 @@ node tools/systems-ids.mts SYS-04 ADR-0012   # look up IDs (or a kind: RSK)
 - **Never edit an accepted ADR's decision.** Write a new ADR that supersedes it, and record the supersession on both sides (`Status: Superseded by ADR-x` / `Supersedes: ADR-y`), plus the status in `adr/README.md`.
 - **Don't make engineering decisions.** Aligning a doc with decisions already recorded is fine; choosing a part, value or design is the owner's call. Record new questions as open items instead.
 - Keep `systems/` free of site config: plain Markdown that reads well on GitHub. Use GitHub alerts (`> [!NOTE]`) rather than JSX.
+
+## Firmware, ROS and generated code
+
+- **Generated code is never edited by hand.** `systems/icd/sync-link.xml` (MAVLink 2) and `systems/icd/can-command.dbc` generate C into `firmware/sync-mcu/app/generated/` and `ros/src/arc_backend_car/include/arc_mavlink/` via `tools/gen-interfaces.sh`. Change the schema, regenerate, commit both; `nx check sync-mcu` fails on stale code.
+- **`firmware/vesc/bldc/` is upstream VESC firmware, GPL-3.0** (ADR-0033). Our changes are ordinary commits there; upstream updates go through `tools/vesc-upstream.sh update <ref>` in a PR of their own. Never copy code from `firmware/vesc/` into MIT parts of the repo. Don't touch its USB, CAN or firmware-upload code: a broken build can then only be recovered over SWD (RSK-20).
+- **Safety functions** (e-stop routine, watchdog, safety envelope) stay fail-safe until implemented, and every change gets its own tests and a second reviewer.
+- **The dev container image is tagged by the hash of its inputs** (`.devcontainer/**`, `west.yml`); CI builds a new one when they change and runs firmware and ROS jobs in it, so a PR that changes the image is tested in its own image.
+
+Gotchas:
+- With rootless Docker, the container's root is your own user: run containers with `--user root` to write to the repo, and never `chown` files to uid 1000 inside one (that maps to a different user on the host, and git can no longer delete them).
+- Upstream VESC's own `.gitignore` ignores `tools` and `.vscode`, which it also tracks; `tools/vesc-upstream.sh` force-adds on import for this reason.
 
 ## Docs site
 
