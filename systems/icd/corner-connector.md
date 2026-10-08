@@ -1,7 +1,7 @@
 # ICD-corner-connector
 
 - **Revision:** E (2026-10-07). The motor controllers move to the deck (ADR-0034), so a corner sends only its motor phases and Hall sensor cable to the chassis; the controller's own connections are on the deck. Rev D (10-pin JST-GH with daisy-chained CAN-FD, ADR-0013), rev C, rev B and rev A are superseded.
-- **Status:** Draft. Needs pin numbers from Triforce's A50S pinout and sign-off from both owners.
+- **Status:** Draft. Needs Molex pin numbering against Triforce's pinout layout, and sign-off from both owners.
 - **Side A:** corner assembly: motor (E-51), gearbox (owner TBD)
 - **Side B:** chassis harness, the motor controllers on the deck (E-50), sync board, power board e-stop circuit (owner TBD)
 - **Traces to:** SYS-05, SYS-13, SYS-19, SYS-25, ADR-0008, ADR-0009, ADR-0012, ADR-0034, RSK-11
@@ -21,19 +21,32 @@ Two connections per corner, both crossing the suspension.
 
 ## Motor controller connections (on the deck)
 
-The A50S V2.3c (ADR-0034) has an XT30 for power, an MR30 for the motor, a micro-USB for configuration, and a 20-pin Pico-Clasp for everything else.
+The A50S V2.3c (ADR-0034) has an XT30 for power, an MR30 for the motor, a micro-USB for VESC Tool, and a 20-pin latching Molex Pico-Clasp (P/N 501189-2010) for everything else. Source: Triforce's product page and its pinout image (`Pinout_V2.3`, read 2026-10-07).
 
 | Connection | Net | Electrical | Notes |
 | --- | --- | --- | --- |
-| XT30 | Motor bus | 4S: 12.0–16.8 V; transients up to the bus clamp threshold (TBD) | From the power board's switched motor bus (ADR-0034); cut by the e-stop delay |
+| XT30 | Motor bus | 4S: 12.0–16.8 V; transients up to the bus clamp threshold (TBD) | From the power board's switched motor bus (ADR-0034); cut by the e-stop delay. Triforce's supplied bulk capacitor goes on this cable as close to the board as possible |
 | MR30 | Motor phases A, B, C | See above | |
-| Pico-Clasp pin `TBC` | CAN_H | Classic CAN, 1 Mbit/s | Command bus (ADR-0009), twisted with CAN_L |
-| Pico-Clasp pin `TBC` | CAN_L | | |
-| Pico-Clasp pin `TBC` | UART_TX | 3.3 V UART, 3 Mbit/s (TBC) | Telemetry to the sync MCU, point to point (ADR-0034). Twisted with GND |
-| Pico-Clasp pin `TBC` | UART_RX | 3.3 V UART | From the sync MCU (time sync, configuration). Twisted with GND |
-| Pico-Clasp pin `TBC` | ESTOP | Logic high = run, low or open = e-stop. Level `TBC`: the input is an MCU pin, so 3.3 V unless Triforce confirms 5 V tolerance | On the PPM input (TBC) |
-| Pico-Clasp pins `TBC` | Hall A, B, C, 5 V, GND, motor temperature | From the motor's sensor cable | |
-| Pico-Clasp pins `TBC` | GND | Signal reference | |
+| Micro-USB | VESC Tool | | Configuration and firmware upload |
+
+**Signal connector, as laid out in Triforce's pinout image** (pin numbers per Molex's drawing, TBC; red-marked pins are 3.3 V max):
+
+| Position | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Top row | GND | Hall 3 / CS | Hall 2 / MISO | Hall 1 / SCK | **Motor temp (3.3 V max)** | 5 V out | SWCLK | SWDIO | Servo / PPM | GND |
+| Bottom row | GND | **SCK / ADC1 (3.3 V max)** | **MISO / ADC2 (3.3 V max)** | TX / SCL / MOSI | RX / SDA / NSS | 3.3 V out | CAN H | CAN L | Aux power in, 12–48 V | GND |
+
+How the car uses it:
+
+| Net | Use |
+| --- | --- |
+| CAN H / CAN L | Command bus (ADR-0009), twisted pair |
+| TX / RX | Telemetry UART to the sync MCU, 3 Mbit/s (TBC), each twisted with GND (ADR-0034) |
+| Servo / PPM | **ESTOP** input. Not marked 3.3 V max, so 5 V logic is acceptable per Triforce's marking (TBC with them); the MCU pin (PB6) is 5 V tolerant |
+| Hall 1–3, Motor temp, 5 V, GND | From the motor's sensor cable. The 5 V output powers the motor's Hall sensors only; the controllers' 5 V outputs are never tied together (Triforce: "only use 1 BEC") |
+| SWCLK / SWDIO | **SWD on the connector:** a bad firmware build is recovered with a probe through the harness, no soldering (RSK-20) |
+| Aux power in | Optional logic supply. Feeding it from an always-on rail would keep the controllers' MCUs and telemetry alive after the e-stop cuts the motor bus: the EE's call |
+| ADC1, ADC2, 3.3 V | Unused |
 
 ### ESTOP behaviour
 
@@ -52,8 +65,9 @@ Controlled braked stop, then a hardware torque cut (SYS-05, ADR-0012 as amended 
 
 ## Open issues
 
-1. Pin numbers on the A50S's 20-pin connector, from Triforce's pinout image.
-2. ESTOP logic level and driver: the power board sources it; the current per controller.
-3. The connector at the corner boundary for the phase leads and the Hall cable; lengths from the CAD layout.
-4. Sync-board signal ground and power-board ground both reach battery negative through the motor bus, which forms a loop. Settle it in the grounding strategy before harness layout.
-5. Brake ramp, target deceleration and delay T (ADR-0012).
+1. Molex pin numbers for the positions above (Triforce's image shows layout, not numbers).
+2. ESTOP logic level (3.3 or 5 V; the PPM pin takes either) and driver: the power board sources it; the current per controller.
+3. Whether the Aux power input is fed from an always-on rail (telemetry and logging survive the motor-bus cut).
+4. The connector at the corner boundary for the phase leads and the Hall cable; lengths from the CAD layout.
+5. Sync-board signal ground and power-board ground both reach battery negative through the motor bus, which forms a loop. Settle it in the grounding strategy before harness layout.
+6. Brake ramp, target deceleration and delay T (ADR-0012).

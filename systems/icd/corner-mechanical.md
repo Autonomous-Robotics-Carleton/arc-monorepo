@@ -44,4 +44,4 @@ A corner is swapped as a unit (SYS-13). This document fixes everything the two s
 
 ## Swap procedure (SYS-13)
 
-TBD: tools, steps and time, demonstrated per the verification plan.
+TBD: tools, steps and time, demonstrated per the verification plan. Known step since ADR-0034: the controller stays on the deck, so after a swap it loads the new motor's saved configuration (resistance, inductance, flux, Hall table) with VESC Tool, or re-runs motor detection with the wheel off the ground (~1 min). Each motor is labelled and its configuration kept in the repo.
