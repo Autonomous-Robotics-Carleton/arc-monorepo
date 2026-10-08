@@ -11,7 +11,7 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 | power-rails | Power board | Every load | Markdown (voltage, current, sequencing, fusing) | TBD |
 | power-sync-stack | Power board | Sync board | Markdown (header pinout) | TBD |
 | carrier-sync | Orin carrier | Sync board | Markdown (triggers, PPS/PTP, Ethernet) | TBD |
-| [sync-link](sync-link.md) | Sync MCU firmware | Sync bridge on the Orin | UDP; MAVLink 2 (ADR-0031) | Draft (outline) |
+| [sync-link](sync-link.md) | Sync MCU firmware | Sync bridge on the Orin | UDP; MAVLink 2 (ADR-0031), message set in `sync-link.xml` | Draft |
 | ros2-msgs | Sync MCU bridge | ROS 2 stack | `.msg` files | TBD |
 | battery-pack | Car (battery bay, power input, per-cell monitor) | Charging station | Markdown (pack form factor, main connector, balance connector (4S JST-XH 5-pin assumed, TBC) which the car also uses for cell monitoring, chemistry and cell count) | TBD |
 | [deck-grid](deck-grid.md) | Chassis | Sensor mounts | Markdown + CAD | Draft (outline) |
