@@ -5,7 +5,7 @@
   Every sample message starts with time_ns, the sample time in the sync
   MCU's clock (SYS-07, ADR-0021). Gaps are detected from MAVLink's
   per-link sequence number; definition mismatches are rejected by
-  MAVLink's CRC_EXTRA. Generated code: tools/gen-sync-link.sh.
+  MAVLink's CRC_EXTRA. Generated code: tools/gen-interfaces.sh.
 -->
 <mavlink>
   <version>1</version>
