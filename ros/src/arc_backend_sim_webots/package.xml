@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>arc_backend_sim_webots</name>
+  <version>0.0.0</version>
+  <description>Webots simulator backend: Webots runs on the host with its GPU (macOS, Windows, Linux) and connects to ROS in the dev container (ADR-0032). Stub.</description>
+  <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>arc_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

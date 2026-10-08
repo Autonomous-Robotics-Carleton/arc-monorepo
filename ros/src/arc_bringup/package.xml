@@ -2,14 +2,16 @@
 <package format="3">
   <name>arc_bringup</name>
   <version>0.0.0</version>
-  <description>Launches the platform on one target: sim, replay or car (ADR-0028).</description>
+  <description>Launches the platform on one target: sim (Gazebo, Webots or the F1TENTH gym), replay or car (ADR-0028, ADR-0032).</description>
   <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
-  <exec_depend>arc_backend_sim</exec_depend>
+  <exec_depend>arc_backend_sim_gazebo</exec_depend>
+  <exec_depend>arc_backend_sim_webots</exec_depend>
+  <exec_depend>arc_backend_sim_gym</exec_depend>
   <exec_depend>arc_backend_replay</exec_depend>
   <exec_depend>arc_backend_car</exec_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>

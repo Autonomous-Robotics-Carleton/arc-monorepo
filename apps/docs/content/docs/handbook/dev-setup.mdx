@@ -234,7 +234,7 @@ npx nx test vesc         # our additions' host tests
 npx nx build ros         # the ROS 2 workspace (colcon)
 npx nx test ros          # its launch tests
 source ros/install/setup.bash
-ros2 launch arc_bringup platform.launch.py target:=sim   # or replay, car
+ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots; or target:=replay, car
 ```
 
 Everything is scaffolding so far: it builds and starts, but does nothing yet.

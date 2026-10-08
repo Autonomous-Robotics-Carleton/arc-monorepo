@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>arc_backend_sim</name>
+  <name>arc_backend_sim_gazebo</name>
   <version>0.0.0</version>
-  <description>Simulator backend of the car interface. One package per simulator comes with ADR-0032; this stub stands in for them. Stub.</description>
+  <description>Gazebo Harmonic simulator backend: the full sensor suite, event cameras included; Linux with a GPU (ADR-0032). Stub.</description>
   <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
   <license>MIT</license>
 

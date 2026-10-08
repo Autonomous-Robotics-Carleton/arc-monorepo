@@ -65,9 +65,11 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 
 - [x] ROS 2 Jazzy added to the dev container (ros-base, colcon, rosdep, MCAP storage, launch_testing)
 - [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_sim`, `arc_backend_replay`, `arc_backend_car`
-- [ ] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym (ADR-0032)
+- [x] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym (ADR-0032): stubs, a launch test each
+- [ ] Each simulator installed and wired to its backend (Gazebo Harmonic and the gym in the dev container; Webots on the host)
 - [ ] `arc_description`: one URDF of the car, the source for every simulator's model
-- [ ] Sensor profiles per launch (`sensors:=lidar | stereo | all`)
+- [x] Sensor profiles per launch: the `sensors:=lidar | stereo | all` argument, passed to every backend
+- [ ] Each simulator rendering only the chosen profile
 - [ ] Benchmark one scene (LiDAR + stereo) per backend, per OS, once they run (ADR-0032)
 - [x] `colcon build` and `colcon test` as Nx targets (`nx build ros`, `nx test ros`), run by CI's dev-container job (tag `env:dev-container`)
 
