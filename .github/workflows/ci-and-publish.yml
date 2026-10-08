@@ -91,17 +91,91 @@ jobs:
           timeout: 60000 # 60 seconds
           customHeaders: '{"Authorization": "Bearer ${{ secrets.WATCHTOWER_TOKEN }}"}'
 
+  dev-image:
+    # The dev container image (ADR-0029), addressed by the hash of its inputs.
+    # If a PR changes the image, its firmware and ROS jobs run in that PR's
+    # image, not in the old one from main. Built only when the hash is new;
+    # main also publishes it as :latest for devcontainer.json and teammates.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.pick.outputs.image }}
+    env:
+      IMAGE: ghcr.io/autonomous-robotics-carleton/arc-dev
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pick the image for these inputs
+        id: pick
+        run: |
+          tag="inputs-${{ hashFiles('.devcontainer/**', 'firmware/sync-mcu/west.yml') }}"
+          if docker manifest inspect "$IMAGE:$tag" > /dev/null 2>&1; then
+            echo "Reusing $IMAGE:$tag"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            # a fork's token can't push to GHCR: test in main's image instead
+            echo "::warning::Fork PR: testing in $IMAGE:latest, not this PR's image"
+            tag=latest
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "image=$IMAGE:$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Build the image
+        if: steps.pick.outputs.exists == 'false'
+        run: |
+          set -o pipefail
+          docker buildx build --platform linux/amd64 --load \
+            --cache-from "$IMAGE:latest" --build-arg BUILDKIT_INLINE_CACHE=1 \
+            -f .devcontainer/Dockerfile -t "${{ steps.pick.outputs.image }}" . \
+            2>&1 | tee build.log
+
+      - name: Smoke test in the image
+        if: steps.pick.outputs.exists == 'false'
+        run: |
+          set -o pipefail
+          docker run --rm -v "$PWD:/workspaces/arc-monorepo" -w /workspaces/arc-monorepo \
+            "${{ steps.pick.outputs.image }}" .devcontainer/smoke-test.sh 2>&1 | tee smoke.log
+
+      - name: Post the end of the log as an annotation
+        if: failure()
+        run: |
+          for log in build.log smoke.log; do
+            [ -s "$log" ] || continue
+            echo "::error title=$log (last 40 lines)::$(tail -n 40 "$log" | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+          done
+
+      - name: Push the image
+        if: steps.pick.outputs.exists == 'false'
+        run: docker push "${{ steps.pick.outputs.image }}"
+
+      - name: Publish as latest
+        if: github.ref == 'refs/heads/main'
+        run: docker buildx imagetools create -t "$IMAGE:latest" "${{ steps.pick.outputs.image }}"
+
   dev-container:
     # Projects that need the firmware or ROS toolchains (tag env:dev-container)
-    # build and test inside the dev container image (ADR-0029), published from
-    # main by the "Dev container" workflow.
+    # build and test inside the dev container image picked by dev-image.
+    needs: dev-image
     runs-on: ubuntu-latest
     permissions:
       actions: read # nx-set-shas
       contents: read
       packages: read
     container:
-      image: ghcr.io/autonomous-robotics-carleton/arc-dev:latest
+      image: ${{ needs.dev-image.outputs.image }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}

@@ -17,7 +17,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 - [x] `.devcontainer/` image: Zephyr SDK 1.0.1 (Arm toolchain only), west, Zephyr v4.4.2 and its STM32/CMSIS modules baked in from `firmware/sync-mcu/west.yml`, Node 22 and pnpm. ROS 2 Jazzy comes in phase 5 and the VESC toolchain in phase 4, to keep the first image small
 - [x] `smoke-test.sh`: builds and runs hello_world on `native_sim`, builds it for `nucleo_h723zg`
-- [ ] CI builds the image, runs the smoke test in it, and publishes it to GHCR from main
+- [x] CI builds the image, runs the smoke test in it, and publishes it to GHCR. The image is tagged by the hash of its inputs, so a PR that changes it is tested in its own image; `main` also publishes it as `:latest`
 - [ ] Make the GHCR package public, so teammates pull its layers without logging in
 - [ ] Verify on Linux, macOS (Intel and Apple Silicon) and Windows (WSL 2): open the repo in the container and build
 - [x] Handbook: a firmware section in Dev setup (Docker, opening the container, `probe-rs` on the host)
