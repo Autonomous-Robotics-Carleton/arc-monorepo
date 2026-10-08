@@ -58,7 +58,8 @@ case "$cmd" in
     mkdir -p "$dest"
     git -C "$work" archive "$new" -- . "${exclude[@]}" | tar -x -C "$dest"
     write_record "$new"
-    git add -- "$dest" "$record"
+    # -f: upstream's own .gitignore would otherwise skip files upstream tracks
+    git add -f -- "$dest" "$record"
     echo "Imported $url $ref ($new) into $dest. Commit it, e.g.:"
     echo "  git commit -m \"chore(vesc): import upstream bldc $ref (${new:0:10})\""
     ;;
@@ -78,6 +79,7 @@ case "$cmd" in
       status=conflicts
     fi
     write_record "$new"
+    # git apply --3way has already staged what it changed, new files included
     git add -- "$record"
     echo "Applied upstream ${base:0:10} -> $ref (${new:0:10}) to $dest: $status."
     if [ "$status" = conflicts ]; then
