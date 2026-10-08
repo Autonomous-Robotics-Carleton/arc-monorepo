@@ -22,8 +22,8 @@
 | Bench on 19 V wall supply | ~90 W low-voltage peak | Wall brick (~150 W for margin), OR-ing parts |
 | Idle on battery (logging, compute) | ~60–90 W, ~5–6 A | Idle run time |
 | Average hard driving | ~230–330 W total | Pack capacity: 10 min ≈ 38–55 Wh ≈ 2.6–3.7 Ah, so ~4–5 Ah usable. A 5,000 mAh 4S hardcase is the starting point |
-| **Peak: ~1 g acceleration at 9 m/s** | ~35 N × 9 m/s ≈ 315 W at the wheels, ~390 W from the motor path, plus LV → **~30–35 A** | Pack C rating (trivial at 5 Ah), wire gauge, XT60s (60 A class), anti-spark switch, distribution |
-| Beyond grip | Wheelspin; no useful work | Enforced by the motor controllers' current limits. **The spec's "~120 A peak" looks like motor capability, not what the car can use; confirm** |
+| **Peak: ~1 g acceleration at 9 m/s** | ~35 N × 9 m/s ≈ 315 W at the wheels, ~390 W from the motor path, plus LV → **~30–35 A** | Pack C rating (trivial at 5 Ah), wire gauge, pack connector (ICD-battery-pack), the XT30 at each motor controller, anti-spark switch, distribution |
+| Beyond grip | Wheelspin; no useful work | Enforced by the motor controllers' current limits. The old "~120 A peak" was motor capability, not what the car can use; `architecture.md` and BOM E-40 now size to ~30–35 A |
 | **E-stop from 9 m/s, pack disconnected** | ~½ × 3.5 × 9² ≈ **140 J** over ~1.8 s, **~160 W peak** at brake onset | Bus clamp resistor (energy and peak), heatsink, threshold above 16.8 V |
 | Voltage sag at peak | ~35 A × 20 mΩ ≈ 0.7 V | Brownout immunity of the LV rails (SYS-31) |
 | Connect / disconnect | Motor controller input capacitors charging | Anti-spark / loop key (E-42) |

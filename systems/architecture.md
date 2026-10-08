@@ -70,7 +70,7 @@ A gimbal-style brushless motor drives the steering through a ~4–6:1 belt (zero
 
 4S LiPo hardcase, charged off the car at the team's charging station (a separate system; the pack is the interface, ICD-battery-pack).
 
-- **Motor path:** battery → loop key / anti-spark → bus bar → four XT60 corners, plus the switched steering output. The bus clamp board burns off regen spikes above full-pack voltage.
+- **Motor path:** battery → loop key / anti-spark → the power board's switched motor bus (cut by the e-stop) → bus bar or heavy wire (E-45) → an XT30 at each motor controller on the deck, plus the switched steering output. The bus clamp board burns off regen spikes above full-pack voltage.
 - **Power board:** LV rails (compute, sensor, 5 V / 3.3 V), with per-rail fuse, switch and current sense. It also carries:
   - battery V/I monitoring and **per-cell monitoring** through the balance lead (SYS-32)
   - wall (19 V) / battery ideal-diode OR-ing
@@ -88,7 +88,7 @@ A gimbal-style brushless motor drives the steering through a ~4–6:1 belt (zero
 
 ## Sync and sensing
 
-The sync MCU (STM32H723, Zephyr) owns the car's time base. It timestamps sensors at the pin, triggers the cameras, runs the heartbeat watchdog and safety envelope, and drives four CAN buses: command, two telemetry, steering. µs-critical sensors are timestamped in its clock; the Orin follows in software to ≤ 1 ms (ADR-0021, SYS-07 ≤ 10 µs).
+The sync MCU (STM32H723, Zephyr) owns the car's time base. It timestamps sensors at the pin, triggers the cameras, runs the heartbeat watchdog and safety envelope, and drives two CAN buses (command and steering) and one telemetry UART per motor controller (ADR-0034). µs-critical sensors are timestamped in its clock; the Orin follows in software to ≤ 1 ms (ADR-0021, SYS-07 ≤ 10 µs).
 
 | Sensor | Part | Rate | Connects to |
 | --- | --- | --- | --- |
@@ -118,7 +118,7 @@ Wi-Fi is the only wireless link (ADR-0005). The car joins the team's Flint 3 rou
 | --- | --- | --- | --- |
 | Heartbeat watchdog | Laptop heartbeat lost (~150 ms); the Orin forwards it, so a hung Orin trips it too | Sync MCU | Rolls ≤ 2 m, then the same brake ramp (SYS-04) |
 | Any-corner stop | One corner silent ~5 ms | Sync MCU | All four corners brake within 20 ms (SYS-25) |
-| Physical e-stop | Button, broken wire, unplugged connector | Controller firmware + power-board timer | Ramped brake (~5 m/s²), motor-bus power cut at T (TBC ~1.8 s); steering returns to centre, cut ~1 s later (ADR-0012, ADR-0019) |
+| Physical e-stop | Button, or the e-stop circuit losing power. A broken or unplugged ESTOP wire brakes that controller and stops the car through SYS-25, without the hardware cut (ICD-corner-connector) | Controller firmware + power-board timer | Ramped brake (~5 m/s²), motor-bus power cut at T (TBC ~1.8 s); steering returns to centre, cut ~1 s later (ADR-0012, ADR-0019) |
 | Command timeout | Corners stop hearing commands | Controller (VESC) / moteus firmware | Brake / hold |
 
 ## Harness
@@ -138,7 +138,7 @@ Mechanical design hasn't started. Constraints carried from the original spec and
 - **Clear sightlines:** LiDAR with a clear 270°+ field of view and a crash guard; rigid stereo bar; positions for side/rear and event cameras; Wi-Fi antennas high and clear of carbon-filled parts.
 - **Mounting:** IMU at the CG and the second IMU near the front axle, both vibration-isolated.
 - **Access:** service port, hotspot button and e-stop button on the chassis.
-- **Cooling:** for the Orin, and airflow over the motor controllers on the deck (~12 A each against a 20 A uncooled rating).
+- **Cooling:** for the Orin, and airflow over the motor controllers on the deck (~12 A each against 40 A continuous with the heatsink; airflow is sized once the deck is modelled).
 - **Reserved:** an encoder pocket behind each motor for a future rear-shaft motor.
 
 ## Where to look next

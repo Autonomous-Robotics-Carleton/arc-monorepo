@@ -23,7 +23,7 @@ power,Central power board,1 build,200,500,estimate,
 sync,Sync MCU board (STM32H723 + PHY + transceivers),1 build,200,500,estimate,
 power,Bus clamp board,1,50,100,estimate,
 power,4S LiPo hardcase packs,3-4,250,450,estimate,charging station is a separate system
-power,Harness (JST-GH + XT60 + wire + crimp tool),1,150,350,estimate,
+power,"Harness (JST-GH, XT30, MR30 and Pico-Clasp connectors, wire, crimp tools)",1,150,350,estimate,
 power,E-stop button + loop key + misc,1,50,100,estimate,
 chassis,Machined aluminium parts (decks + mounts + bearing plates),1,300,1000,estimate,CNC service
 chassis,Carbon fibre plates,1,150,400,estimate,

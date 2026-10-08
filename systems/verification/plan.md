@@ -55,7 +55,7 @@
 | SYS-21 Platform isolation | T | S3 | R8: run the broken experiment container (crash, hang, CPU/GPU/memory/disk hogs) while driving on the stand | Platform keeps driving, logging and can stop | Not started |
 | SYS-22 Safety envelope | T | S2, S3 | R1: send commands beyond each limit, including from a "malicious" experiment | Nothing beyond the limits reaches the actuators; default 3 m/s; limits raisable to the physical maximum | Not started |
 | SYS-23 Command logging | D | S3 | Check logs for operator commands and policy outputs on the sensor time base | Present, same time base | Not started |
-| SYS-24 Full-rate data | A, T | S0, S2 | Bus-load and storage budgets; R1/R3 measured bus load and dropped-sample counts at full rate | Every sensor at native rate; links ≤ 50%, CAN ≤ 70% | Not started |
+| SYS-24 Full-rate data | A, T | S0, S2 | Bus-load and storage budgets; R1/R2 measured bus load and dropped-sample counts at full rate | Every sensor at native rate; links ≤ 50%, CAN ≤ 70% | Not started |
 | SYS-25 Any-corner stop | T | S2, S3 | R1/R2: unplug one controller's command bus, telemetry link, or power mid-run | All four corners begin a controlled stop ≤ 20 ms after ~5 ms of silence; a single dropped frame never triggers | Not started |
 | SYS-26 Laptop internet | D | S1 | R6: laptop wired to the router keeps internet; other devices get no gateway | Pass on Linux and macOS | Not started |
 | SYS-27 Reachability | D | S3 | R6: reach the car via router, button hotspot, and service port, each with no outside network | All three paths work | Not started |
@@ -69,8 +69,8 @@
 ## Before the order (S0 checklist)
 
 - [ ] Power, bus-load, latency, cost and mass budgets close (`budgets/`)
-- [ ] RSK-03 LTspice simulation (`tests/rsk-03-canfd-bench.md`, step 0)
+- [x] ~~RSK-03 LTspice simulation (`tests/rsk-03-canfd-bench.md`, step 0)~~ Retired with the drive CAN-FD buses (ADR-0034)
 - [ ] Camera drivers confirmed for JetPack 7.2 (RSK-01)
-- [ ] Sync MCU pin-mux fits (EE)
+- [x] Sync MCU pin-mux fits (checked 2026-10-07, `handoff/electrical.md` §2)
 - [ ] Every custom board through the fab gate, with extra bare PCBs ordered
 - [ ] Optional: ground-speed phone test (`tests/ground-speed-phone-test.md`)

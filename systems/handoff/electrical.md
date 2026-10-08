@@ -135,5 +135,4 @@ The starting point for the electrical engineer. It collects, per board, what's d
 | **Mass and CG** (SYS-16) | Mechanical | Power scenarios, bus clamp, pack choice |
 | Steering motor peak current | Mechanical (actuator design) | Steering switched output |
 | Aero fan power (SYS-15) | Capstone | Motor bus reserve |
-| ICD owners and sign-offs (corner connector, and the unwritten power-rails, power-sync-stack and carrier-sync ICDs) | Team | Fab gate |
-| v1 budget (SYS-17) | Team | Upgrade choices |
+| ICD owners and sign-offs (corner connector, controller telemetry, can-command, sync link, corner mechanical, deck grid, and the unwritten power-rails, power-sync-stack and carrier-sync ICDs) | Team | Fab gate |

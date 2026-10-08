@@ -41,7 +41,7 @@ Family recommended in ADR-0027 (Proposed): XRAY X4 parts, with crash spares in t
 | Item | Qty | How | Selection | Requirements | Traces to |
 | --- | --- | --- | --- | --- | --- |
 | Gearbox bearing plates | 4 corners | Machine | TBD | Precise bearing bores and gear centres | ADR-0026 |
-| Motor mounts (also the VESC FET heatsink) | 4 | Machine | TBD | Clamp the Ø28 mm can on its bolt pattern; FET side of the VESC bolts on | E-50, E-51 |
+| Motor mounts | 4 | Machine | TBD | Clamp the Ø28 mm can on its bolt pattern. No longer a heatsink: the motor controllers are on the deck (ADR-0034) | E-51 |
 | Tub splice plates | TBD (if the tub is split) | Machine | TBD (MQ-1) | Join tub sections; may double as motor-mount plates | RSK-17 |
 
 ## Printed parts (M4)
