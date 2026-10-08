@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<!--
+  ICD-sync-link message set (ADR-0031): MAVLink 2, ARC messages only.
+  Draft: field lists follow the message families in sync-link.md.
+  Every sample message starts with time_ns, the sample time in the sync
+  MCU's clock (SYS-07, ADR-0021). Gaps are detected from MAVLink's
+  per-link sequence number; definition mismatches are rejected by
+  MAVLink's CRC_EXTRA. Generated code: tools/gen-sync-link.sh.
+-->
+<mavlink>
+  <version>1</version>
+  <dialect>0</dialect>
+  <enums>
+    <enum name="ARC_IMU">
+      <description>Which IMU.</description>
+      <entry value="0" name="ARC_IMU_CG"><description>Navigation-grade IMU at the centre of gravity.</description></entry>
+      <entry value="1" name="ARC_IMU_FRONT"><description>Consumer-grade IMU at the front axle.</description></entry>
+    </enum>
+    <enum name="ARC_ANGLE_SENSOR">
+      <description>Which angle sensor (AS5047 family).</description>
+      <entry value="0" name="ARC_ANGLE_WHEEL_FL"/>
+      <entry value="1" name="ARC_ANGLE_WHEEL_FR"/>
+      <entry value="2" name="ARC_ANGLE_WHEEL_RL"/>
+      <entry value="3" name="ARC_ANGLE_WHEEL_RR"/>
+      <entry value="4" name="ARC_ANGLE_SUSPENSION_FL"/>
+      <entry value="5" name="ARC_ANGLE_SUSPENSION_FR"/>
+      <entry value="6" name="ARC_ANGLE_SUSPENSION_RL"/>
+      <entry value="7" name="ARC_ANGLE_SUSPENSION_RR"/>
+      <entry value="8" name="ARC_ANGLE_KNUCKLE_FL"/>
+      <entry value="9" name="ARC_ANGLE_KNUCKLE_FR"/>
+    </enum>
+    <enum name="ARC_CORNER">
+      <description>Which corner.</description>
+      <entry value="0" name="ARC_CORNER_FL"/>
+      <entry value="1" name="ARC_CORNER_FR"/>
+      <entry value="2" name="ARC_CORNER_RL"/>
+      <entry value="3" name="ARC_CORNER_RR"/>
+    </enum>
+    <enum name="ARC_WATCHDOG_STATE">
+      <description>Heartbeat watchdog (SYS-04).</description>
+      <entry value="0" name="ARC_WATCHDOG_OK"><description>Heartbeat arriving.</description></entry>
+      <entry value="1" name="ARC_WATCHDOG_ROLLING"><description>Heartbeat lost; within the roll-out before braking.</description></entry>
+      <entry value="2" name="ARC_WATCHDOG_BRAKING"><description>Braking on the e-stop ramp.</description></entry>
+    </enum>
+    <enum name="ARC_FAULT_SOURCE">
+      <description>Where a fault was detected (SYS-19).</description>
+      <entry value="0" name="ARC_FAULT_SYNC_MCU"/>
+      <entry value="1" name="ARC_FAULT_MOTOR_CONTROLLER"/>
+      <entry value="2" name="ARC_FAULT_STEERING"/>
+      <entry value="3" name="ARC_FAULT_POWER"/>
+      <entry value="4" name="ARC_FAULT_SENSOR"/>
+      <entry value="5" name="ARC_FAULT_LINK"/>
+    </enum>
+  </enums>
+  <messages>
+    <!-- Sync MCU → Orin -->
+    <message id="52000" name="ARC_LINK_STATUS">
+      <description>Link health, 1 Hz each way. Carries the protocol version, which both sides check.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sync-MCU time when sent.</field>
+      <field type="uint16_t" name="protocol_version">The &lt;version&gt; of this file the sender was built from.</field>
+      <field type="uint32_t" name="rx_gaps">Received packets missing since start, from MAVLink sequence numbers.</field>
+      <field type="uint32_t" name="rx_bad">Packets rejected (CRC or unknown message) since start.</field>
+    </message>
+    <message id="52001" name="ARC_IMU_SAMPLE">
+      <description>One IMU sample.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time.</field>
+      <field type="float[3]" name="accel" units="m/s/s">Acceleration, body frame (x forward, y left, z up).</field>
+      <field type="float[3]" name="gyro" units="rad/s">Angular rate, body frame.</field>
+      <field type="uint8_t" name="imu" enum="ARC_IMU">Which IMU.</field>
+    </message>
+    <message id="52002" name="ARC_ANGLE_SAMPLE">
+      <description>One angle-sensor sample: wheel, suspension or steering knuckle.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time.</field>
+      <field type="float" name="angle" units="rad">Absolute angle.</field>
+      <field type="uint8_t" name="sensor" enum="ARC_ANGLE_SENSOR">Which sensor.</field>
+    </message>
+    <message id="52003" name="ARC_RIDE_HEIGHT_SAMPLE">
+      <description>One ToF ride-height sample.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time.</field>
+      <field type="float" name="range" units="m">Distance to the floor.</field>
+      <field type="uint8_t" name="sensor">Sensor index: 0–3 corners FL, FR, RL, RR; 4 the ground-speed camera's.</field>
+      <field type="uint8_t" name="status">Sensor status code; 0 is valid.</field>
+    </message>
+    <message id="52004" name="ARC_MOTOR_STATUS">
+      <description>One motor controller's full status (ADR-0034), forwarded from its UART link.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time, mapped to sync-MCU time.</field>
+      <field type="int32_t" name="erpm" units="rpm">Electrical speed.</field>
+      <field type="int32_t" name="tachometer">Commutation steps since start.</field>
+      <field type="float" name="current_q" units="A">Motor q-axis current (torque).</field>
+      <field type="float" name="current_d" units="A">Motor d-axis current.</field>
+      <field type="float" name="current_in" units="A">Input (battery-side) current.</field>
+      <field type="float" name="duty">Duty cycle, -1 to 1.</field>
+      <field type="float" name="voltage_in" units="V">Motor-bus voltage at the controller.</field>
+      <field type="float" name="temp_fet" units="degC">Power-stage temperature.</field>
+      <field type="float" name="temp_motor" units="degC">Motor temperature.</field>
+      <field type="uint8_t" name="corner" enum="ARC_CORNER">Which corner.</field>
+      <field type="uint8_t" name="fault">VESC fault code; 0 is none.</field>
+    </message>
+    <message id="52005" name="ARC_STEERING_STATUS">
+      <description>Steering actuator status from the moteus-c1 (ADR-0019).</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time.</field>
+      <field type="float" name="angle" units="rad">Steering output angle.</field>
+      <field type="float" name="velocity" units="rad/s">Steering output velocity.</field>
+      <field type="float" name="torque" units="N.m">Output torque estimate from q-axis current.</field>
+      <field type="float" name="temp" units="degC">Controller temperature.</field>
+      <field type="uint8_t" name="fault">moteus fault code; 0 is none.</field>
+    </message>
+    <message id="52006" name="ARC_CAMERA_TRIGGER">
+      <description>A camera trigger pulse, for pairing frames with trigger times (ADR-0021).</description>
+      <field type="uint64_t" name="time_ns" units="ns">Trigger time.</field>
+      <field type="uint32_t" name="frame">Frame sequence number for this camera.</field>
+      <field type="uint8_t" name="camera">Trigger output index.</field>
+    </message>
+    <message id="52007" name="ARC_POWER_SAMPLE">
+      <description>Battery and cell voltages (SYS-32).</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time.</field>
+      <field type="float" name="voltage" units="V">Pack voltage.</field>
+      <field type="float" name="current" units="A">Pack current, positive out of the pack.</field>
+      <field type="float[4]" name="cell_voltage" units="V">Cell voltages, cell 1 at the pack negative.</field>
+    </message>
+    <message id="52008" name="ARC_SAFETY_STATE">
+      <description>The safety state, on every change and periodically.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Time of the state.</field>
+      <field type="float" name="max_speed" units="m/s">Envelope in force: speed.</field>
+      <field type="float" name="max_accel" units="m/s/s">Envelope in force: acceleration.</field>
+      <field type="float" name="max_steer" units="rad">Envelope in force: steering angle.</field>
+      <field type="uint8_t" name="watchdog" enum="ARC_WATCHDOG_STATE">Heartbeat watchdog state.</field>
+      <field type="uint8_t" name="estop">1 while the physical e-stop is active.</field>
+    </message>
+    <message id="52009" name="ARC_FAULT">
+      <description>A fault or event, when detected (SYS-19).</description>
+      <field type="uint64_t" name="time_ns" units="ns">Detection time.</field>
+      <field type="uint32_t" name="detail">Source-specific detail.</field>
+      <field type="uint16_t" name="code">Source-specific code.</field>
+      <field type="uint8_t" name="source" enum="ARC_FAULT_SOURCE">Where it was detected.</field>
+    </message>
+    <!-- Orin → sync MCU -->
+    <message id="52050" name="ARC_DRIVE_COMMAND">
+      <description>Drive and steering command. Latest wins; never retransmitted. Clamped by the safety envelope before any CAN command (SYS-22).</description>
+      <field type="uint64_t" name="time_ns" units="ns">When the command was computed, in sync-MCU time.</field>
+      <field type="float" name="speed" units="m/s">Target speed.</field>
+      <field type="float" name="accel" units="m/s/s">Acceleration limit for reaching it.</field>
+      <field type="float" name="steer" units="rad">Target steering angle.</field>
+    </message>
+    <message id="52051" name="ARC_OPERATOR_HEARTBEAT">
+      <description>The operator's heartbeat, forwarded by the Orin from the laptop (SYS-04). Never sent straight from the laptop.</description>
+      <field type="uint64_t" name="time_ns" units="ns">When the Orin forwarded it, in sync-MCU time.</field>
+      <field type="uint32_t" name="counter">The laptop's heartbeat counter, passed through.</field>
+    </message>
+    <message id="52052" name="ARC_ENVELOPE_SET">
+      <description>Session safety-envelope limits (SYS-22). The sync MCU confirms with ARC_SAFETY_STATE.</description>
+      <field type="uint64_t" name="time_ns" units="ns">When set, in sync-MCU time.</field>
+      <field type="float" name="max_speed" units="m/s">Speed limit; 3 m/s by default for new experiments.</field>
+      <field type="float" name="max_accel" units="m/s/s">Acceleration limit.</field>
+      <field type="float" name="max_steer" units="rad">Steering-angle limit.</field>
+    </message>
+  </messages>
+</mavlink>
