@@ -1,0 +1,25 @@
+{
+  "name": "vesc",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "tags": ["env:dev-container"],
+  "implicitDependencies": ["systems"],
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "make -C firmware/vesc/bldc -j$(nproc) fw_a50s_v23c_12s"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cmake -S firmware/vesc/arc -B firmware/vesc/build/arc",
+          "cmake --build firmware/vesc/build/arc",
+          "ctest --test-dir firmware/vesc/build/arc --output-on-failure"
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

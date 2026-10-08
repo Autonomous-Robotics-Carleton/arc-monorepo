@@ -53,12 +53,13 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 
 - [x] ADR-0033: vendored snapshot plus an update script, replacing ADR-0030's subtree (a subtree needs merge commits; this repo rebase-merges)
 - [x] `tools/vesc-upstream.sh` (import and three-way update), tested in a scratch repo: 6.06 → 7.00 applies cleanly with a local change kept; a conflicting change is reported and marked. Skips lispBM's test reports, REPL, docs and examples (153 MB → 22 MB)
-- [ ] Upstream `vedderb/bldc` imported into `firmware/vesc/bldc/` at `release_7_00` (SQ-3), recorded in `firmware/vesc/UPSTREAM`
-- [ ] The VESC's Arm toolchain in the dev container: GCC 7 (2018-q2), which `release_7_00` builds with (SQ-3)
+- [x] Upstream `vedderb/bldc` imported into `firmware/vesc/bldc/` at `release_7_00` (SQ-3), recorded in `firmware/vesc/UPSTREAM`
+- [x] The VESC's Arm toolchain in the dev container: GCC 7 (2018-q2), which `release_7_00` builds with (SQ-3), checksum pinned
 - [x] Licence boundary written into the root README and `LICENSE` (GPL-3.0 for `firmware/vesc/`)
 - [x] ~~ARC hardware config skeleton~~ Not needed: the A50S's hardware config is upstream (`hwconf/teamtriforceuk/a50s_v23c/`, in `release_6_06` and `release_7_00`)
-- [ ] Stubs for the e-stop brake routine, UART telemetry and the eRPM limit, with host unit tests
-- [ ] Nx targets; CI builds the stock `a50s_v23c_12s` target and ours
+- [x] Stubs for the e-stop brake routine, UART telemetry and the eRPM limit, with host unit tests (`firmware/vesc/arc/`, fail-safe)
+- [x] Nx targets (`nx build vesc`, `nx test vesc`); CI builds `a50s_v23c_12s` in the dev-container job
+- [ ] Our modules wired into the `bldc/` build as they're implemented
 
 ## Phase 5: Platform software scaffold
 
