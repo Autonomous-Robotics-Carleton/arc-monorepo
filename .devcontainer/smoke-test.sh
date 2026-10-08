@@ -31,4 +31,7 @@ ros2 pkg prefix rclcpp > /dev/null
 colcon --help > /dev/null
 python3 -c "import rclpy, launch_testing"
 
+echo "== sync-link code generator"
+python3 -m pymavlink.tools.mavgen --help > /dev/null
+
 echo "== dev container OK"

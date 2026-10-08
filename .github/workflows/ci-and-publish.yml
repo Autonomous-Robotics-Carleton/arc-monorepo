@@ -195,6 +195,6 @@ jobs:
       - name: Set Nx base and head
         uses: nrwl/nx-set-shas@v5
 
-      - name: Build and test affected firmware and ROS
+      - name: Check, build and test affected firmware and ROS
         # `nx affected` has no --projects: exclude everything without the tag
-        run: npx nx affected -t build test --exclude='*,!tag:env:dev-container'
+        run: npx nx affected -t check build test --exclude='*,!tag:env:dev-container'
