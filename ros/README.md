@@ -9,7 +9,7 @@ Platform: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT (ADR-0016). Exper
 The platform nodes are the same on every target; a **backend** implements the car interface (`arc_msgs`) for each one:
 
 ```bash
-ros2 launch arc_bringup platform.launch.py target:=sim      # a simulator (ADR-0032)
+ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots (ADR-0032); sensors:=lidar|stereo|all
 ros2 launch arc_bringup platform.launch.py target:=replay   # play back an MCAP log
 ros2 launch arc_bringup platform.launch.py target:=car      # the sync MCU over the sync link (ICD-sync-link)
 ```
@@ -21,10 +21,12 @@ Scaffolding: every package builds, but nothing is implemented yet.
 | Package | Job | State | Traces to |
 | --- | --- | --- | --- |
 | `arc_msgs` | The car interface: messages and services | Placeholder message; the ICD isn't written yet | `systems/icd/` |
-| `arc_bringup` | Launch files and parameters; `target:=` | Picks the backend; a launch test per target | ADR-0028 |
-| `arc_backend_sim` | Simulator backend | Stub; one package per simulator comes with ADR-0032 | ADR-0032 |
+| `arc_bringup` | Launch files and parameters; `target:=`, `sim:=`, `sensors:=` | Picks the backend; a launch test per backend | ADR-0028, ADR-0032 |
+| `arc_backend_sim_gazebo` | Gazebo Harmonic: full sensor suite, event cameras; Linux with a GPU | Stub | ADR-0032 |
+| `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
+| `arc_backend_sim_gym` | F1TENTH gym: 2D and fast; planning, control, CI | Stub | ADR-0032 |
 | `arc_backend_replay` | Log-replay backend | Stub | SYS-24 |
-| `arc_backend_car` | Bridge to the sync MCU | Stub | ADR-0021, ADR-0024 |
+| `arc_backend_car` | Bridge to the sync MCU | Stub, with the generated sync-link code and a round-trip test | ADR-0021, ADR-0024, ADR-0031 |
 
 Still to come:
 
