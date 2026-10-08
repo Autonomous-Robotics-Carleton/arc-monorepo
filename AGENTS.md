@@ -60,7 +60,6 @@ Gotchas:
 
 - Branch from `main`: `yourname/<type>/<issue>-<short-name>` (issue number optional).
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `ci`. One logical change per commit.
-- Don't add AI co-author trailers or "generated with" lines to commits or PRs.
 - Rebase on `origin/main`; never merge `main` into a branch, and don't use GitHub's "Update branch" (it creates a merge commit).
 - PRs use the template in `.github/pull_request_template.md`. They're merged **once**, with "Rebase and merge" (or "Squash and merge" for messy branches). If a PR's commits are already on `main`, close it instead.
 - Check `git status` before committing: files already staged by `git mv` or `git rm` get swept into the next commit.
