@@ -12,7 +12,7 @@ It's stock VESC firmware plus three additions:
 
 ## Upstream and updates (ADR-0033)
 
-Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot. `UPSTREAM` records the repository, ref and commit it's based on. Our changes are ordinary commits in `bldc/`.
+Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. Our changes are ordinary commits in `bldc/`.
 
 ```bash
 tools/vesc-upstream.sh import <ref>   # first import (ref: SQ-3 in systems/software/setup-plan.md)
@@ -21,4 +21,21 @@ tools/vesc-upstream.sh update <ref>   # bring in upstream's changes, three-way, 
 
 **Licence:** everything under `firmware/vesc/` is GPL-3.0, under upstream's licence; the rest of the repo is MIT. Don't copy code from here into other parts of the repo.
 
-Nothing is imported yet.
+## Layout
+
+| Path | What |
+| --- | --- |
+| `bldc/` | Upstream VESC firmware, plus our edits as ordinary commits |
+| `arc/` | Our additions (e-stop, UART telemetry, speed limit) as modules with host tests. Stubs so far, fail-safe; each joins the firmware build in `bldc/` as it's implemented |
+| `UPSTREAM` | The upstream commit `bldc/` is based on |
+
+## Build and test
+
+In the dev container (GCC 7 2018-q2, the compiler upstream expects):
+
+```bash
+npx nx build vesc   # bldc: make fw_a50s_v23c_12s -> bldc/build/a50s_v23c_12s/*.bin
+npx nx test vesc    # arc/: host tests with CMake and CTest
+```
+
+Flash the `.bin` with VESC Tool over USB.
