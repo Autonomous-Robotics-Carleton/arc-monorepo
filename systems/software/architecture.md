@@ -47,7 +47,7 @@ The sync MCU's `native_sim` build speaks the same sync-link protocol as the real
 
 | Interface | Defined in | Generated into |
 | --- | --- | --- |
-| Command CAN bus (classic) | `can-command.dbc` (ICD README, not written yet) | Sync MCU firmware, VESC firmware |
+| Command CAN bus (classic) | `can-command.dbc` (draft; stock VESC frames) | Sync MCU firmware (the VESC side is stock) |
 | Controller telemetry (UART) | ICD controller-telemetry (draft; MAVLink 2, the ARC message set in `sync-link.xml`) | Sync MCU firmware, VESC firmware |
 | Sync MCU ↔ Orin (UDP) | ICD-sync-link, `sync-link.xml` (draft; MAVLink 2, ADR-0031) | Sync MCU firmware, the ROS sync bridge |
 | Car interface (ROS 2) | `arc_msgs` (ICD ros2-msgs) | Every ROS package and experiment |

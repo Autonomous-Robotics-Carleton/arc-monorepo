@@ -1,6 +1,6 @@
 # ICD-sync-link
 
-- **Revision:** draft (2026-10-07). The message catalogue is drafted in [`sync-link.xml`](sync-link.xml) (MAVLink 2, ADR-0031); code is generated from it by `tools/gen-sync-link.sh`.
+- **Revision:** draft (2026-10-07). The message catalogue is drafted in [`sync-link.xml`](sync-link.xml) (MAVLink 2, ADR-0031); code is generated from it by `tools/gen-interfaces.sh`.
 - **Status:** Draft. Needs an owner on each side and their sign-off.
 - **Side A:** sync MCU firmware (`firmware/sync-mcu/`, the `sync_link` module; E-30) (owner TBD)
 - **Side B:** the sync bridge on the Orin (`ros/`, the car backend of the car interface; ADR-0028) (owner TBD)
