@@ -1,7 +1,7 @@
 # Software architecture (v1)
 
-- **Status:** Draft (2026-10-07). The repo is being set up for software: see [`setup-plan.md`](setup-plan.md).
-- **Decisions:** ADR-0028 (targets), ADR-0029 (dev environment), ADR-0033 (VESC firmware vendored in this repo; supersedes ADR-0030); also ADR-0016 (Orin platform), ADR-0017 (Zephyr), ADR-0021 (time sync), ADR-0024 (telemetry latency).
+- **Status:** Draft (2026-10-08). Every component is scaffolded: see [`setup-plan.md`](setup-plan.md).
+- **Decisions:** ADR-0028 (targets), ADR-0029 (dev environment), ADR-0031 (sync-link encoding), ADR-0032 (simulators), ADR-0033 (VESC firmware vendored in this repo; supersedes ADR-0030), ADR-0034 (off-the-shelf motor controllers); also ADR-0016 (Orin platform), ADR-0017 (Zephyr), ADR-0021 (time sync), ADR-0024 (telemetry latency).
 - **Requirements:** SYS-33 (targets) and the software-facing requirements SYS-06, SYS-09, SYS-21 to SYS-24, SYS-29.
 
 The car's software, where each part lives in this repo, and how each part runs on more than one target.

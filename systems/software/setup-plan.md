@@ -1,6 +1,6 @@
 # Software setup plan (v1)
 
-- **Status:** Draft (2026-10-07). Phase 0 done; phase 1 in progress.
+- **Status:** Draft (2026-10-08). The scaffolding is done: every phase has landed except the unticked items below, which wait on hardware, simulators or implementation work. Open work is tracked as GitHub issues (index: #110).
 - **Goal:** the repo ready for software work: every component scaffolded, building and tested in CI for its targets, before the hardware arrives. Writing the drivers, estimator and controllers comes after this plan.
 - **Order:** firmware first (current focus), then interfaces, then platform software.
 - **How it's built:** [`architecture.md`](architecture.md), ADR-0028, ADR-0029, ADR-0033.
@@ -10,7 +10,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 ## Phase 0: Decisions and docs
 
 - [x] SYS-33: every component runs on simulation, development hardware and the car
-- [x] ADR-0028 targets, ADR-0029 dev environment, ADR-0030 VESC firmware in this repo
+- [x] ADR-0028 targets, ADR-0029 dev environment, ADR-0030 VESC firmware in this repo (superseded by ADR-0033)
 - [x] [`architecture.md`](architecture.md) and this plan
 
 ## Phase 1: Dev environment
@@ -18,25 +18,27 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 - [x] `.devcontainer/` image: Zephyr SDK 1.0.1 (Arm toolchain only), west, Zephyr v4.4.2 and its STM32/CMSIS modules baked in from `firmware/sync-mcu/west.yml`, Node 22 and pnpm. ROS 2 Jazzy comes in phase 5 and the VESC toolchain in phase 4, to keep the first image small
 - [x] `smoke-test.sh`: builds and runs hello_world on `native_sim`, builds it for `nucleo_h723zg`
 - [x] CI builds the image, runs the smoke test in it, and publishes it to GHCR. The image is tagged by the hash of its inputs, so a PR that changes it is tested in its own image; `main` also publishes it as `:latest`
-- [ ] Make the GHCR package public, so teammates pull its layers without logging in
+- [x] Make the GHCR package public, so teammates pull its layers without logging in
 - [ ] Verify on Linux, macOS (Intel and Apple Silicon) and Windows (WSL 2): open the repo in the container and build
 - [x] Handbook: a firmware section in Dev setup (Docker, opening the container, `probe-rs` on the host)
 
 ## Phase 2: Sync MCU firmware scaffold
 
 - [x] West manifest pinning Zephyr and its modules (`firmware/sync-mcu/west.yml`); the dev container bakes the workspace in at `/opt/zephyr-ws`, so nothing is committed or fetched by hand
-- [ ] Application skeleton, one module per job, as stubs:
+- [x] Application skeleton, one module per job, as stubs (`firmware/sync-mcu/app/src/`):
   - time base
   - sensor sampling
-  - CAN buses (command, telemetry, steering)
+  - CAN buses (command, steering)
+  - the motor controllers' UART telemetry links (ADR-0034)
   - watchdog and safety envelope
   - sync link to the Orin
-- [ ] Three targets building:
+- [x] Three targets building:
   - `native_sim`
   - `nucleo_h723zg`
   - `arc_sync`: a board definition skeleton in this repo, pins TBD from the EE
-- [ ] Tests on `native_sim` with Zephyr's test runner (twister), using loopback CAN
-- [ ] Nx targets: build per board, test; CI runs them on every affected PR
+- [x] Tests on `native_sim` with Zephyr's test runner (twister): safety, sync link, CAN command packing
+- [ ] Loopback CAN tests, once the CAN module is implemented
+- [x] Nx targets: build per board, test; CI runs them on every affected PR
 
 ## Phase 3: Interfaces
 
@@ -64,7 +66,7 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 ## Phase 5: Platform software scaffold
 
 - [x] ROS 2 Jazzy added to the dev container (ros-base, colcon, rosdep, MCAP storage, launch_testing)
-- [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_sim`, `arc_backend_replay`, `arc_backend_car`
+- [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_replay` and `arc_backend_car` (the simulator backends are below)
 - [x] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym (ADR-0032): stubs, a launch test each
 - [ ] Each simulator installed and wired to its backend (Gazebo Harmonic and the gym in the dev container; Webots on the host)
 - [ ] `arc_description`: one URDF of the car, the source for every simulator's model
@@ -88,6 +90,7 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 
 - The platform image and the path from a merged PR to the Orin (ADR-0016)
 - The real drivers, estimator, controllers and logging
+- The ground station: the operator laptop's software, including the heartbeat the Orin forwards (SYS-04). Nothing is scaffolded yet (issue #71)
 
 ## Open questions
 
