@@ -26,7 +26,7 @@ Scaffolding: every package builds, but nothing is implemented yet.
 | `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
 | `arc_backend_sim_gym` | F1TENTH gym: 2D and fast; planning, control, CI | Stub | ADR-0032 |
 | `arc_backend_replay` | Log-replay backend | Stub | SYS-24 |
-| `arc_backend_car` | Bridge to the sync MCU | Stub, with the generated sync-link code and a round-trip test | ADR-0021, ADR-0024, ADR-0031 |
+| `arc_backend_car` | Bridge to the sync MCU | Exchanges `ARC_LINK_STATUS` with the sync MCU over UDP (the generated sync-link code, a round-trip test); the car interface itself is a stub | ADR-0021, ADR-0024, ADR-0031 |
 
 Still to come:
 
