@@ -1,6 +1,6 @@
 # ADR-0004: Separate power and signal connectors at each corner
 
-- **Status:** Accepted. Signal pinout redefined in ICD-corner-connector rev B (ADR-0006, ADR-0009)
+- **Status:** Superseded by ADR-0034 (the motor controllers move to the deck, so no power or signal connector crosses the corner boundary; a corner sends its motor phases and Hall cable, ICD-corner-connector rev E). Earlier: signal pinout redefined in ICD-corner-connector rev B (ADR-0006, ADR-0009)
 - **Date:** before 2026-09-23
 - **Deciders:** TBD
 - **Traces to:** SYS-13, RSK-05

@@ -1,6 +1,6 @@
 # ADR-0033: The VESC firmware is vendored as an upstream snapshot, updated by script
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0034 (our changes are now the e-stop routine, UART telemetry and the speed limit, on upstream's A50S target; no ARC hardware config or FD telemetry)
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-05, SYS-24, SYS-33, ADR-0011, ADR-0012, ADR-0024, ADR-0028, RSK-12
