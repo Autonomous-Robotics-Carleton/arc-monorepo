@@ -22,6 +22,7 @@
   --sensor: #7A2BB8;
   --open: #6B7680;
   --fd: #0E7490;
+  --uart: #B0306F;
   --tint: #E6ECF0;
   --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --body: "IBM Plex Sans", "Segoe UI", Roboto, Arial, sans-serif;
@@ -30,13 +31,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #101519; --sheet: #151B20; --ink: #E2E8EC; --muted: #98A5AF; --rule: #2E3840; --box: #1A2229;
-    --power: #FF7B6E; --safety: #F2A54A; --can: #5BD08A; --data: #7FA6FF; --sensor: #C99BFF; --open: #8D99A3; --fd: #4FD1E0; --tint: #1F2930;
+    --power: #FF7B6E; --safety: #F2A54A; --can: #5BD08A; --data: #7FA6FF; --sensor: #C99BFF; --open: #8D99A3; --fd: #4FD1E0; --uart: #F27AB8; --tint: #1F2930;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #101519; --sheet: #151B20; --ink: #E2E8EC; --muted: #98A5AF; --rule: #2E3840; --box: #1A2229;
-  --power: #FF7B6E; --safety: #F2A54A; --can: #5BD08A; --data: #7FA6FF; --sensor: #C99BFF; --open: #8D99A3; --fd: #4FD1E0; --tint: #1F2930;
+  --power: #FF7B6E; --safety: #F2A54A; --can: #5BD08A; --data: #7FA6FF; --sensor: #C99BFF; --open: #8D99A3; --fd: #4FD1E0; --uart: #F27AB8; --tint: #1F2930;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -91,6 +92,8 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 .w-open { stroke: var(--open); stroke-dasharray: 6 4; }
 .w-fd { stroke: var(--fd); }
 .c-fd { fill: var(--fd); }
+.w-uart { stroke: var(--uart); }
+.c-uart { fill: var(--uart); }
 .w-ink { stroke: var(--ink); stroke-width: 1.4; fill: none; }
 .c-power { fill: var(--power); } .c-safety { fill: var(--safety); } .c-can { fill: var(--can); }
 .c-data { fill: var(--data); } .c-sensor { fill: var(--sensor); } .c-open { fill: var(--open); } .c-ink { fill: var(--ink); } .c-muted { fill: var(--muted); }
@@ -100,9 +103,9 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 
 <div class="wrap">
   <header class="title">
-    <div class="eyebrow">ARC 4WD car · v1 · systems/ on shrikarv/doc-site-redesign · 2026-10-02</div>
+    <div class="eyebrow">ARC 4WD car · v1 · systems/ · 2026-10-08</div>
     <h1>ARC Car Interface Topology</h1>
-    <p class="lede">Every electrical interface on the v1 car as currently decided (ADR-0006 to ADR-0021), centred on the sync MCU board. Dashed items are still open.</p>
+    <p class="lede">Every electrical interface on the v1 car as currently decided (through ADR-0034), centred on the sync MCU board. Dashed items are still open.</p>
   </header>
 
   <section>
@@ -112,20 +115,22 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
         <span><i style="border-color:var(--power)"></i>Power</span>
         <span><i style="border-color:var(--safety)"></i>Safety (e-stop)</span>
         <span><i style="border-color:var(--can)"></i>Classic CAN (commands)</span>
-        <span><i style="border-color:var(--fd)"></i>CAN-FD (VESC telemetry)</span>
+        <span><i style="border-color:var(--fd)"></i>CAN-FD (steering)</span>
+        <span><i style="border-color:var(--uart)"></i>UART (controller telemetry)</span>
         <span><i style="border-color:var(--data)"></i>High-speed data (Ethernet, Wi-Fi, CSI, PCIe)</span>
         <span><i style="border-color:var(--sensor)"></i>Sensor I/O and timing</span>
         <span><i class="dash" style="border-color:var(--open)"></i>Open decision</span>
       </div>
       <figure>
         <div class="scroll">
-<svg class="wide" viewBox="0 0 1200 830" role="img" aria-label="System topology: the Orin NX handles cameras, Wi-Fi, storage and Ethernet; the sync MCU board reads every vehicle-state sensor, triggers cameras, and commands four VESCs over one classic CAN bus and receives their telemetry over two CAN-FD buses; the power board and e-stop feed the VESCs a shared e-stop enable line.">
+<svg class="wide" viewBox="0 0 1200 830" role="img" aria-label="System topology: the Orin NX handles cameras, Wi-Fi, storage and Ethernet; the sync MCU board reads every vehicle-state sensor, triggers cameras, and commands four A50S motor controllers on the deck over one classic CAN bus and receives their telemetry over one UART each; the power board feeds every controller the ESTOP line and switches their motor bus.">
   <defs>
     <marker id="ar-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-data" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="ar-sensor" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-sensor" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="ar-safety" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-safety" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="ar-open" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-open" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="ar-fd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-fd" d="M0,0 L10,5 L0,10 z"/></marker>
+    <marker id="ar-uart" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-uart" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="ar-power" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-power" d="M0,0 L10,5 L0,10 z"/></marker>
   </defs>
 
@@ -195,14 +200,14 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <!-- Sync MCU board -->
   <rect class="bx-key" x="680" y="180" width="220" height="340" rx="4"/>
   <text class="tb" x="790" y="206" text-anchor="middle">Sync MCU board</text>
-  <text class="tn c-muted" x="790" y="224" text-anchor="middle">STM32H723 · 3 FDCAN + MCP2518FD</text>
+  <text class="tn c-muted" x="790" y="224" text-anchor="middle">STM32H723 · Zephyr</text>
   <text class="t" x="696" y="256">Owns the car's time base</text>
   <text class="t" x="696" y="276">Timestamps every input at the pin</text>
   <text class="t" x="696" y="296">Enforces the safety envelope</text>
   <text class="t" x="696" y="316">Runs the heartbeat watchdog</text>
   <text class="t" x="696" y="336">Raw sensors at 1–4 kHz</text>
   <text class="t" x="696" y="352">µs sensors in its own clock</text>
-  <text class="tn c-muted" x="696" y="380">4 CAN buses · Zephyr</text>
+  <text class="tn c-muted" x="696" y="380">2 CAN buses · 4 UARTs</text>
   <text class="tn c-can" x="690" y="490">120 Ω</text>
 
   <!-- Sensors -->
@@ -218,14 +223,14 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
     <text class="tn c-sensor" x="930" y="248" text-anchor="middle">SPI</text>
 
     <rect class="bx" x="960" y="282" width="220" height="36" rx="3"/>
-    <text class="t" x="972" y="297">Steering encoder</text><text class="tm" x="972" y="312">on the knuckle · absolute</text>
+    <text class="t" x="972" y="297">Knuckle encoders ×2</text><text class="tm" x="972" y="312">AS5047, front knuckles · absolute</text>
     <line class="w w-sensor" x1="958" y1="300" x2="902" y2="300" marker-end="url(#ar-sensor)"/>
     <text class="tn c-sensor" x="930" y="294" text-anchor="middle">SPI</text>
 
     <rect class="bx" x="960" y="328" width="220" height="36" rx="3"/>
-    <text class="t" x="972" y="343">Suspension pots ×4</text><text class="tm" x="972" y="358">ratiometric · 2 kHz</text>
+    <text class="t" x="972" y="343">Suspension angle ×4</text><text class="tm" x="972" y="358">AS5047 family · ≥ 2 kHz</text>
     <line class="w w-sensor" x1="958" y1="346" x2="902" y2="346" marker-end="url(#ar-sensor)"/>
-    <text class="tn c-sensor" x="930" y="340" text-anchor="middle">ADC</text>
+    <text class="tn c-sensor" x="930" y="340" text-anchor="middle">SPI</text>
 
     <rect class="bx" x="960" y="374" width="220" height="36" rx="3"/>
     <text class="t" x="972" y="389">Ride-height ToF ×5</text><text class="tm" x="972" y="404">4 corners + 1 for ground-speed scale</text>
@@ -251,19 +256,17 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <line class="w w-can" x1="960" y1="660" x2="960" y2="680"/><circle class="c-can" cx="960" cy="660" r="3"/>
   <text class="tn c-can" x="1006" y="664">120 Ω</text>
   <text class="tn c-can" x="472" y="590" text-anchor="end">Classic CAN</text>
-  <text class="tn c-can" x="472" y="604" text-anchor="end">1 Mbit/s</text>
+  <text class="tn c-can" x="472" y="604" text-anchor="end">1 Mbit/s (TBC)</text>
   <text class="tn c-can" x="472" y="618" text-anchor="end">commands only</text>
 
-  <!-- Telemetry: two CAN-FD buses -->
-  <polyline class="w w-fd" points="680,515 520,515 520,645 740,645"/>
-  <line class="w w-fd" x1="600" y1="680" x2="600" y2="649" marker-end="url(#ar-fd)"/><circle class="c-fd" cx="600" cy="645" r="3"/>
-  <line class="w w-fd" x1="740" y1="680" x2="740" y2="649" marker-end="url(#ar-fd)"/>
-  <polyline class="w w-fd" points="680,505 500,505 500,634 1020,634"/>
-  <line class="w w-fd" x1="880" y1="680" x2="880" y2="638" marker-end="url(#ar-fd)"/><circle class="c-fd" cx="880" cy="634" r="3"/>
-  <line class="w w-fd" x1="1020" y1="680" x2="1020" y2="638" marker-end="url(#ar-fd)"/>
-  <text class="tn c-fd" x="530" y="532">CAN-FD telemetry, 5 Mbit/s</text>
-  <text class="tn c-fd" x="530" y="546">front bus: FL, FR</text>
-  <text class="tn c-fd" x="530" y="560">rear bus: RL, RR · ~60% each</text>
+  <!-- Telemetry: one UART per controller, point to point -->
+  <polyline class="w w-uart" points="680,500 492,500 492,652 600,652 600,680" marker-start="url(#ar-uart)"/>
+  <polyline class="w w-uart" points="680,506 500,506 500,644 740,644 740,680" marker-start="url(#ar-uart)"/>
+  <polyline class="w w-uart" points="680,512 508,512 508,636 880,636 880,680" marker-start="url(#ar-uart)"/>
+  <polyline class="w w-uart" points="680,518 516,518 516,628 1020,628 1020,680" marker-start="url(#ar-uart)"/>
+  <text class="tn c-uart" x="530" y="548">UART telemetry, 3 Mbit/s (TBC)</text>
+  <text class="tn c-uart" x="530" y="562">one link per controller</text>
+  <text class="tn c-uart" x="530" y="576">full status at 1 kHz</text>
 
   <!-- Stacking header -->
   <line class="w-ink" x1="760" y1="520" x2="760" y2="565"/>
@@ -287,45 +290,47 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 
   <!-- Battery + motor path -->
   <rect class="bx" x="20" y="575" width="110" height="46" rx="3"/>
-  <text class="t" x="75" y="594" text-anchor="middle">4S LiPo</text><text class="tm" x="75" y="610" text-anchor="middle">peak ~120 A</text>
+  <text class="t" x="75" y="594" text-anchor="middle">4S LiPo</text><text class="tm" x="75" y="610" text-anchor="middle">peak ~30–35 A</text>
   <line class="w w-power" x1="130" y1="598" x2="160" y2="598" marker-end="url(#ar-power)"/>
   <text class="tn c-power" x="166" y="602">to power board</text>
   <line class="w w-power" x1="75" y1="621" x2="75" y2="650"/>
   <rect class="bx" x="20" y="650" width="110" height="40" rx="3"/>
   <text class="t" x="75" y="674" text-anchor="middle">Loop key</text>
   <polyline class="w-bus" points="75,690 75,800 1080,800"/>
-  <text class="tn c-power" x="150" y="820">Motor bus 12–16.8 V · bus bar · XT60 to each corner</text>
+  <text class="tn c-power" x="492" y="820">Motor bus 12–16.8 V · switched on the power board, cut at T · XT30 at each controller</text>
   <rect class="bx" x="220" y="730" width="120" height="40" rx="3"/>
   <text class="t" x="280" y="747" text-anchor="middle">Bus clamp</text><text class="tm" x="280" y="762" text-anchor="middle">dumps regen spikes</text>
   <line class="w w-power" x1="280" y1="770" x2="280" y2="800"/><circle class="c-power" cx="280" cy="800" r="3.5"/>
+  <rect class="bx" x="360" y="784" width="120" height="32" rx="3"/>
+  <text class="t" x="420" y="799" text-anchor="middle">Motor-bus switch</text><text class="tm" x="420" y="812" text-anchor="middle">power board</text>
 
-  <!-- VESCs -->
+  <!-- Motor controllers, on the deck (ADR-0034) -->
   <g>
     <rect class="bx-key" x="510" y="680" width="120" height="60" rx="3"/>
-    <text class="tb" x="570" y="699" text-anchor="middle">VESC 6.4 fork</text><text class="tn c-ink" x="570" y="715" text-anchor="middle">FL</text><text class="tm" x="570" y="731" text-anchor="middle">drives 1010 motor</text>
+    <text class="tb" x="570" y="699" text-anchor="middle">A50S V2.3c</text><text class="tn c-ink" x="570" y="715" text-anchor="middle">FL</text><text class="tm" x="570" y="731" text-anchor="middle">on the deck · 1010</text>
     <rect class="bx-key" x="650" y="680" width="120" height="60" rx="3"/>
-    <text class="tb" x="710" y="699" text-anchor="middle">VESC 6.4 fork</text><text class="tn c-ink" x="710" y="715" text-anchor="middle">FR</text><text class="tm" x="710" y="731" text-anchor="middle">drives 1010 motor</text>
+    <text class="tb" x="710" y="699" text-anchor="middle">A50S V2.3c</text><text class="tn c-ink" x="710" y="715" text-anchor="middle">FR</text><text class="tm" x="710" y="731" text-anchor="middle">on the deck · 1010</text>
     <rect class="bx-key" x="790" y="680" width="120" height="60" rx="3"/>
-    <text class="tb" x="850" y="699" text-anchor="middle">VESC 6.4 fork</text><text class="tn c-ink" x="850" y="715" text-anchor="middle">RL</text><text class="tm" x="850" y="731" text-anchor="middle">drives 1010 motor</text>
+    <text class="tb" x="850" y="699" text-anchor="middle">A50S V2.3c</text><text class="tn c-ink" x="850" y="715" text-anchor="middle">RL</text><text class="tm" x="850" y="731" text-anchor="middle">on the deck · 1010</text>
     <rect class="bx-key" x="930" y="680" width="120" height="60" rx="3"/>
-    <text class="tb" x="990" y="699" text-anchor="middle">VESC 6.4 fork</text><text class="tn c-ink" x="990" y="715" text-anchor="middle">RR</text><text class="tm" x="990" y="731" text-anchor="middle">drives 1010 motor</text>
+    <text class="tb" x="990" y="699" text-anchor="middle">A50S V2.3c</text><text class="tn c-ink" x="990" y="715" text-anchor="middle">RR</text><text class="tm" x="990" y="731" text-anchor="middle">on the deck · 1010</text>
   </g>
   <line class="w w-power" x1="530" y1="800" x2="530" y2="742" marker-end="url(#ar-power)"/><circle class="c-power" cx="530" cy="800" r="3.5"/>
   <line class="w w-power" x1="670" y1="800" x2="670" y2="742" marker-end="url(#ar-power)"/><circle class="c-power" cx="670" cy="800" r="3.5"/>
   <line class="w w-power" x1="810" y1="800" x2="810" y2="742" marker-end="url(#ar-power)"/><circle class="c-power" cx="810" cy="800" r="3.5"/>
   <line class="w w-power" x1="950" y1="800" x2="950" y2="742" marker-end="url(#ar-power)"/><circle class="c-power" cx="950" cy="800" r="3.5"/>
 
-  <!-- ESTOP_EN -->
+  <!-- ESTOP, on each controller's Servo/PPM pin -->
   <polyline class="w w-safety" points="918,623 918,768"/>
   <line class="w w-safety" x1="610" y1="768" x2="1030" y2="768"/><circle class="c-safety" cx="918" cy="768" r="3"/>
   <line class="w w-safety" x1="610" y1="768" x2="610" y2="742" marker-end="url(#ar-safety)"/>
   <line class="w w-safety" x1="750" y1="768" x2="750" y2="742" marker-end="url(#ar-safety)"/>
   <line class="w w-safety" x1="890" y1="768" x2="890" y2="742" marker-end="url(#ar-safety)"/>
   <line class="w w-safety" x1="1030" y1="768" x2="1030" y2="742" marker-end="url(#ar-safety)"/>
-  <text class="tn c-safety" x="1060" y="772">ESTOP_EN</text>
+  <text class="tn c-safety" x="1060" y="772">ESTOP</text>
 </svg>
         </div>
-        <figcaption>The Orin handles cameras, Wi-Fi, storage and the Ethernet side. The sync board reads every vehicle-state sensor directly, triggers the cameras and sends time sync to the Orin. The four VESCs get motor power from the bus bar, commands from one classic CAN trunk (terminated at the sync board and the far end), telemetry out over two CAN-FD buses (front pair, rear pair, each daisy-chained through its two VESCs), and ESTOP_EN from the power board. Lines that cross without a dot aren't connected.</figcaption>
+        <figcaption>The Orin handles cameras, Wi-Fi, storage and the Ethernet side. The sync board reads every vehicle-state sensor directly, triggers the cameras and sends time sync to the Orin. The four A50S motor controllers sit on the deck (ADR-0034). They get motor power from the power board's switched motor bus, commands from one classic CAN trunk (terminated at the sync board and the far end), and ESTOP from the power board on each one's Servo/PPM pin; each sends its telemetry to the sync board over its own UART. The e-stop first brakes in the controllers' firmware, then the power board opens the motor-bus switch at T. Lines that cross without a dot aren't connected.</figcaption>
       </figure>
     </div>
   </section>
@@ -333,20 +338,19 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <section>
     <h2>Sync board I/O</h2>
     <div class="sheet">
-      <p>What the STM32H723 drives, from the BOM tally. The EE still has to check that it all fits the pin-mux of one package.</p>
+      <p>What the STM32H723 drives, from the BOM tally. Checked against the STM32H723ZG pin-mux on 2026-10-07: it fits, with 37 pins to spare (<code>handoff/electrical.md</code> §2).</p>
       <div class="scroll">
       <table>
         <thead><tr><th>Interface</th><th>Users</th><th>Count</th></tr></thead>
         <tbody>
           <tr><td>SPI devices</td><td>2 IMUs, 4 wheel encoders, 4 suspension angle sensors, 2 knuckle encoders</td><td class="num">12</td></tr>
-          <tr><td>CAN</td><td>Command bus (classic, 4 VESCs); telemetry front and rear (CAN-FD); steering (CAN-FD via MCP2518FD)</td><td class="num">3 FDCAN + 1 external</td></tr>
+          <tr><td>CAN</td><td>Command bus (classic, 4 motor controllers); steering (CAN-FD, on the MCP2518FD or a freed internal FDCAN: the EE's call)</td><td class="num">2</td></tr>
           <tr><td>I2C</td><td>5 ride-height ToF via mux</td><td class="num">1 bus</td></tr>
           <tr><td>Trigger outputs</td><td>Stereo, quad, forward event (Trigger In), downward event (Trigger In)</td><td class="num">4 + spare</td></tr>
           <tr><td>GPIO</td><td>E-stop status, status LEDs, 3 ground-speed lighting modes</td><td class="num">≥ 5</td></tr>
-          <tr><td>ADC</td><td>Battery voltage and current</td><td class="num">2</td></tr>
-          <tr><td>Stacking header</td><td>Power board: rail current sense, cell voltages</td><td class="num">1</td></tr>
+          <tr><td>Stacking header</td><td>Power board: battery V/I, rail currents, cell voltages. Open: one I2C bus recommended, analog battery V/I as the fallback (ADR-0022, Proposed)</td><td class="num">1</td></tr>
           <tr><td>Ethernet</td><td>To the Orin via the switch; PPS line to an Orin GPIO</td><td class="num">1</td></tr>
-          <tr><td>UART</td><td>Debug console</td><td class="num">1</td></tr>
+          <tr><td>UART</td><td>Debug console; telemetry from each motor controller</td><td class="num">5</td></tr>
         </tbody>
       </table>
       </div>
@@ -358,48 +362,46 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
     <div class="sheet">
       <figure>
         <div class="scroll">
-<svg class="wide" viewBox="0 0 980 230" role="img" aria-label="Stop timelines at 12 metres per second: the e-stop begins its brake ramp immediately and the hardware cuts gate drive at 3 seconds; a heartbeat loss rolls at most 150 milliseconds, under 2 metres, before the same brake ramp starts.">
-  <!-- axis: x = 180 + t*250 -->
+<svg class="wide" viewBox="0 0 980 230" role="img" aria-label="Stop timelines at 9 metres per second: the e-stop begins its brake ramp immediately and stops in about 1.9 seconds, then the power board cuts the motor bus at the delay T; a heartbeat loss rolls at most 150 milliseconds, about 1.4 metres, before the same brake ramp starts.">
+  <!-- axis: x = 180 + t*300 -->
   <line class="grid-l" x1="180" y1="40" x2="180" y2="196"/>
-  <line class="grid-l" x1="305" y1="40" x2="305" y2="196"/>
-  <line class="grid-l" x1="430" y1="40" x2="430" y2="196"/>
-  <line class="grid-l" x1="555" y1="40" x2="555" y2="196"/>
-  <line class="grid-l" x1="680" y1="40" x2="680" y2="196"/>
-  <line class="grid-l" x1="805" y1="40" x2="805" y2="196"/>
-  <line class="grid-l" x1="930" y1="40" x2="930" y2="196"/>
+  <line class="grid-l" x1="330.0" y1="40" x2="330.0" y2="196"/>
+  <line class="grid-l" x1="480" y1="40" x2="480" y2="196"/>
+  <line class="grid-l" x1="630.0" y1="40" x2="630.0" y2="196"/>
+  <line class="grid-l" x1="780" y1="40" x2="780" y2="196"/>
+  <line class="grid-l" x1="930.0" y1="40" x2="930.0" y2="196"/>
   <line class="w-ink" x1="180" y1="196" x2="940" y2="196"/>
   <text class="tn c-muted" x="180" y="214" text-anchor="middle">0 s</text>
-  <text class="tn c-muted" x="305" y="214" text-anchor="middle">0.5</text>
-  <text class="tn c-muted" x="430" y="214" text-anchor="middle">1.0</text>
-  <text class="tn c-muted" x="555" y="214" text-anchor="middle">1.5</text>
-  <text class="tn c-muted" x="680" y="214" text-anchor="middle">2.0</text>
-  <text class="tn c-muted" x="805" y="214" text-anchor="middle">2.5</text>
-  <text class="tn c-muted" x="930" y="214" text-anchor="middle">3.0 s</text>
+  <text class="tn c-muted" x="330.0" y="214" text-anchor="middle">0.5</text>
+  <text class="tn c-muted" x="480" y="214" text-anchor="middle">1.0</text>
+  <text class="tn c-muted" x="630.0" y="214" text-anchor="middle">1.5</text>
+  <text class="tn c-muted" x="780" y="214" text-anchor="middle">2.0</text>
+  <text class="tn c-muted" x="930.0" y="214" text-anchor="middle">2.5 s</text>
 
   <!-- Lane 1: e-stop -->
   <text class="tb" x="16" y="78">E-stop button</text>
-  <text class="tm" x="16" y="94">ESTOP_EN low</text>
-  <polygon class="c-safety" points="180,96 218,64 218,96" opacity="0.55"/>
-  <rect class="c-safety" x="218" y="64" width="587" height="32" opacity="0.28"/>
-  <text class="tn c-ink" x="226" y="84">VESC firmware brakes at ~5 m/s² until stopped</text>
-  <line class="w w-safety" x1="805" y1="56" x2="805" y2="104"/>
-  <text class="tn c-safety" x="812" y="60">stopped ≈ 2.5 s</text>
-  <line class="w w-power" x1="930" y1="50" x2="930" y2="110"/>
-  <text class="tn c-power" x="924" y="122" text-anchor="end">hardware cuts gate drive (T ≈ 3 s)</text>
+  <text class="tm" x="16" y="94">ESTOP low</text>
+  <polygon class="c-safety" points="180,96 225.0,64 225.0,96" opacity="0.55"/>
+  <rect class="c-safety" x="225.0" y="64" width="517.5" height="32" opacity="0.28"/>
+  <text class="tn c-ink" x="233.0" y="84">controller firmware brakes at ~5 m/s² until stopped</text>
+  <line class="w w-safety" x1="742.5" y1="56" x2="742.5" y2="104"/>
+  <text class="tn c-safety" x="749.5" y="60">stopped ≈ 1.9 s</text>
+  <line class="w w-open" x1="840.0" y1="68" x2="840.0" y2="110"/>
+  <text class="tn c-power" x="846.0" y="122" text-anchor="end">power board cuts the motor bus at T (TBC)</text>
 
   <!-- Lane 2: heartbeat -->
   <text class="tb" x="16" y="160">Heartbeat lost</text>
   <text class="tm" x="16" y="176">watchdog → brake</text>
-  <rect x="180" y="146" width="38" height="32" class="c-open" opacity="0.35"/>
-  <text class="tn c-muted" x="199" y="140" text-anchor="middle">≤150 ms</text>
-  <polygon class="c-safety" points="218,178 256,146 256,178" opacity="0.55"/>
-  <rect class="c-safety" x="256" y="146" width="587" height="32" opacity="0.28"/>
-  <text class="tn c-ink" x="264" y="166">same brake ramp, then braking until stopped</text>
-  <line class="w w-safety" x1="843" y1="138" x2="843" y2="186"/>
-  <text class="tn c-safety" x="850" y="150">≈ 2.65 s</text>
+  <rect x="180" y="146" width="45.0" height="32" class="c-open" opacity="0.35"/>
+  <text class="tn c-muted" x="202.5" y="140" text-anchor="middle">≤150 ms</text>
+  <polygon class="c-safety" points="225.0,178 270.0,146 270.0,178" opacity="0.55"/>
+  <rect class="c-safety" x="270.0" y="146" width="517.5" height="32" opacity="0.28"/>
+  <text class="tn c-ink" x="278.0" y="166">same brake ramp, then braking until stopped</text>
+  <line class="w w-safety" x1="787.5" y1="138" x2="787.5" y2="186"/>
+  <text class="tn c-safety" x="794.5" y="150">≈ 2.0 s</text>
 </svg>
         </div>
-        <figcaption>At 12 m/s and ~5 m/s² (TBC). The brake ramp (the darker wedge, ~150 ms) keeps braking from being instant. On heartbeat loss the car rolls at most 150 ms, about 1.8 m, before braking starts, which meets the 2 m rolling limit. Total distance is about 15 m for the e-stop and about 17 m for heartbeat loss.</figcaption>
+        <figcaption>At 9 m/s (SYS-01) and ~5 m/s² (TBC). The brake ramp (the darker wedge, ~150 ms) keeps braking from being instant. On heartbeat loss the car rolls at most 150 ms, about 1.4 m, before braking starts, which meets the 2 m rolling limit. Total distance, ramp included, is about 9 m for the e-stop and about 10 m for heartbeat loss. The motor-bus cut T is TBC: it must come after the stop, with margin (ADR-0012 as amended by ADR-0034); its position here is illustrative.</figcaption>
       </figure>
     </div>
   </section>
@@ -409,10 +411,11 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
     <div class="sheet">
       <ul>
         <li><strong>Grounding</strong>: motor ground vs logic ground vs bus returns; isolated transceivers or a single-point ground. Needed before harness layout.</li>
-        <li><strong>RSK-03</strong>: the CAN-FD buses at 5 Mbit/s. LTspice before the VESC layout; bench test after the order.</li>
+        <li><strong>T</strong>, the motor-bus cut delay (TBC), and the brake values, on the R2 motor bench (ADR-0012).</li>
+        <li><strong>Steering bus</strong>: the MCP2518FD or a freed internal FDCAN (the EE's call, ADR-0034).</li>
+        <li><strong>Motor controllers on the deck</strong>: placement and airflow wait on the CAD model.</li>
         <li><strong>GenX320 modules</strong>: Jetson CSI fit, a JetPack 7.2 driver, Trigger In broken out (RSK-01).</li>
-        <li><strong>Sync MCU pin-mux</strong> for 12 SPI devices, 3 FDCAN, Ethernet and triggers.</li>
-        <li><strong>Optional i210/i226 NIC</strong> on the carrier, if the Orin NX has a spare PCIe lane.</li>
+        <li><strong>Optional i210/i226 NIC</strong> on the carrier: recommended not fitted (ADR-0023, Proposed).</li>
         <li><strong>Floor check</strong> (optional): phone test of the school floor for the ground-speed camera.</li>
       </ul>
     </div>
