@@ -111,7 +111,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - **Requirements:** SYS-08, -26, -27, -29; RSK-01, -08, -13.
 - **Open:**
   - CSI lane mapping for the Arducam kits and both GenX320s
-  - Whether the Orin NX has a spare PCIe x1 lane for the optional i210/i226 (not needed if ADR-0023, Proposed, is accepted)
+  - ~~Whether the Orin NX has a spare PCIe x1 lane~~ **Yes (checked 2026-10-07):** the module has 1 × x4 + 3 × x1 PCIe Gen4; NVMe takes the x4 and the Wi-Fi card one x1, leaving at least one x1 for an optional i210/i226. Whether Antmicro's baseboard routes it is for the carrier fork's layout. Only matters if ADR-0023 (Proposed: don't fit it) is rejected
   - Trigger connector pinout
   - Device tree on JetPack 7.2
   - Camera driver availability for 7.2 (RSK-01)
