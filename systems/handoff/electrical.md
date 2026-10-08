@@ -88,7 +88,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Motor phases (MR30) and the motor's Hall sensor cable come from each corner to the deck (ICD-corner-connector rev E).
 - **Requirements:** SYS-05, -13, -19, -24, -25; RSK-11, -12, -18, -19, -20.
 - **Open (integration, not design):**
-  - Molex pin numbers for the 20-pin Pico-Clasp layout now in ICD-corner-connector (ESTOP goes on Servo/PPM, which takes 3.3 or 5 V; SWD is on the connector)
+  - Circuit numbers for the 20-pin Pico-Clasp are in ICD-corner-connector, provisional until checked on the first unit (ESTOP goes on Servo/PPM, which takes 3.3 or 5 V; SWD is on the connector)
   - Whether to feed each controller's Aux power input (12–48 V) from an always-on rail, so telemetry survives the e-stop's motor-bus cut
   - Use Triforce's supplied bulk capacitor on each XT30 cable; never tie the controllers' 5 V outputs together
   - Deck mounting and airflow: waits on the CAD model. The heatsink option is bought (decided 2026-10-07), giving 40 A continuous against ~12 A
