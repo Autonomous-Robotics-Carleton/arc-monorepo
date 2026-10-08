@@ -1,6 +1,6 @@
 # ICD-sync-link
 
-- **Revision:** draft outline (2026-10-07). What each side must agree on; the message catalogue and field layouts are still to write, in MAVLink 2 (ADR-0031).
+- **Revision:** draft (2026-10-07). The message catalogue is drafted in [`sync-link.xml`](sync-link.xml) (MAVLink 2, ADR-0031); code is generated from it by `tools/gen-sync-link.sh`.
 - **Status:** Draft. Needs an owner on each side and their sign-off.
 - **Side A:** sync MCU firmware (`firmware/sync-mcu/`, the `sync_link` module; E-30) (owner TBD)
 - **Side B:** the sync bridge on the Orin (`ros/`, the car backend of the car interface; ADR-0028) (owner TBD)
@@ -22,10 +22,10 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 
 | Field | Why |
 | --- | --- |
-| Protocol version | Mismatched versions are rejected and logged, never guessed at |
+| Protocol version | Carried in `ARC_LINK_STATUS` (1 Hz each way) as the schema's `<version>`; a mismatch is logged and the link refused. A changed message definition is also rejected per message by MAVLink's CRC_EXTRA |
 | Message type | Which payload follows |
-| Sequence number (per message type, per direction) | UDP can drop or reorder; gaps are counted and logged as faults (SYS-19) |
-| Sample time, in sync-MCU nanoseconds | When the data was sampled, not sent (SYS-07, SYS-29, ADR-0021) |
+| Sequence number (MAVLink's, per link and direction) | UDP can drop or reorder; gaps are counted, reported in `ARC_LINK_STATUS` and logged as faults (SYS-19) |
+| Sample time, in sync-MCU nanoseconds | `time_ns`, the first field of every message: when the data was sampled, not sent (SYS-07, SYS-29, ADR-0021) |
 
 ## Sync MCU → Orin
 
@@ -51,7 +51,7 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 
 ## Open issues
 
-1. Message catalogue, in MAVLink 2 (ADR-0031).
+1. ~~Message catalogue~~ **Drafted** in `sync-link.xml`: one message per family above. Field lists to review with both owners.
 2. Addresses and ports.
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. Command rate and the safety-state rate.
