@@ -2,9 +2,9 @@
 
 - **Revision:** draft outline (2026-10-03). Values come from the block layout (`mechanical/cad-workflow.md`, phase 2).
 - **Status:** Draft. Needs an owner on each side and their sign-off.
-- **Side A:** corner assembly: motor (E-51), gearbox and bearing plates, CVD, VESC on its motor mount (E-50), wheel encoder (E-22), suspension pivot sensor (E-23); front corners also the knuckle encoder (E-24) and steering linkage (owner TBD)
+- **Side A:** corner assembly: motor (E-51), gearbox and bearing plates, CVD, wheel encoder (E-22), suspension pivot sensor (E-23); front corners also the knuckle encoder (E-24) and steering linkage (owner TBD)
 - **Side B:** chassis: lower tub, splice plates, suspension mounts (owner TBD)
-- **Traces to:** SYS-01, SYS-02, SYS-13, ADR-0006, ADR-0008, ADR-0019, ADR-0026, RSK-04, RSK-17
+- **Traces to:** SYS-01, SYS-02, SYS-13, ADR-0006, ADR-0008, ADR-0019, ADR-0026, ADR-0034, RSK-04, RSK-17
 
 A corner is swapped as a unit (SYS-13). This document fixes everything the two sides must agree on so each can be designed separately: where the corner sits, how it's held, and what crosses the boundary.
 
@@ -40,7 +40,7 @@ A corner is swapped as a unit (SYS-13). This document fixes everything the two s
 | --- | --- |
 | Corner power (XT60) and signal (JST-GH 10-pin) connectors: position and access | TBD; electrical side in ICD-corner-connector |
 | Wheel and suspension sensor cables to the sync board (ADR-0008) | TBD routing and strain relief |
-| FET heat path: VESC → motor mount → air | Stays in aluminium; nothing hot rests on the print |
+| Motor phase leads and Hall sensor cable to the controller on the deck (ADR-0034) | TBD routing and strain relief across the suspension; Hall cable away from the phase leads |
 
 ## Swap procedure (SYS-13)
 
