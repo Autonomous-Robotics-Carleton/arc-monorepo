@@ -1,10 +1,10 @@
 ---
 title: Dev setup
-description: From a fresh machine to running the docs site and website locally.
+description: From a fresh machine to running the docs site and website, and building the firmware and ROS in the dev container.
 icon: SquareTerminal
 ---
 
-You'll set up Linux (Windows only), Git and GitHub, Node.js, then clone the repo and run it. Once it works, read [Contributing](../../../../../.github/CONTRIBUTING.md) before your first change.
+You'll set up Linux (Windows only), Git and GitHub, Node.js, then clone the repo and run it. Firmware and ROS work also needs the dev container (section 5). Once it works, read [Contributing](../../../../../.github/CONTRIBUTING.md) before your first change.
 
 ## 1. Linux on Windows (WSL)
 
@@ -180,7 +180,7 @@ The repo is an [Nx](https://nx.dev) workspace, so every project is run through `
 | `npx nx show projects` | List the projects |
 | `npx nx graph` | Show how projects depend on each other |
 | `npx nx check systems` | Check links and IDs in `systems/` |
-| `npx nx affected -t lint check build` | What CI runs, for whatever you changed |
+| `npx nx affected -t lint test check build` | What CI runs, for whatever you changed |
 
 ## 5. Firmware and ROS: the dev container
 
@@ -208,7 +208,7 @@ Docker Engine ([install guide](https://docs.docker.com/engine/install/ubuntu/)),
 
 In VS Code, install the **Dev Containers** extension, open the repo and run **Dev Containers: Reopen in Container**. JetBrains IDEs and the `devcontainer` CLI work too.
 
-The first open builds the image, or pulls its layers once CI has published it: several GB, so give it time. Then check it inside the container:
+The first open builds the image, reusing the layers of the one CI publishes (`ghcr.io/autonomous-robotics-carleton/arc-dev:latest`) as a cache: several GB to download, so give it time. Then check it inside the container:
 
 ```sh title="Terminal (in the container)"
 .devcontainer/smoke-test.sh   # ends with "dev container OK"
@@ -238,7 +238,7 @@ source ros/install/setup.bash
 ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots; or target:=replay, car
 ```
 
-Everything is scaffolding so far: it builds and starts, but does nothing yet.
+Everything is scaffolding so far: it builds and starts, and the sync MCU and ROS link up, but nothing else is implemented yet.
 </Step>
 </Steps>
 
@@ -270,3 +270,7 @@ Git doesn't know who you are. Set your identity as in [step 2](#set-your-git-ide
 Run `nvm use` and `corepack enable` from the repo root. If `pnpm -v` still shows the wrong version, a separately installed pnpm is earlier on your `PATH`: remove it (`which pnpm` shows where it is).
 </Accordion>
 </Accordions>
+
+## What to work on
+
+Open work is in the GitHub issues, indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110). Pick one without a `blocked` or `needs-decision` label, then follow [Contributing](../../../../../.github/CONTRIBUTING.md).

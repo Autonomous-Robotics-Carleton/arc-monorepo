@@ -33,7 +33,8 @@ We’re keeping this project **fully open source**, so current and future member
 | [`experiments/`](experiments/README.md) | Team experiments, run in containers beside the platform |
 | [`hardware/`](hardware/README.md) | Board designs and mechanical exports |
 | [`platform/`](platform/README.md) | Jetson image, kernel, containers, system services |
-| [`tools/`](tools/README.md) | Developer scripts |
+| [`tools/`](tools/README.md) | Developer scripts: `systems/` checks, interface code generation, VESC vendoring, firmware-in-the-loop test |
+| [`.devcontainer/`](.devcontainer/) | The dev container every firmware and ROS build runs in (CI uses the same image) |
 | [`libs/`](libs/README.md) | Shared TypeScript packages |
 | `apps/` | The public website and the docs site (below) |
 
@@ -61,13 +62,15 @@ npx nx dev docs        # Docs site → http://localhost:3000
 npx nx dev web         # Website  → http://localhost:3001
 ```
 
-Requires Node.js 22 (`.nvmrc`). Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](.github/CONTRIBUTING.md)**. Coding agents: start with **[AGENTS.md](AGENTS.md)**.
+Requires Node.js 22 (`.nvmrc`). Firmware and ROS build in the dev container: see **Handbook → Dev setup** on the docs site. Branching, commits, PRs and the rules for `systems/` are in **[CONTRIBUTING.md](.github/CONTRIBUTING.md)**. Coding agents: start with **[AGENTS.md](AGENTS.md)**.
+
+**Looking for something to work on?** Open work is in the issues, indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110).
 
 ---
 
 # 🧪 CI/CD Pipeline
 
-**GitHub Actions** runs `nx affected`, so each PR only lints, tests, checks and builds the projects its changes touch. A change in `systems/` also marks the projects that depend on it (`docs`, `ros`, `sync-mcu`).
+**GitHub Actions** runs `nx affected`, so each PR only lints, tests, checks and builds the projects its changes touch. A change in `systems/` also marks the projects that depend on it (`docs`, `sync-mcu`, `vesc`, `ros`, and through them `firmware-in-loop`).
 
 On every merge to `main` that affects the docs:
 
@@ -76,7 +79,9 @@ On every merge to `main` that affects the docs:
   * `ghcr.io/autonomous-robotics-carleton/2026:<commit-sha>`
 * ARC infrastructure auto-deploys it to **docs.arcarleton.ca** via Watchtower
 
-Contributors never touch Docker.
+Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) build and test inside the dev container image, `ghcr.io/autonomous-robotics-carleton/arc-dev`. CI tags it by the hash of its inputs, so a PR that changes the image is tested in its own image; `main` publishes it as `:latest`.
+
+Website and docs contributors never touch Docker; firmware and ROS contributors use the dev container.
 
 ---
 
@@ -90,7 +95,8 @@ arc-monorepo/                 # Nx monorepo root
 ├── experiments/              # Team experiments (containers)
 ├── hardware/                 # Board designs, mechanical exports
 ├── platform/                 # Jetson image and services
-├── tools/                    # Repo scripts (systems/ checker, ID lookup)
+├── tools/                    # Repo scripts (systems/ checks, codegen, VESC vendoring, firmware-in-loop)
+├── .devcontainer/            # Dev container for firmware and ROS (CI uses it too)
 ├── libs/
 │   └── systems-model/        # Parser and checks for systems/
 ├── apps/
@@ -122,7 +128,7 @@ arc-monorepo/                 # Nx monorepo root
 
 # ➕ Adding a New App or Library
 
-This repo uses **Nx** + **pnpm workspaces**. All apps live in `apps/`, shared code in `libs/`.
+This repo uses **Nx** + **pnpm workspaces**. Web apps live in `apps/` and shared TypeScript in `libs/`; the car's projects are in `firmware/`, `ros/`, `systems/` and `tools/`.
 
 ## Add a new app
 
@@ -217,6 +223,11 @@ import { something } from '@arc/config';
 | `npx nx affected -t lint test check build` | What CI runs: only projects your changes touch |
 | `npx nx check systems` | Check `systems/`: links, IDs, ADRs, verification coverage |
 | `node tools/systems-ids.mts SYS-04` | Look up an ID: definition, status, references |
+| `npx nx build sync-mcu` / `test sync-mcu` | Sync MCU firmware: three targets; tests on `native_sim` (dev container) |
+| `npx nx build vesc` / `test vesc` | Motor controller firmware (A50S); host tests for our modules (dev container) |
+| `npx nx build ros` / `test ros` | ROS 2 workspace; launch tests per backend (dev container) |
+| `npx nx test firmware-in-loop` | Sync MCU firmware on `native_sim` and ROS link up over UDP (dev container) |
+| `tools/gen-interfaces.sh` | Regenerate code from `systems/icd/` (`--check` in CI) |
 
 ---
 

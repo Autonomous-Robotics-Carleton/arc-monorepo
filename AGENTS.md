@@ -13,7 +13,7 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west / make |
 | `experiments/` | Team experiments and their template (scaffold) | |
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
-| `hardware/` | Board designs and mechanical exports (empty so far) | |
+| `hardware/` | Board designs and mechanical exports (no boards started yet) | |
 | `platform/` | Jetson image and services; `dev-kit/` has Orin Nano bench notes | |
 | `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, the firmware-in-the-loop test | Node, Bash |
 | `libs/systems-model/` | Parser for `systems/`: IDs, definitions, references, ADRs, checks | TypeScript |
@@ -66,7 +66,7 @@ Gotchas:
 
 ## Docs site
 
-- Pages come from several places and are mounted in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (handbook, MDX), `systems/` (→ `/docs/car`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
+- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (handbook, MDX), `systems/` (→ `/docs/car`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
 - **Format:** MDX for site-written pages; plain Markdown for `systems/` and `CONTRIBUTING.md`. Don't convert between them.
 - **Links are written as relative file paths** (`../systems/risks.md`) so they work on GitHub too; the site turns them into page URLs, or GitHub links for files that aren't pages.
 - **IDs are linked automatically** (remark plugin in `apps/docs/lib/remark-system-ids.ts`); don't hand-link them.
@@ -81,8 +81,9 @@ Gotchas:
 
 ## Git and PRs
 
+- Open work is in GitHub issues, indexed in #110 and labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`) plus `needs-decision` / `blocked`. No ground-station software exists yet (#71).
 - Branch from `main`: `yourname/<type>/<issue>-<short-name>` (issue number optional).
-- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `ci`. One logical change per commit.
+- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `hardware`, `platform`, `ci`. One logical change per commit.
 - Rebase on `origin/main`; never merge `main` into a branch, and don't use GitHub's "Update branch" (it creates a merge commit).
 - PRs use the template in `.github/pull_request_template.md`. They're merged **once**, with "Rebase and merge" (or "Squash and merge" for messy branches). If a PR's commits are already on `main`, close it instead.
 - Check `git status` before committing: files already staged by `git mv` or `git rm` get swept into the next commit.

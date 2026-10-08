@@ -15,6 +15,8 @@ Everyone taking part follows the [Code of Conduct](../CODE_OF_CONDUCT.md). Repor
 | `platform/` | Jetson image and system services |
 | `tools/` | Developer scripts |
 | `libs/` | Shared TypeScript packages |
+| `experiments/` | Team experiments and their template |
+| `.devcontainer/` | The dev container firmware and ROS build in |
 | `apps/docs`, `apps/web` | Docs site and public website |
 
 ## Setup
@@ -35,23 +37,25 @@ npx nx show projects              # list projects
 npx nx dev docs                   # docs site on http://localhost:3000
 npx nx dev web                    # website on http://localhost:3001
 npx nx check systems              # check links and IDs in systems/
-npx nx affected -t lint check build   # what CI runs, for whatever you changed
+npx nx affected -t lint test check build   # what CI runs, for whatever you changed
 ```
+
+Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) build only inside the dev container (ADR-0029): see **Dev setup** in the handbook.
 
 ## Making a change
 
-1. **Start from an issue.** Use the issue forms: *Failure report* for any hardware or firmware failure during a run, *Bug* for software, *Proposal* for features and design changes.
+1. **Start from an issue.** Open work is indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110); issues are labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`), and `needs-decision` or `blocked` when they can't start yet. For a new issue, use the issue forms: *Failure report* for any hardware or firmware failure during a run, *Bug* for software, *Proposal* for features and design changes.
 2. **Branch from `main`** as `yourname/<type>/<issue>-<short-name>`, e.g. `jdoe/feat/42-imu-driver`. Leave out the issue number if there isn't one.
-3. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary` in the imperative, under 72 characters. The scope is usually the project: `systems`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `hardware`, `platform`. One logical change per commit.
+3. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary` in the imperative, under 72 characters. The scope is usually the project: `systems`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `hardware`, `platform`, `ci`. One logical change per commit.
 
    ```
-   docs(systems): ADR-0022 corner harness connector
+   docs(systems): ADR-0034 off-the-shelf motor controllers
    feat(sync-mcu): timestamp wheel encoder edges
    fix(web): sponsor logos overflow on mobile
    ```
 
 4. **Stay current by rebasing**, not merging: `git fetch origin && git rebase origin/main`, then `git push --force-with-lease`.
-5. **Open a PR** and fill in the template. Run `npx nx affected -t lint check build` first; CI runs the same thing.
+5. **Open a PR** and fill in the template. Run `npx nx affected -t lint test check build` first (in the dev container if you touched firmware or ROS); CI runs the same thing.
 
 ## How PRs are accepted
 
