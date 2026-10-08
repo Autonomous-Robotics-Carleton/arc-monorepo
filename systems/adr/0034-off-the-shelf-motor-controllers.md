@@ -4,8 +4,8 @@
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-01, SYS-04, SYS-05, SYS-06, SYS-07, SYS-13, SYS-19, SYS-24, SYS-25, SYS-29, RSK-02, RSK-03, RSK-11, RSK-12, RSK-18, RSK-19, RSK-20
-- **Supersedes:** ADR-0011 (drive telemetry on two CAN-FD buses, and the FD hardware added to the VESC fork). Its choice of the STM32H723 for the sync MCU stands.
-- **Amends:** ADR-0006 (the controller leaves the corner), ADR-0009 (the command bus now runs on the deck), ADR-0012 (the hardware torque cut moves to the power board), ADR-0013 (now applies to the steering bus only), ADR-0024 (VESC telemetry path), ADR-0028 (VESC firmware targets)
+- **Supersedes:** ADR-0011 (drive telemetry on two CAN-FD buses, and the FD hardware added to the VESC fork; its choice of the STM32H723 for the sync MCU stands), ADR-0004 (the corner's power and signal connectors)
+- **Amends:** ADR-0006 (the controller leaves the corner), ADR-0009 (the command bus now runs on the deck), ADR-0012 (the hardware torque cut moves to the power board), ADR-0013 (now applies to the steering bus only), ADR-0024 (VESC telemetry path), ADR-0028 (VESC firmware targets), ADR-0019 (steering bus placement), ADR-0033 (our firmware changes)
 
 ## Context
 

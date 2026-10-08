@@ -9,7 +9,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0001](0001-lidar-hokuyo.md) | Hokuyo UST-10LX over RPLidar A3 | Accepted (backfilled) |
 | [0002](0002-separate-can-buses.md) | Classic CAN for motor control, separate CAN-FD bus for sensors | Superseded by 0009 |
 | [0003](0003-corner-sensor-node.md) | Separate sensor MCU per corner, not on the motor controller | Superseded by 0006 |
-| [0004](0004-corner-connectors.md) | Separate power and signal connectors at each corner; XT30(2+2) rejected | Accepted (pinout in ICD rev B) |
+| [0004](0004-corner-connectors.md) | Separate power and signal connectors at each corner; XT30(2+2) rejected | Superseded by 0034 |
 | [0005](0005-wifi-only-link.md) | Wi-Fi to the laptop is the only wireless link; no RC radio | Accepted (backfilled) |
 | [0006](0006-no-corner-module.md) | No corner module in v1; VESC is the only corner board | Accepted, amended by 0034 |
 | [0007](0007-ride-height-sensors.md) | Four corner ride-height sensors in v1, plus one at the optical flow sensor | Accepted |
@@ -24,7 +24,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted |
 | [0017](0017-sync-mcu-rtos.md) | Sync MCU firmware on Zephyr | Accepted |
 | [0018](0018-steering-actuator.md) | Steering: VESC-driven brushless actuator, belt reduction, return-to-centre on e-stop | Superseded by 0019 |
-| [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted |
+| [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted, amended by 0034 |
 | [0020](0020-time-sync-ptp.md) | Time sync: PTP with hardware timestamping through a PTP-aware switch | Superseded by 0021 |
 | [0021](0021-time-sync-sync-mcu-domain.md) | Time sync: µs-critical sensors timestamped in the sync MCU's clock; Orin synced in software; optional i210/i226 | Accepted |
 | [0022](0022-power-board-telemetry-and-shutdown.md) | Power-board data to the sync MCU over I2C with fault interrupts; two-tier low-battery shutdown | Proposed (recommendation) |
@@ -38,6 +38,6 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0030](0030-vesc-firmware-in-repo.md) | VESC firmware fork in this repo as a git subtree of upstream (GPL-3.0 subdirectory) | Superseded by 0033 |
 | [0031](0031-sync-link-encoding.md) | Sync link encoded as MAVLink 2 with our own message set | Accepted |
 | [0032](0032-simulator.md) | Simulators as pluggable backends: Gazebo Harmonic, Webots, F1TENTH gym | Accepted |
-| [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted |
+| [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted, amended by 0034 |
 | [0034](0034-off-the-shelf-motor-controllers.md) | Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s | Accepted |
 

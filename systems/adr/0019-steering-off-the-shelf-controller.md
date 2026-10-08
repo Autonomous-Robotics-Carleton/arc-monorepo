@@ -1,10 +1,11 @@
 # ADR-0019: Steering actuator driven by an off-the-shelf controller (moteus-c1) on its own CAN-FD bus
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0034 (the steering bus can use a freed internal FDCAN instead of the MCP2518FD; the EE's call)
 - **Date:** 2026-10-03
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-05, SYS-06, SYS-08, SYS-10, SYS-22, SYS-24, SYS-29, ADR-0012, ADR-0013
 - **Supersedes:** ADR-0018 (no fifth VESC)
+- **Amends:** ADR-0012 (steering on e-stop: return to centre under sync-MCU command, hold if the sync MCU is silent, power cut after the drive corners)
 
 ## Context
 
