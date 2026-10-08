@@ -56,7 +56,8 @@ Controlled braked stop, then a hardware torque cut (SYS-05, ADR-0012 as amended 
 - **Fail-safe:** our firmware enables the MCU's internal pull-down on the ESTOP input (TBC that the board adds no pull-up), so an unplugged connector, a broken wire or an unpowered e-stop circuit reads as e-stop.
 - **Stage 1, braking (firmware):** when ESTOP is low, the controller ignores commands on the command bus and ramps brake current to the target deceleration until the wheel stops.
 - **Stage 2, torque cut (hardware):** the power board removes motor-bus power after T (TBC ~1.8 s to stop from 9 m/s at ~5 m/s², plus margin), whatever the controller firmware is doing.
-- **A broken ESTOP wire to one controller** brakes that corner and stops the car through SYS-25, but doesn't trigger the hardware cut: only the button does.
+- **The motor-bus switch opens when unpowered,** so losing the e-stop circuit's power also gives the hardware cut.
+- **A broken ESTOP wire to one controller** brakes that corner and stops the car through SYS-25, but doesn't trigger the hardware cut: only the button does. Accepted as a trade-off (2026-10-07).
 - **Release:** doesn't restart motion. The controllers wait for fresh commands once the motor bus is back.
 
 ## Termination
