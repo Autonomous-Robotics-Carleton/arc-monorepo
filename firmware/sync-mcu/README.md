@@ -2,7 +2,7 @@
 
 Zephyr firmware for the STM32H723 on the sync board (ADR-0017).
 
-It owns the car's time base: µs-critical sensors are timestamped in this clock, and the Orin syncs to it in software (ADR-0021). It also runs the heartbeat watchdog and the safety envelope (SYS-04, SYS-22), drives the command CAN bus, both CAN-FD telemetry buses and the steering bus (ADR-0011, ADR-0019), and streams everything to the Orin over Ethernet: every sample is forwarded within ≤ 0.25 ms of arriving, over UDP, with no per-millisecond batching (ADR-0024, SYS-29).
+It owns the car's time base: µs-critical sensors are timestamped in this clock, and the Orin syncs to it in software (ADR-0021). It also runs the heartbeat watchdog and the safety envelope (SYS-04, SYS-22), drives the command CAN bus and the steering bus (ADR-0009, ADR-0019), reads each motor controller's telemetry UART (ADR-0034), and streams everything to the Orin over Ethernet: every sample is forwarded within ≤ 0.25 ms of arriving, over UDP, with no per-millisecond batching (ADR-0024, SYS-29).
 
 Pin and I/O tally: `systems/bom/electrical.md`. Board handoff: `systems/handoff/electrical.md`. How it fits the rest: `systems/software/architecture.md`.
 
@@ -11,7 +11,7 @@ Pin and I/O tally: `systems/bom/electrical.md`. Board handoff: `systems/handoff/
 | Path | What |
 | --- | --- |
 | `west.yml` | Pins Zephyr (v4.4.2) and its modules. The dev container bakes this workspace in; nothing is fetched by hand |
-| `app/` | The application. One module per job, all stubs: `time_base`, `sensors`, `can_buses`, `safety`, `sync_link`. The `safety` stubs are fail-safe (nothing they guard can move the car) |
+| `app/` | The application. One module per job, all stubs: `time_base`, `sensors`, `can_buses`, `controller_links`, `safety`, `sync_link`. The `safety` stubs are fail-safe (nothing they guard can move the car) |
 | `boards/arc/arc_sync/` | Our board definition (skeleton: pins, crystal and package TBD from the EE) |
 | `tests/` | Tests that run on `native_sim` with twister |
 

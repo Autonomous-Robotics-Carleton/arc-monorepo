@@ -1,11 +1,14 @@
 # vesc
 
-Firmware for the VESC 6.4 fork at each corner (ADR-0011).
+Firmware for the four motor controllers: off-the-shelf Team Triforce A50S V2.3c boards on the lower deck (ADR-0034), built from upstream's `a50s_v23c_12s` target. Flash it with VESC Tool over USB; per-unit current calibration lives in the board's EEPROM and survives reflashing.
 
-It's stock VESC firmware plus two additions:
+It's stock VESC firmware plus three additions:
 
-- **E-stop brake routine** (ADR-0012): reads ESTOP_EN on a GPIO, ramps brake current to a target deceleration, and ignores CAN commands while the e-stop is active. This is a safety function: it needs its own test cases, and changes get extra review.
-- **CAN-FD telemetry** (ADR-0011, ADR-0024): an SPI CAN-FD controller carries telemetry; motor commands stay on the classic CAN bus. Each frame is built from the latest motor-control values at send time and stamped with the sample counter then. The telemetry thread runs at high thread priority; motor control is protected because it runs in the ADC interrupt (RSK-12). SPI transfers are DMA-driven.
+- **E-stop brake routine** (ADR-0012): reads ESTOP on a spare input (PPM, TBC) with the MCU's pull-down, ramps brake current to a target deceleration, and ignores CAN commands while the e-stop is active. This is a safety function: it needs its own test cases, and changes get extra review.
+- **UART telemetry** (ADR-0024, ADR-0034): full status at 1 kHz over a UART to the sync MCU; motor commands stay on the classic CAN bus. Each frame is built from the latest motor-control values at send time and stamped with the sample counter then. The telemetry thread runs at high thread priority; motor control is protected because it runs in the ADC interrupt (RSK-12). UART transfers are DMA-driven.
+- **Speed limit** (ADR-0034): maximum eRPM ~75k (TBC), the range where the A50S's control loop is stable (RSK-18).
+
+**Don't touch the USB, CAN or firmware-upload code.** The running firmware receives uploads, so a build that breaks them can only be recovered over SWD (RSK-20).
 
 ## Upstream and updates (ADR-0033)
 

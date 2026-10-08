@@ -1,6 +1,7 @@
 /*
  * Sync MCU firmware (ADR-0017): the car's time base, sensors, CAN buses,
- * safety envelope and heartbeat watchdog, and the link to the Orin.
+ * motor-controller telemetry links, safety envelope and heartbeat watchdog,
+ * and the link to the Orin.
  * Architecture: systems/software/architecture.md.
  */
 
@@ -8,6 +9,7 @@
 #include <zephyr/logging/log.h>
 
 #include "can_buses.h"
+#include "controller_links.h"
 #include "safety.h"
 #include "sensors.h"
 #include "sync_link.h"
@@ -22,6 +24,7 @@ int main(void)
 	time_base_init();
 	sensors_init();
 	can_buses_init();
+	controller_links_init();
 	sync_link_init();
 
 	struct safety_envelope envelope;

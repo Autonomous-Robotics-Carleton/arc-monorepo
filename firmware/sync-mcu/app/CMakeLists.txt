@@ -17,6 +17,7 @@ target_sources(app PRIVATE
   src/time_base.c
   src/sensors.c
   src/can_buses.c
+  src/controller_links.c
   src/safety.c
   src/sync_link.c
 )
