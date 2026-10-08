@@ -21,7 +21,7 @@ Two connections per corner, both crossing the suspension.
 
 ## Motor controller connections (on the deck)
 
-The A50S V2.3c (ADR-0034) has an XT30 for power, an MR30 for the motor, a micro-USB for VESC Tool, and a 20-pin latching Molex Pico-Clasp (P/N 501189-2010) for everything else. Source: Triforce's product page and its pinout image (`Pinout_V2.3`, read 2026-10-07).
+The A50S V2.3c (ADR-0034) has an XT30 for power, an MR30 for the motor, a micro-USB for VESC Tool, and a 20-pin Molex Pico-Clasp for everything else. The harness side is the 501189-2010 receptacle crimp housing: 1.00 mm pitch, dual row, inner positive lock, −40 to +105 °C, with Molex 501193 gold crimp terminals (Molex's extraction tool for them is rated 28–32 AWG, so plan thin signal wire). Source: Triforce's product page and its pinout image (`Pinout_V2.3`, read 2026-10-07).
 
 | Connection | Net | Electrical | Notes |
 | --- | --- | --- | --- |
