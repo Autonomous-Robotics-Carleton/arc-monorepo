@@ -41,23 +41,23 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 ## Phase 3: Interfaces
 
 - [ ] ICD-sync-link: what the sync MCU sends the Orin and back, framing, versioning, timing (ADR-0024)
-- [ ] Decision on the sync-link encoding, written as a recommendation ADR first
-- [ ] `can-command.dbc` and `can-telemetry.dbc` skeletons, plus code generation (e.g. `cantools`) into the sync MCU and VESC firmware (file split: SQ-6)
+- [x] Decision on the sync-link encoding: MAVLink 2 (ADR-0031)
+- [ ] `can-command.dbc` skeleton, plus code generation (e.g. `cantools`) into the sync MCU and VESC firmware
+- [ ] ICD controller-telemetry: the UART link's message set (ADR-0034)
 - [ ] CI fails if generated code doesn't match its source
 
-## Phase 4: VESC firmware fork
+## Phase 4: VESC firmware
 
-> [!NOTE]
-> **On hold.** The electrical team is considering an off-the-shelf motor controller instead of the VESC fork. That choice reopens ADR-0011 (the VESC side of the FD telemetry), ADR-0012 (where the brake ramp runs) and ADR-0033, so nothing more happens here until it's made.
+The motor controllers are off-the-shelf A50S boards running our build of the VESC firmware (ADR-0034), so this phase is firmware only: no hardware config of our own.
 
 - [x] ADR-0033: vendored snapshot plus an update script, replacing ADR-0030's subtree (a subtree needs merge commits; this repo rebase-merges)
 - [x] `tools/vesc-upstream.sh` (import and three-way update), tested in a scratch repo: 6.06 → 7.00 applies cleanly with a local change kept; a conflicting change is reported and marked. Skips lispBM's test reports, REPL, docs and examples (153 MB → 22 MB)
 - [ ] Upstream `vedderb/bldc` imported into `firmware/vesc/bldc/` at the ref chosen in SQ-3, recorded in `firmware/vesc/UPSTREAM`
 - [ ] The VESC's Arm toolchain in the dev container: GCC 7 (2018-q2) for the upstream release branches, Arm GNU 14.3 for upstream master; follows SQ-3
 - [x] Licence boundary written into the root README and `LICENSE` (GPL-3.0 for `firmware/vesc/`)
-- [ ] ARC hardware config skeleton (pins TBD; VESC 6 MK5 vs 6.4 base is open in the electrical handoff)
-- [ ] Stubs for the e-stop brake routine and FD telemetry, with host unit tests
-- [ ] Nx targets; CI builds the stock VESC 6 config and ours
+- [x] ~~ARC hardware config skeleton~~ Not needed: the A50S's hardware config is upstream (`hwconf/teamtriforceuk/a50s_v23c/`, in `release_6_06` and `release_7_00`)
+- [ ] Stubs for the e-stop brake routine, UART telemetry and the eRPM limit, with host unit tests
+- [ ] Nx targets; CI builds the stock `a50s_v23c_12s` target and ours
 
 ## Phase 5: Platform software scaffold
 
@@ -90,7 +90,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 | --- | --- | --- |
 | SQ-1 | ~~Zephyr version to pin~~ **Answered:** v4.4.2 with SDK 1.0.1 (newest stable; supports the NUCLEO-H723ZG). The 3.7 LTS is two years older and its 4.4 release notes list fixes not backported to it. Revisit when a 4.x LTS appears | Phase 1 |
 | SQ-2 | ~~Sync-link encoding~~ **Answered:** MAVLink 2 with our own message set (ADR-0031) | Phase 3 |
-| SQ-3 | VESC firmware release branch to start from. **Recommendation:** `release_7_00` (firmware 7.00, the current stable release, maintained; `master` is 7.01 test builds). It builds with GCC 7 (2018-q2) | Phase 4 |
+| SQ-3 | VESC firmware release branch to start from. **Recommendation:** `release_7_00` (firmware 7.00, the current stable release, maintained; `master` is 7.01 test builds). It builds with GCC 7 (2018-q2). Both 6.06 and 7.00 include the A50S v2.3c hardware config | Phase 4 |
 | SQ-4 | ~~Simulators~~ **Answered (ADR-0032):** pluggable backends: Gazebo Harmonic (full sensors, event cameras), Webots (native GPU on macOS and Windows), F1TENTH gym (fast, CI) | Phase 5 |
-| SQ-5 | Development boards: buy a NUCLEO-H723ZG (and a stock VESC 6) before the order, or wait for it? | Testing the development-hardware targets |
-| SQ-6 | CAN `.dbc` files: ADR-0009 names one `icd/can.dbc`; ADR-0011 says each FD bus gets its own; the ICD README lists `can-command.dbc` and one `can-telemetry.dbc`. **Recommendation:** the ICD README's two files (front and rear FD buses carry the same frames), and a note on ADR-0009 and ADR-0011 pointing to it | The `.dbc` skeletons and code generation (phase 3) |
+| SQ-5 | Development boards: buy a NUCLEO-H723ZG before the order, or wait for it? A spare A50S from the order serves as the VESC development hardware (ADR-0034) | Testing the development-hardware targets |
+| SQ-6 | ~~CAN `.dbc` file split~~ **Answered by ADR-0034:** telemetry left CAN for a UART per controller, so only `can-command.dbc` remains | — |

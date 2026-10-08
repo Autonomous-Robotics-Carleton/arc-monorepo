@@ -1,6 +1,6 @@
 # ADR-0024: Telemetry is stamped at sampling and forwarded within 0.25 ms; SYS-29 is measured at the driver process, p99
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0034 (VESC telemetry travels over a UART per controller, not CAN-FD; stamping at sampling and the high-priority thread carry over)
 - **Date:** 2026-10-03
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-06, SYS-24, SYS-29, ADR-0011, ADR-0016, ADR-0017, ADR-0019, RSK-03, RSK-12

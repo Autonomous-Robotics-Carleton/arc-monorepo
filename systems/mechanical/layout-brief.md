@@ -8,11 +8,11 @@
 
 | Req | Mechanical consequence |
 | --- | --- |
-| SYS-01 ≥ 12 m/s | Gearing per `architecture.md`; stiff, aligned drivetrain |
+| SYS-01 ≥ 9 m/s | Gearing per `architecture.md`; stiff, aligned drivetrain |
 | SYS-02 size box | Overall width 238–341 mm, **length 454–654 mm** (F1TENTH/Roboracer). A 1/10 touring car (~260 mm wheelbase) is far too short; even ~310 mm is borderline (RSK-16) |
 | SYS-05 e-stop | Physical button reachable on the car while it's moving or just stopped |
 | SYS-12 crash survival | Crash guard for the LiDAR, cameras and front corners (impact speed TBD) |
-| SYS-13 corner swap | A corner (motor, gearbox, VESC) removable without disturbing the rest (time TBD) |
+| SYS-13 corner swap | A corner (motor, gearbox) removable without disturbing the rest (time TBD); its phase leads and Hall cable unplug at the corner boundary (ADR-0034) |
 | SYS-15 aero reserve | Flat underfloor volume kept for the suction fan (size TBD with the capstone) |
 | SYS-16 mass/CG | Not limited, but tracked; heavy parts low |
 | SYS-24, sensors | Clear fields of view, rigid camera mounts, vibration-isolated IMUs |
@@ -30,7 +30,7 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | 4S LiPo hardcase (~5,000 mAh) | 1 | TBD (standard 1/10 hardcase) | ~450–550 | **Placed first:** low, central, quick swap |
 | Castle 1010 motor | 4 | Ø28 × 58.4 (+ shaft) | 146.5 | Transverse, inboard, staggered fore/aft per axle |
 | Gearbox (2 stages) + CVD | 4 | TBD from gear layout | TBD | Stage 1 swappable (80 teeth total, mod 0.5); stage 2 ~12/54 steel; precise bearing bores; wheel-encoder magnet pocket |
-| VESC 6.4 fork | 4 | TBD (target ~30 × 40) | TBD | FET side bolted to the aluminium motor mount; 10-pin + XT60 connectors accessible |
+| Motor controller, A50S V2.3c (ADR-0034) | 4 | 35.5 × 21 × 13.8 (STEP models from Triforce) | 11 (~30 with heatsink) | On the lower deck, with airflow; XT30, MR30, Pico-Clasp and micro-USB accessible |
 | Steering actuator (gimbal motor + belt + moteus-c1 38 × 38 × 9) | 1 | TBD | TBD | Front, near the steering linkage; fits beside the staggered front motors |
 | Orin NX + heatsink/fan on the carrier (120 × 60) | 1 | ~120 × 60 × TBD height | TBD | Real airflow path; NVMe reachable for swapping |
 | Sync board + power board (stacked) | 1 | TBD | TBD | Close to the corners (CAN runs) and the battery; e-stop and service connectors reachable |
@@ -55,7 +55,7 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 1. **Size box and wheels:** pick a wheelbase and track that give ≥ 454 mm overall length and fit the width box.
 2. **Battery bay:** low and central.
 3. **Corners:** staggered motors, gearboxes, CVDs, wheel encoders. Check the front at full steering lock and full bump with the steering actuator in place.
-4. **Lower deck:** VESCs on motor mounts, power and sync stack, bus clamp.
+4. **Lower deck:** the four motor controllers, power and sync stack, bus clamp.
 5. **Underfloor:** aero volume, ground-speed window and shroud, ToF sensors, the dead-wheel pod's reserved space.
 6. **Upper deck:** hole grid; compute bay with airflow; IMU at the CG.
 7. **Sensor mounts:** LiDAR height and crash guard, stereo bar, side/rear cameras, forward event camera, antennas.

@@ -1,6 +1,6 @@
 # ADR-0006: No corner module in v1; the VESC is the only board at each corner
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0034 (the motor controller moves to the deck: each corner is a motor and gearbox; still no corner module)
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-06, SYS-10, SYS-13, SYS-17

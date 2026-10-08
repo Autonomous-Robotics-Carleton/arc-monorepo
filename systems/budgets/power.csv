@@ -1,7 +1,7 @@
 rail,load,bom_id,qty,nominal_v,typ_w_each,peak_w_each,peak_duration,inrush_or_notes,source,owner
-motor_bus,Drive VESC + Castle 1010 (per corner),E-50/E-51,4,12-16.8,see scenarios,see scenarios,seconds,"input caps charge on connect: anti-spark switch (E-42); grip-limited, see power-scenarios.md",estimate,EE
+motor_bus,Drive controller (A50S) + Castle 1010 (per corner),E-50/E-51,4,12-16.8,see scenarios,see scenarios,seconds,"input caps charge on connect: anti-spark switch (E-42); grip-limited, see power-scenarios.md",estimate,EE
 motor_bus,Steering actuator (moteus-c1 + gimbal motor) via switched output,E-31,1,12-16.8,5,60,< 0.2 s per steering move,"moteus 20 A peak phase; battery-side current much lower; final from actuator design",estimate,EE
-motor_bus,Bus clamp board,E-43,1,12-16.8,0,200,~2.4 s (e-stop from 12 m/s with pack disconnected),"absorbs ~250 J; threshold just above 16.8 V",estimate,EE
+motor_bus,Bus clamp board,E-43,1,12-16.8,0,160,~1.8 s (e-stop from 9 m/s with pack disconnected),"absorbs ~140 J; threshold just above 16.8 V",estimate,EE
 motor_bus,Future aero fan (reserve),SYS-15,1,12-16.8,TBD,TBD,TBD,from capstone,TBD,capstone
 compute,Jetson Orin NX 16GB,E-01,1,carrier input,15,40,sustained,"25 W mode typical ceiling; ~40 W Super mode",NVIDIA mode table (verify),EE
 compute,Carrier board (Antmicro fork),E-02,1,carrier input,3,5,sustained,,estimate,EE
@@ -14,7 +14,7 @@ lv_5v_3v3,Arducam quad OV9281 kit,E-12,1,via carrier/5 V,2,3,sustained,,estimate
 lv_5v_3v3,Prophesee GenX320 (forward + ground speed),E-13/E-25,2,1.8-3.3 (via module),0.05,0.1,sustained,< 50 mW each per Prophesee,datasheet,EE
 lv_5v_3v3,Ground-speed lighting (LED rings + grazing LEDs),E-29,1,5,1.5,4,sustained in use,constant-current DC drive (no PWM),estimate,EE
 lv_5v_3v3,Class 1 IR VCSEL module,E-29,1,5,0.3,0.5,sustained in use,hardware current limit (Class 1),estimate,EE
-lv_5v_3v3,Sync MCU board (STM32H723 + PHY + 4 CAN transceivers + MCP2518FD),E-30,1,3.3/5,1.5,2.5,sustained,,estimate,EE
+lv_5v_3v3,Sync MCU board (STM32H723 + PHY + CAN transceivers + MCP2518FD if fitted),E-30,1,3.3/5,1.5,2.5,sustained,,estimate,EE
 lv_5v_3v3,IMUs (navigation-grade + consumer),E-20/E-21,2,3.3,0.2,0.4,sustained,,estimate,EE
 lv_5v_3v3,AS5047 encoders (4 wheel + 4 suspension + 2 knuckle),E-22/E-23/E-24,10,3.3,0.05,0.06,sustained,,datasheet class,EE
 lv_5v_3v3,Ride-height ToF + I2C mux,E-26,5,3.3,0.05,0.1,sustained,,estimate,EE

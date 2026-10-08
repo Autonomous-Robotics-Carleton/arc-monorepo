@@ -16,11 +16,10 @@ The starting point for the electrical engineer. It collects, per board, what's d
 | System requirements | `requirements/system.md` |
 | Decisions (ADRs) | `adr/README.md` |
 | Functional BOM + sync MCU I/O tally | `bom/electrical.md` |
-| Corner connector (rev D, 10-pin) | `icd/corner-connector.md` |
+| Corner connector (rev E: motor phases and Hall cable to the deck) | `icd/corner-connector.md` |
 | Power loads and scenarios | `budgets/power.csv`, `budgets/power-scenarios.md` |
 | Bus load, latency, cost | `budgets/bus-load.csv`, `budgets/latency.csv`, `budgets/cost.csv` |
 | Risks | `risks.md` |
-| Bench test for the CAN-FD buses | `tests/rsk-03-canfd-bench.md` |
 | Verification plan (rigs R1–R8, pre-order S0 checklist) | `verification/plan.md` |
 
 ## Boards
@@ -32,15 +31,16 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Per-rail fuse, switch and current sense; battery V/I monitoring.
   - Wall (19 V) / battery ideal-diode OR-ing with no reboot.
   - Regulators rated ≥ 30 V with TVS.
-  - E-stop circuit sourcing ESTOP_EN to the four corners (ADR-0012).
-  - Switched, fused motor-bus output for steering, cut by a delayed e-stop line at T_drive + ~1 s (ADR-0019).
+  - E-stop circuit sourcing ESTOP to the four motor controllers (ADR-0012).
+  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC ~1.8 s from 9 m/s), rated for peak pack current (~30–35 A).** This is the hardware torque cut (ADR-0034).
+  - Switched, fused motor-bus output for steering, cut at T + ~1 s (ADR-0019).
   - Bus clamp on the motor distribution bus.
   - Per-cell battery monitor through the balance lead, ≥ 100 Hz to ±10 mV, data to the sync MCU (SYS-32, E-46).
 - **Requirements:** SYS-03, -05, -14, -19, -30, -31, -32; RSK-06, RSK-11.
 - **Open:**
   - Rail current ratings and regulator choices (yours, from `power.csv`)
-  - ESTOP_EN logic level, driver and current per corner
-  - Bus clamp threshold and resistor sizing (~250 J, ~200 W peak estimate)
+  - ESTOP logic level, driver and current per controller; the motor-bus switch part
+  - Bus clamp threshold and resistor sizing (~140 J, ~160 W peak estimate from 9 m/s)
   - Low-battery thresholds (on the lowest cell) and the clean-shutdown signal to the Orin (SYS-30)
   - Cell-monitor part and balance-lead connection while the pack is installed (E-46)
   - Stacking-header pinout with the sync board (ICD power-sync-stack, not written yet)
@@ -54,8 +54,8 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - **Decided:**
   - STM32H723 + Ethernet PHY (ADR-0011); firmware on Zephyr (ADR-0017).
   - Time sync: µs-critical sensors timestamped in the sync MCU's clock; camera triggers and periodic pulses to each GenX320's Trigger In; Orin synced in software, PPS to an Orin GPIO as cross-check (ADR-0021).
-  - Buses: one classic command CAN bus, two CAN-FD telemetry buses (front, rear), and a CAN-FD steering bus via a populated MCP2518FD (ADR-0011, ADR-0019).
-  - SO-8 CAN transceivers with SIC drop-in; unpopulated split termination, common-mode choke and TVS footprints (ADR-0013).
+  - Buses: one classic command CAN bus and a CAN-FD steering bus (ADR-0019); one UART per motor controller for telemetry (ADR-0034). The steering bus can move from the MCP2518FD to a freed internal FDCAN: your call.
+  - SO-8 CAN transceivers with SIC drop-in; unpopulated split termination, common-mode choke and TVS footprints on the steering bus (ADR-0013).
   - I/O per the tally in `bom/electrical.md`:
     - 12 SPI devices (2 IMUs, 4 wheel encoders, 4 suspension angle sensors, 2 knuckle encoders), each with a data-ready or chip-select line as needed
     - I2C + mux for 5 ToF sensors
@@ -65,31 +65,29 @@ The starting point for the electrical engineer. It collects, per board, what's d
     - status LEDs
 - **Requirements:** SYS-04, -07, -19, -22, -24, -25, -29.
 - **Open:**
-  - Package and pin-mux check for 12 SPI chip-selects + 3 FDCAN + Ethernet + triggers
+  - Package and pin-mux check for 12 SPI chip-selects + FDCAN + 5 UARTs + Ethernet + triggers
   - Connector map and pinouts for every sensor run
   - Camera-trigger connector to the carrier (ICD carrier-sync, not written yet)
   - Isolated vs non-isolated transceivers (follows the grounding decision)
   - Ethernet path if the optional i210/i226 is fitted: point-to-point to the Orin instead of through the switch (ADR-0021). **Recommendation in ADR-0023 (Proposed):** don't fit it in v1; the sync MCU stays on the switch
   - Lighting driver design
 
-### 3. VESC 6.4 fork (×4 corners + spares)
+### 3. Motor controllers: A50S V2.3c (×4 + 2 spares, off the shelf)
 
-- **Decided** (ADR-0006, -0011, -0012, -0013):
-  - VESC 6.4 base; MPU9150 and NRF24 not populated.
-  - Command bus on the built-in CAN + TJA1051T/3, untouched.
-  - Telemetry via an added MCP2518FD + 40 MHz crystal + SO-8 CAN FD transceiver (SIC drop-in), with the FD pair passed straight through (daisy-chain).
-  - Rework footprints.
-  - ESTOP_EN: GPIO read for the firmware brake ramp, plus a hardware delay (T ≈ 3 s) ANDed into DRV8301 EN_GATE, with a fail-safe pull-down.
-  - Connector rev D.
-  - Layout rules: transceiver within 1–2 cm of the connector; 120 Ω differential pair; no vias; away from phase outputs.
-- **Requirements:** SYS-05, -13, -24, -25; RSK-02, -03, -11, -12.
-- **Open:**
-  - **RSK-03:** bench testing can't happen before the order, so do the LTspice step in the test procedure before layout
-  - ESTOP_EN level; final delay T and brake-ramp values
-  - Confirm the DRV8301 re-init behaviour after EN_GATE low
-  - Size target (~30 × 40 mm from the original spec) against reality; FET thermal path to the motor mount
-  - **Pin map for the CAN-FD controller.** It needs an SPI bus (SCK, MISO, MOSI), a chip-select and an interrupt line, and the stock VESC 6 MK5's STM32F405 (LQFP64) has no free pins. Likely source: SPI1 on PA5–PA7 (today the comm header's SPI/ADC pins), with chip-select and interrupt from pins freed by leaving off the radio module and onboard IMU (PA4, PB12, PA15, PB2). SPI1 can run ≥ 20 MHz (ADR-0011)
-  - **Which revision to fork.** ADR-0011 names the VESC 6.4; the current published hardware is the VESC 6 MK5 (STM32F405, DRV8301, TJA1051T/3, but an nRF51822 radio and a BMI160 IMU rather than an NRF24 and MPU9150). Confirm the base and which parts are left off
+- **Decided** (ADR-0034):
+  - Team Triforce A50S V2.3c, 12S version, bought, not designed. Mounted on the lower deck, not on the motors.
+  - Runs our build of the vendored VESC firmware (ADR-0033); per-unit current calibration stays in the board's EEPROM.
+  - Commands on the classic CAN command bus (ADR-0009); telemetry over one UART per controller to the sync MCU, 3 Mbit/s (TBC).
+  - E-stop: our firmware reads ESTOP on a spare input (PPM, TBC) and ramps the brake; the power board's switched motor bus provides the hardware cut (section 1).
+  - Motor phases (MR30) and the motor's Hall sensor cable come from each corner to the deck (ICD-corner-connector rev E).
+- **Requirements:** SYS-05, -13, -19, -24, -25; RSK-11, -12, -18, -19, -20.
+- **Open (integration, not design):**
+  - Pin numbers on the 20-pin Pico-Clasp, from Triforce's pinout image; which pin takes ESTOP, and its voltage tolerance
+  - Whether the board exposes SWD pads (RSK-20): check the product photos and STEP models
+  - Deck mounting and airflow; whether the optional heatsink is needed at ~12 A against the 20 A uncooled rating
+  - Hall cable extensions and phase-lead routing across the suspension, away from CAN and UART lines
+  - Whether the Castle 1010's sensor cable carries motor temperature, which would make E-28 unnecessary
+  - No datasheet exists: ratings come from Triforce's product page, the electrical design from the upstream hardware config (`hwconf/teamtriforceuk/a50s_v23c/`)
 
 ### 4. Orin carrier (fork of Antmicro's baseboard)
 
@@ -115,9 +113,9 @@ The starting point for the electrical engineer. It collects, per board, what's d
 ### 5. Harness
 
 - **Decided:**
-  - JST-GH for signal, XT60 for corner power; everything locking.
-  - Corner connector rev D (10-pin).
-  - Command-bus trunk terminated at the sync board and the far end in the harness; FD buses daisy-chained with a sealed terminator pigtail at the far VESC.
+  - JST-GH for signal; the controllers' own XT30, MR30 and Pico-Clasp on the deck; everything locking (check that the Pico-Clasp latches).
+  - Corner connector rev E: motor phases and the Hall cable from each corner to the deck.
+  - Command-bus trunk terminated at the sync board and the far end in the harness; UART links point to point, twisted with ground.
   - One spare conductor per run; labels match schematic net names; strain relief at every entry.
   - Chassis service Ethernet port (E-09).
 - **Open:** run lengths (from CAD), connector part numbers, terminator construction.

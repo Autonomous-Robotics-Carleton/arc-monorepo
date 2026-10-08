@@ -4,10 +4,10 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 
 | ICD | Side A | Side B | Format | Status |
 | --- | --- | --- | --- | --- |
-| [corner-connector](corner-connector.md) | Corner VESC board | Chassis harness / sync board / e-stop | Markdown | Proposed (rev D) |
-| [corner-mechanical](corner-mechanical.md) | Corner (motor, gearbox, VESC) | Chassis | Markdown + CAD | Draft (outline) |
-| can-command | Sync MCU | Corner VESCs (classic CAN, ADR-0009) | `can-command.dbc` | TBD |
-| can-telemetry | Corner VESCs | Sync MCU (2 × CAN-FD, ADR-0011) | `can-telemetry.dbc` | TBD |
+| [corner-connector](corner-connector.md) | Corner (motor, gearbox) | Chassis harness / motor controllers on the deck / sync board / e-stop | Markdown | Draft (rev E) |
+| [corner-mechanical](corner-mechanical.md) | Corner (motor, gearbox) | Chassis | Markdown + CAD | Draft (outline) |
+| can-command | Sync MCU | Motor controllers (classic CAN, ADR-0009) | `can-command.dbc` | TBD |
+| controller-telemetry | Motor controllers | Sync MCU (one UART each, ADR-0034) | TBD (MAVLink 2 message set recommended, as on the sync link) | TBD |
 | power-rails | Power board | Every load | Markdown (voltage, current, sequencing, fusing) | TBD |
 | power-sync-stack | Power board | Sync board | Markdown (header pinout) | TBD |
 | carrier-sync | Orin carrier | Sync board | Markdown (triggers, PPS/PTP, Ethernet) | TBD |

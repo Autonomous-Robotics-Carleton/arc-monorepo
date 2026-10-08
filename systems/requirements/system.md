@@ -32,10 +32,10 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 
 | ID | Requirement | Rationale | Verif. | Status |
 | --- | --- | --- | --- | --- |
-| SYS-01 | Top speed on tile ≥ 12 m/s (the fastest gearing in `architecture.md`) | F1TENTH/Roboracer sets no speed cap; racing and limit-handling research. Practical limits are the track and grip | T | Draft |
+| SYS-01 | Top speed on tile ≥ 9 m/s (~32 km/h). Lowered from 12 m/s on 2026-10-07: the team doesn't need more, and the motor controllers' stable range ends there at 13.5:1 gearing (ADR-0034) | Racing and limit-handling research; F1TENTH/Roboracer sets no speed cap. Practical limits are the track and grip | T | Draft |
 | SYS-02 | Overall width 238–341 mm and length 454–654 mm (F1TENTH/Roboracer rule 2.1.3: within 15% of Traxxas). **To check in CAD:** a 1/10 touring layout (~310 mm wheelbase) may come in under the 454 mm minimum length (RSK-16) | Eligible to race F1TENTH/Roboracer. The head-to-head presence rule and the power-equivalence and single-motor rules are deliberately not followed. LiDAR (≤ UST-30LX equivalent) and battery (≤ 4S) already comply | I | Draft |
 | SYS-03 | Run time ≥ 10 min of hard driving per pack | One session per pack | T | Draft |
-| SYS-04 | After loss of operator heartbeat, the car rolls ≤ 2 m before braking starts (≤ ~150 ms watchdog timeout at 12 m/s), then brakes to a stop using the same controlled brake ramp as the e-stop. Expected total from 12 m/s at ~5 m/s²: ~17 m | Safety; sets watchdog timeout and VESC brake config | T | Draft |
+| SYS-04 | After loss of operator heartbeat, the car rolls ≤ 2 m before braking starts (≤ ~150 ms watchdog timeout, ~1.4 m at 9 m/s), then brakes to a stop using the same controlled brake ramp as the e-stop. Expected total from 9 m/s at ~5 m/s²: ~9.5 m | Safety; sets watchdog timeout and the controllers' brake config | T | Draft |
 | SYS-05 | A physical e-stop brings the car to a controlled, braked stop (ramped, not instantaneous; never free rolling), then removes drive torque in hardware within `TBC` 3 s, without depending on Orin or sync-board software (IEC 60204-1 stop category 1, ADR-0012) | Safety; covers a hung Orin or sync MCU | T + I | Draft |
 | SYS-06 | Vehicle-state estimate available to the controller at ≥ 200 Hz, age ≤ 5 ms p99 (sensor sample to estimate available); output rate configurable upward | Classical control and MPC (mission 1). Sets encoder/pot sample rates and VESC status rates (ADR-0008, ADR-0009). | T | Draft |
 | SYS-07 | All sensor samples carry timestamps on one time base, aligned to within ≤ 10 µs between any two sensors (LiDAR ≤ 1 ms); µs-critical sensors are timestamped in the sync MCU's clock (ADR-0021) | Sensor fusion and MPC (mission 1); aligned training data (mission 2) | T | Draft |
@@ -44,7 +44,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-10 | Measure ground velocity directly, forward and sideways (ADR-0014), and per-wheel speed, well enough to estimate slip ratio and sideslip to within ±2% (TBC) | MPC on a low-grip surface (mission 1) | T | Draft |
 | SYS-11 | Manual teleop latency, gamepad event to wheel response, ≤ 20 ms p95 and ≤ 50 ms p99 | Demonstration data quality (mission 2) | T | Draft |
 | SYS-12 | LiDAR and cameras survive a frontal impact at `TBD` m/s with no damage | Testing will crash the car | T | Draft |
-| SYS-13 | Swapping one corner (motor, gearbox, VESC) takes ≤ `TBD` min, with no code changes (config only) | Modularity, serviceability | D | Draft |
+| SYS-13 | Swapping one corner (motor, gearbox; the motor controller stays on the deck, ADR-0034) takes ≤ `TBD` min, with no code changes (config only: the controller loads that motor's saved configuration) | Modularity, serviceability | D | Draft |
 | SYS-14 | Low-voltage systems run from wall power or battery, switching over without reboot | Bench work without cycling LiPos | T | Draft |
 | SYS-15 | Reserve underfloor volume `TBD` and power `TBD` W for active aero | Active-aero capstone (known user) | I + A | Draft |
 | SYS-16 | Mass and CG are not limited; they are tracked (mass budget, CG estimate) for handling, power and braking estimates | Mass isn't a design driver for v1 | A then I | Draft |
@@ -76,7 +76,7 @@ Places where v1 hardware deliberately limits what software can do. Each was chos
 | LIM-02 | 2D LiDAR: one plane, 40 Hz, 10 m, ±40 mm | Standard for 1/10 racing; 3D scanners are slower and bigger | ADR-0001 | v2 if 3D perception becomes a goal |
 | LIM-03 | Event cameras are 320 × 320 | Only small, low-power MIPI event sensor | ADR-0014 | Higher-resolution event sensors in v2 |
 | LIM-04 | Ride height from ToF: ~10–20 ms per reading, mm-level noise | Laser triangulation rejected on cost | ADR-0007, BOM E-26 | If aero needs µm-level ride height |
-| LIM-05 | No room to add hardware without a change: all four CSI ports used; all CAN controllers used | Tight integration in v1; modularity is a v2 goal | ADR-0014, ADR-0019 | v2 modular car |
+| LIM-05 | No room to add hardware without a change: all four CSI ports used. (The CAN controllers were all used too until ADR-0034 freed two) | Tight integration in v1; modularity is a v2 goal | ADR-0014, ADR-0034 | v2 modular car |
 | LIM-06 | The sync MCU is a single point of failure: if it dies, data stops, steering holds, and the VESCs time out and brake | Fails safe; redundancy isn't worth the complexity in v1 | ADR-0017, ADR-0019 | If S5 shows sync-MCU failures |
 | LIM-07 | Wheel forces and tire temperature aren't measured directly (forces are estimated from suspension angle × spring rate and motor current; tire temperature dropped) | No requirement needed them in v1 | ADR-0006 | If vehicle-dynamics research needs them |
 | LIM-08 | Raw data from a full run can't be streamed live over Wi-Fi; it comes off on the swappable NVMe | Wi-Fi bandwidth; everything is still logged onboard at full rate | ADR-0015 | — |

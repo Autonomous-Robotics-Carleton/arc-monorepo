@@ -1,6 +1,6 @@
 # ADR-0011: VESC telemetry on two CAN-FD buses; commands stay on one classic CAN bus
 
-- **Status:** Accepted, amended by ADR-0013 (daisy-chained FD buses, discrete MCP2518FD + SO-8 transceiver instead of the MCP251863, rework-only fallbacks) and ADR-0024 (telemetry frames stamped at sampling; telemetry thread at high thread priority, not low)
+- **Status:** Superseded by ADR-0034 (off-the-shelf controllers; telemetry over a UART per controller; no CAN-FD drive buses). Its choice of the STM32H723 for the sync MCU stands. Previously amended by ADR-0013 and ADR-0024
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-05, SYS-06, SYS-19, SYS-24, SYS-25, RSK-02, RSK-03, RSK-12

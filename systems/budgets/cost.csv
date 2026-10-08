@@ -15,7 +15,7 @@ state,AS5047 encoders + magnets + breakouts (4 wheel + 2 steering knuckles),6,12
 state,Suspension potentiometers,4,40,80,estimate,baseline
 state,Ride-height ToF sensors,5,50,125,estimate,baseline
 drive,Castle 1010-4400kV sensored motors,4,400,520,estimate,
-drive,VESC 6.4 fork boards incl. CAN-FD parts (4 corners + spares),6,550,1100,estimate,small-batch fab + assembly; extra bare PCBs for rework
+drive,A50S V2.3c motor controllers (4 corners + 2 spares),6,570,900,estimate,"£70 each, +£30 per heatsink if needed (Triforce product page, 2026-10-07); ~1.35 USD/GBP TBC; plus UK shipping and import duty (ADR-0034)"
 drive,Gearboxes (steel gears) + bearings + CVDs,4 corners,400,700,estimate,
 steering,moteus-c1 controller,1,69,69,"mjbots list $69",ADR-0019
 steering,Steering actuator mechanics (gimbal motor + belt + pulleys + mount),1,80,200,estimate,ADR-0019

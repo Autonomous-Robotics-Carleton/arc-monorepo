@@ -11,16 +11,16 @@ v1 is tightly integrated; modular hardware is a v2 goal. The car runs on an indo
 | Area | v1 | Decided in |
 | --- | --- | --- |
 | Drive | 4× Castle 1010-4400kV, one per wheel, two-stage gearbox, CVDs | ADR-0026 |
-| Motor control | 4× custom VESC 6.4 fork | ADR-0006, ADR-0011, ADR-0013 |
+| Motor control | 4× A50S V2.3c (off the shelf, VESC firmware) on the lower deck | ADR-0034 |
 | Steering | Gimbal brushless motor + belt, driven by a moteus-c1 | ADR-0019 |
 | Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard; JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016, ADR-0025 |
-| Sync and sensor hub | STM32H723 on Zephyr: owns the time base, safety envelope and watchdog | ADR-0011, ADR-0017, ADR-0021 |
+| Sync and sensor hub | STM32H723 on Zephyr: owns the time base, safety envelope and watchdog | ADR-0011, ADR-0017, ADR-0021, ADR-0034 |
 | Power | 4S LiPo; power board with LV rails, monitoring and e-stop circuit; bus clamp | ADR-0012, `budgets/power-scenarios.md` |
 | Ground link | Team router (GL.iNet Flint 3, 6 GHz), laptop gateway, button hotspot, service port | ADR-0015 |
 
 ## Drive
 
-**Corners.** Each corner is a motor, gearbox and VESC; there's no separate corner module or corner sensor board (ADR-0006). Wheel encoders and suspension sensors wire directly to the sync board (ADR-0008).
+**Corners.** Each corner is a motor and gearbox; its motor controller sits on the lower deck (ADR-0034), and there's no corner module or corner sensor board (ADR-0006). Wheel encoders and suspension sensors wire directly to the sync board (ADR-0008).
 
 **Motor:** [Castle 1010-4400kV](https://www.powerhobby.com/products/castle-creations-060-0098-00-4-pole-sensored-brushless-motor-1010-4400kv), sensored, 2S–4S.
 
@@ -49,14 +49,14 @@ The motor mount clamps a 28 mm can on this bolt pattern, so any 28 mm motor drop
 | 18/62 | 3.44:1 | 15.5:1 | 11 m/s |
 | 20/60 | 3.00:1 | 13.5:1 | 12.5 m/s |
 
-Assumes 4S, about 50,000 rpm loaded and a 65 mm tire. Peak wheel speed at 13.5:1 is about 3,700 rpm. Front and rear may run different ratios on purpose. SYS-01 requires ≥ 12 m/s.
+Assumes 4S, about 50,000 rpm loaded and a 65 mm tire. Peak wheel speed at 13.5:1 is about 3,700 rpm. Front and rear may run different ratios on purpose. SYS-01 requires ≥ 9 m/s. The controllers cap motor speed at ~37,500 rpm (~75k eRPM, ADR-0034), so real top speeds are about 25% below the table: ~9 m/s at 13.5:1.
 
-**Motor control:** a custom fork of the VESC 6.4 (STM32F405, DRV8301), MPU9150 and NRF24 not populated (ADR-0006, ADR-0011).
+**Motor control:** four off-the-shelf A50S V2.3c controllers (35.5 × 21 × 13.8 mm, VESC firmware) on the lower deck, running our build of the vendored VESC firmware (ADR-0033, ADR-0034).
 
 - Commands arrive over one classic CAN bus (1 Mbit/s) using the stock VESC path.
-- Full telemetry at ≥ 1 kHz goes out over two CAN-FD buses (front pair, rear pair) through an added MCP2518FD + SO-8 transceiver, daisy-chained through the boards (ADR-0013).
-- The FET side bolts to the aluminium motor mount as the heatsink. An NTC on the motor can feeds the board's motor-temperature input.
-- Corner connectors: XT60 for power, and the 10-pin JST-GH signal connector in ICD-corner-connector rev D.
+- Full telemetry at 1 kHz goes to the sync MCU over one UART per controller, stamped at sampling.
+- A maximum-eRPM limit in each controller keeps the motors in the range where its control loop is stable.
+- Each corner sends its motor phases and Hall sensor cable to the deck (ICD-corner-connector rev E).
 
 ## Steering
 
@@ -77,7 +77,7 @@ A gimbal-style brushless motor drives the steering through a ~4–6:1 belt (zero
   - regulators rated ≥ 30 V with TVS
   - the e-stop circuit
 - **Low battery:** the lowest cell triggers a warning, then a clean Orin shutdown before cutoff (SYS-30). Voltage sag at peak current must never reset anything (SYS-31).
-- **Sizing inputs:** `budgets/power.csv` and `budgets/power-scenarios.md`. The tires limit useful peak current to roughly 40–45 A, not the old 120 A figure. Rail sizing is the EE's.
+- **Sizing inputs:** `budgets/power.csv` and `budgets/power-scenarios.md`. The tires limit useful peak current to roughly 30–35 A at the 9 m/s top speed (40–45 A at the old 12 m/s), not the old 120 A figure. Rail sizing is the EE's.
 
 ## Compute and software
 
@@ -104,7 +104,7 @@ The sync MCU (STM32H723, Zephyr) owns the car's time base. It timestamps sensors
 | Steering knuckle ×2 | AS5047 | 2 kHz | Sync SPI |
 | Ride height ×5 | ToF (4 corners + 1 for ground-speed scale) | Native | Sync I2C + mux |
 | Cell voltages ×4 | Power-board cell monitor | ≥ 100 Hz | Stacking header |
-| Motor/FET temperature, currents | VESC telemetry | ≥ 1 kHz | CAN-FD |
+| Motor/FET temperature, currents | Controller telemetry | ≥ 1 kHz | UART per controller |
 
 Latency from sample to the Orin is ≤ 2 ms for sync-board sensors and VESC telemetry (SYS-29, `budgets/latency.csv`).
 
@@ -118,12 +118,12 @@ Wi-Fi is the only wireless link (ADR-0005). The car joins the team's Flint 3 rou
 | --- | --- | --- | --- |
 | Heartbeat watchdog | Laptop heartbeat lost (~150 ms) | Sync MCU | Rolls ≤ 2 m, then the same brake ramp (SYS-04) |
 | Any-corner stop | One corner silent ~5 ms | Sync MCU | All four corners brake within 20 ms (SYS-25) |
-| Physical e-stop | Button, broken wire, unplugged connector | VESC firmware + hardware timer | Ramped brake (~5 m/s²), gate drive cut at ~3 s; steering returns to centre, cut ~1 s later (ADR-0012, ADR-0019) |
-| Command timeout | Corners stop hearing commands | VESC / moteus firmware | Brake / hold |
+| Physical e-stop | Button, broken wire, unplugged connector | Controller firmware + power-board timer | Ramped brake (~5 m/s²), motor-bus power cut at T (TBC ~1.8 s); steering returns to centre, cut ~1 s later (ADR-0012, ADR-0019) |
+| Command timeout | Corners stop hearing commands | Controller (VESC) / moteus firmware | Brake / hold |
 
 ## Harness
 
-Every connection locks; every run carries a spare conductor; every wire is labelled with its schematic net name; strain relief at every board entry. JST-GH for signal, XT60 for corner power. Twisted pairs for every bus, routed away from motor phase leads. Command-bus terminators sit at the sync board and the far end of the trunk; FD buses terminate at the sync board and in a sealed pigtail at the far VESC.
+Every connection locks; every run carries a spare conductor; every wire is labelled with its schematic net name; strain relief at every board entry. JST-GH for signal; the controllers' own connectors (XT30, MR30, Pico-Clasp) on the deck. Twisted pairs for every bus and UART link, routed away from motor phase leads; Hall cables too. Command-bus terminators sit at the sync board and the far end of the trunk.
 
 ## Mechanical
 
@@ -132,13 +132,13 @@ Mechanical design hasn't started. Constraints carried from the original spec and
 - **Wheels:** 1/10 touring, about 64–65 mm diameter, 24–26 mm wide, 12 mm hex. Tire compound for tile is TBD.
 - **Size:** F1TENTH/Roboracer box: width 238–341 mm, length 454–654 mm (SYS-02). A ~310 mm wheelbase may come in under the 454 mm minimum length (RSK-16).
 - **Battery bay:** placed first in the layout, low and central, sized to a 1/10 hardcase; ~5,000 mAh 4S is the starting point.
-- **Mass:** heavy parts (battery, motors, VESCs) on the lower deck. The upper deck carries a hole grid for sensors.
+- **Mass:** heavy parts (battery, motors, motor controllers) on the lower deck. The upper deck carries a hole grid for sensors.
 - **Front corners must fit:** staggered motors, both gear stages, CVDs, wheel encoders, suspension sensors, knuckle encoders and the steering actuator, at full lock and full bump (RSK-04).
 - **Underfloor:** reserve a flat volume for the active-aero suction fan, plus the ground-speed camera's floor window and shroud, and the 4 corner ToF sensors. The dead-wheel pod's space is reserved as the ground-speed fallback.
 - **Clear sightlines:** LiDAR with a clear 270°+ field of view and a crash guard; rigid stereo bar; positions for side/rear and event cameras; Wi-Fi antennas high and clear of carbon-filled parts.
 - **Mounting:** IMU at the CG and the second IMU near the front axle, both vibration-isolated.
 - **Access:** service port, hotspot button and e-stop button on the chassis.
-- **Cooling:** for the Orin and the VESC FETs (FETs into the motor mounts).
+- **Cooling:** for the Orin, and airflow over the motor controllers on the deck (~12 A each against a 20 A uncooled rating).
 - **Reserved:** an encoder pocket behind each motor for a future rear-shaft motor.
 
 ## Where to look next
