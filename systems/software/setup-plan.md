@@ -47,6 +47,9 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 ## Phase 4: VESC firmware fork
 
+> [!NOTE]
+> **On hold.** The electrical team is considering an off-the-shelf motor controller instead of the VESC fork. That choice reopens ADR-0011 (the VESC side of the FD telemetry), ADR-0012 (where the brake ramp runs) and ADR-0033, so nothing more happens here until it's made.
+
 - [x] ADR-0033: vendored snapshot plus an update script, replacing ADR-0030's subtree (a subtree needs merge commits; this repo rebase-merges)
 - [x] `tools/vesc-upstream.sh` (import and three-way update), tested in a scratch repo: 6.06 → 7.00 applies cleanly with a local change kept; a conflicting change is reported and marked. Skips lispBM's test reports, REPL, docs and examples (153 MB → 22 MB)
 - [ ] Upstream `vedderb/bldc` imported into `firmware/vesc/bldc/` at the ref chosen in SQ-3, recorded in `firmware/vesc/UPSTREAM`
@@ -60,10 +63,10 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 
 - [x] ROS 2 Jazzy added to the dev container (ros-base, colcon, rosdep, MCAP storage, launch_testing)
 - [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_sim`, `arc_backend_replay`, `arc_backend_car`
-- [ ] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym, once ADR-0032 (Proposed) is accepted
+- [ ] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym (ADR-0032)
 - [ ] `arc_description`: one URDF of the car, the source for every simulator's model
 - [ ] Sensor profiles per launch (`sensors:=lidar | stereo | all`)
-- [ ] Benchmark one scene (LiDAR + stereo) per backend, per OS, before accepting ADR-0032
+- [ ] Benchmark one scene (LiDAR + stereo) per backend, per OS, once they run (ADR-0032)
 - [x] `colcon build` and `colcon test` as Nx targets (`nx build ros`, `nx test ros`), run by CI's dev-container job (tag `env:dev-container`)
 
 ## Phase 6: Firmware in the loop
@@ -86,8 +89,8 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 | # | Question | Blocks |
 | --- | --- | --- |
 | SQ-1 | ~~Zephyr version to pin~~ **Answered:** v4.4.2 with SDK 1.0.1 (newest stable; supports the NUCLEO-H723ZG). The 3.7 LTS is two years older and its 4.4 release notes list fixes not backported to it. Revisit when a 4.x LTS appears | Phase 1 |
-| SQ-2 | Sync-link encoding. **Recommendation in ADR-0031 (Proposed):** MAVLink 2 with our own message set | Phase 3 |
+| SQ-2 | ~~Sync-link encoding~~ **Answered:** MAVLink 2 with our own message set (ADR-0031) | Phase 3 |
 | SQ-3 | VESC firmware release branch to start from. **Recommendation:** `release_7_00` (firmware 7.00, the current stable release, maintained; `master` is 7.01 test builds). It builds with GCC 7 (2018-q2) | Phase 4 |
-| SQ-4 | Simulators. **Recommendation in ADR-0032 (Proposed):** pluggable backends: Gazebo Harmonic (full sensors, event cameras), Webots (native GPU on macOS and Windows), F1TENTH gym (fast, CI) | Phase 5 |
+| SQ-4 | ~~Simulators~~ **Answered (ADR-0032):** pluggable backends: Gazebo Harmonic (full sensors, event cameras), Webots (native GPU on macOS and Windows), F1TENTH gym (fast, CI) | Phase 5 |
 | SQ-5 | Development boards: buy a NUCLEO-H723ZG (and a stock VESC 6) before the order, or wait for it? | Testing the development-hardware targets |
 | SQ-6 | CAN `.dbc` files: ADR-0009 names one `icd/can.dbc`; ADR-0011 says each FD bus gets its own; the ICD README lists `can-command.dbc` and one `can-telemetry.dbc`. **Recommendation:** the ICD README's two files (front and rear FD buses carry the same frames), and a note on ADR-0009 and ADR-0011 pointing to it | The `.dbc` skeletons and code generation (phase 3) |

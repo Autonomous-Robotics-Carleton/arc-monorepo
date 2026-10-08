@@ -1,12 +1,9 @@
 # ADR-0031: The sync link uses MAVLink 2 with our own message set
 
-- **Status:** Proposed (recommendation, not yet decided)
+- **Status:** Accepted
 - **Date:** 2026-10-07
-- **Deciders:** TBD (recommended by Shrikar Vempati; for review by the software team)
+- **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-07, SYS-19, SYS-24, SYS-29, ADR-0017, ADR-0024, ADR-0028, ICD-sync-link
-
-> [!IMPORTANT]
-> **This is a recommendation, not a decision.** It answers SQ-2 in `software/setup-plan.md`, so ICD-sync-link can get its message catalogue. Push back on anything here; it becomes `Accepted` only after review.
 
 ## Context
 
@@ -37,8 +34,6 @@ ICD-sync-link fixes what crosses between the sync MCU and the Orin, but not how 
 5. Can grow without breaking deployed builds.
 
 ## Decision
-
-**Recommended, not decided:**
 
 - **Option B:** MAVLink 2 with an ARC message set.
 - **Where the schema lives:** `systems/icd/sync-link.xml`, next to ICD-sync-link.
