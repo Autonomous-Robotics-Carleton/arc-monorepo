@@ -12,7 +12,7 @@
 
 ## Checklist
 
-- [ ] `npx nx affected -t lint check build` passes locally
+- [ ] `npx nx affected -t lint test check build` passes locally (in the dev container if firmware or ROS changed)
 - [ ] Docs updated if behaviour, setup or interfaces changed
 - [ ] Changes a requirement, ICD or budget: links the ADR or issue that justifies it
 - [ ] Changes an ICD: the owners on both sides have approved

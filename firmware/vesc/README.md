@@ -15,7 +15,7 @@ It's stock VESC firmware plus three additions:
 Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. Our changes are ordinary commits in `bldc/`.
 
 ```bash
-tools/vesc-upstream.sh import <ref>   # first import (ref: SQ-3 in systems/software/setup-plan.md)
+tools/vesc-upstream.sh import <ref>   # first import: done, at release_7_00 (SQ-3)
 tools/vesc-upstream.sh update <ref>   # bring in upstream's changes, three-way, in a PR of its own
 ```
 
