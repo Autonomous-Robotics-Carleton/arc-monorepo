@@ -2,7 +2,7 @@ item,bom_id,qty,mass_each_g,mass_total_g,x_mm,y_mm,z_mm,source,owner
 4S LiPo hardcase (~5000 mAh),E-40,1,450-550,450-550,TBD,TBD,TBD,estimate (layout-brief.md),mech
 Castle 1010-4400kV motor,E-51,4,146.5,586,TBD,TBD,TBD,datasheet (architecture.md),mech
 Gearbox + CVD per corner,,4,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-A50S V2.3c motor controller,E-50,4,11,44,TBD,TBD,TBD,"Triforce product page; ~30 g each with heatsink (ADR-0034)",EE
+A50S V2.3c motor controller with heatsink,E-50,4,30,120,TBD,TBD,TBD,"Triforce product page: ~30 g with heatsink, 11 g bare (ADR-0034)",EE
 Steering actuator (motor + belt + moteus-c1),E-31,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech
 Orin NX + carrier + heatsink/fan,E-01/E-02/E-03,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
 Sync board + power board (stacked),E-30/E-41,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE

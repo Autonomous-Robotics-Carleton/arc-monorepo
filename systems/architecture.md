@@ -116,7 +116,7 @@ Wi-Fi is the only wireless link (ADR-0005). The car joins the team's Flint 3 rou
 
 | Layer | Trigger | Runs on | Behaviour |
 | --- | --- | --- | --- |
-| Heartbeat watchdog | Laptop heartbeat lost (~150 ms) | Sync MCU | Rolls ≤ 2 m, then the same brake ramp (SYS-04) |
+| Heartbeat watchdog | Laptop heartbeat lost (~150 ms); the Orin forwards it, so a hung Orin trips it too | Sync MCU | Rolls ≤ 2 m, then the same brake ramp (SYS-04) |
 | Any-corner stop | One corner silent ~5 ms | Sync MCU | All four corners brake within 20 ms (SYS-25) |
 | Physical e-stop | Button, broken wire, unplugged connector | Controller firmware + power-board timer | Ramped brake (~5 m/s²), motor-bus power cut at T (TBC ~1.8 s); steering returns to centre, cut ~1 s later (ADR-0012, ADR-0019) |
 | Command timeout | Corners stop hearing commands | Controller (VESC) / moteus firmware | Brake / hold |
