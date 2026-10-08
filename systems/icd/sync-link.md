@@ -1,6 +1,6 @@
 # ICD-sync-link
 
-- **Revision:** draft outline (2026-10-07). What each side must agree on; the message catalogue and field layouts come once the encoding is chosen (ADR-0031, Proposed).
+- **Revision:** draft outline (2026-10-07). What each side must agree on; the message catalogue and field layouts are still to write, in MAVLink 2 (ADR-0031).
 - **Status:** Draft. Needs an owner on each side and their sign-off.
 - **Side A:** sync MCU firmware (`firmware/sync-mcu/`, the `sync_link` module; E-30) (owner TBD)
 - **Side B:** the sync bridge on the Orin (`ros/`, the car backend of the car interface; ADR-0028) (owner TBD)
@@ -16,7 +16,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | Protocol | UDP, both directions |
 | Addresses and ports | TBD: fixed addresses on the car's internal network |
 | Datagram size | ≤ one Ethernet frame (no IP fragmentation) |
-| Encoding | TBD (ADR-0031, Proposed) |
+| Encoding | MAVLink 2 with our own message set (ADR-0031) |
 
 ## Every message carries
 
@@ -51,7 +51,7 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 
 ## Open issues
 
-1. Encoding and message catalogue (ADR-0031).
+1. Message catalogue, in MAVLink 2 (ADR-0031).
 2. Addresses and ports.
 3. Heartbeat path: via the Orin (as above) or straight from the laptop to the sync MCU. Via the Orin means a hung Orin also stops the car, which is fail-safe.
 4. Command rate and the safety-state rate.

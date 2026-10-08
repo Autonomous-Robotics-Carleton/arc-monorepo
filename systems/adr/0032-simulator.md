@@ -1,12 +1,9 @@
 # ADR-0032: Simulators are pluggable backends: Gazebo Harmonic, Webots and the F1TENTH gym
 
-- **Status:** Proposed (recommendation, not yet decided)
+- **Status:** Accepted
 - **Date:** 2026-10-07
-- **Deciders:** TBD (recommended by Shrikar Vempati; for review by the software team)
+- **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-08, SYS-10, SYS-24, SYS-33, ADR-0014, ADR-0016, ADR-0026, ADR-0028, ADR-0029
-
-> [!IMPORTANT]
-> **This is a recommendation, not a decision.** It answers SQ-4 in `software/setup-plan.md`, so the simulator backends can be scaffolded in phase 5. Push back on anything here; it becomes `Accepted` only after review.
 
 ## Context
 
@@ -41,8 +38,6 @@ No single simulator does all of that well. **Rendering cost is the main problem:
 
 ## Decision
 
-**Recommended, not decided:**
-
 - **Option B.**
 - **Each simulator is a backend package** implementing the car interface (ADR-0028). It's chosen at launch: `target:=sim sim:=gazebo | webots | gym`.
 - **Scaffolded in phase 5,** as package skeletons and launch wiring, not working integrations:
@@ -61,5 +56,6 @@ No single simulator does all of that well. **Rendering cost is the main problem:
 
 - **The dev container gets** ROS 2 Jazzy, Gazebo Harmonic and the F1TENTH gym (phase 5). Webots runs on the host, which the Dev setup page must cover.
 - **Each backend needs** someone to keep it working. A backend that nobody uses gets dropped rather than left to rot.
-- **To check before accepting:** one scene (LiDAR + stereo) benchmarked in each backend, on each OS; the event-camera plugin's maturity.
+- **Webots stays** because the team has no shared Linux machine with a GPU: without it, macOS users can't simulate cameras or GPU LiDAR at a usable speed in the container.
+- **To check once the backends run:** one scene (LiDAR + stereo) benchmarked in each backend, on each OS; the event-camera plugin's maturity.
 - **Reopen if:** a backend can't be kept working, or one simulator turns out to cover everything after all.

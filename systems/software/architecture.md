@@ -39,7 +39,7 @@ The car's software, where each part lives in this repo, and how each part runs o
 | --- | --- | --- | --- |
 | Sync MCU firmware | `native_sim`: runs on a laptop or in CI, loopback CAN, simulated sensors | NUCLEO-H723ZG (none owned yet) | `arc_sync` board definition |
 | VESC firmware | Our additions unit-tested on the host | Stock VESC 6 | ARC VESC fork hardware config |
-| Platform software | Simulator backends (Gazebo Harmonic, Webots, F1TENTH gym; ADR-0032, Proposed); MCAP log replay | The team's F1TENTH car, if useful | The car |
+| Platform software | Simulator backends (Gazebo Harmonic, Webots, F1TENTH gym; ADR-0032); MCAP log replay | The team's F1TENTH car, if useful | The car |
 
 The sync MCU's `native_sim` build speaks the same sync-link protocol as the real board, so the full stack, real firmware included, runs on a laptop.
 
