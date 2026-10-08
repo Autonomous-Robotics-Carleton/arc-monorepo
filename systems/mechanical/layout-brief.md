@@ -33,7 +33,7 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | Motor controller, A50S V2.3c with heatsink (ADR-0034) | 4 | Board 35.5 × 21 × 13.8; heatsink envelope TBC from Triforce's STEP models | ~30 | On the lower deck, with airflow (sized once the deck is modelled); XT30, MR30, Pico-Clasp and micro-USB accessible |
 | Steering actuator (gimbal motor + belt + moteus-c1 38 × 38 × 9) | 1 | TBD | TBD | Front, near the steering linkage; fits beside the staggered front motors |
 | Orin NX + heatsink/fan on the carrier (120 × 60) | 1 | ~120 × 60 × TBD height | TBD | Real airflow path; NVMe reachable for swapping |
-| Sync board + power board (stacked) | 1 | TBD | TBD | Close to the corners (CAN runs) and the battery; e-stop and service connectors reachable |
+| Sync board + power board (stacked) | 1 | TBD | TBD | Close to the motor controllers on the deck (CAN and UART runs) and the battery; e-stop and service connectors reachable |
 | Bus clamp board + resistor | 1 | TBD | TBD | On the motor bus; resistor needs airflow or a heatsink |
 | Ethernet switch | 1 | TBD | TBD | Near the Orin and sync board |
 | Hokuyo UST-10LX | 1 | ~50 × 50 × 70 (check datasheet) | ~130 (check) | High, clear 270°+ view, crash guard |
@@ -69,14 +69,14 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | M1 | Base | **Decided** (2026-10-03) | Custom chassis on off-the-shelf 1/10 suspension parts (arms, knuckles, hubs, shocks, wheels) |
 | M2 | Wheelbase and track | Open: block layout | Start at ~330–350 mm wheelbase so overall length clears 454 mm; track to suit the width box and steering lock |
 | M3 | Ride height / floor clearance | Open: with the aero capstone | Also fixes the ground-speed window distance and ToF minimum range |
-| M4 | Materials | **Decided** (2026-10-03) | **3D-printed lower deck:** a **PAHT-CF** (high-temperature CF nylon) ribbed tub, not a flat plate, with heat-set inserts. Material may change once the printers are known (see open questions). Built in: battery bay, ground-speed floor window and shroud, ToF pockets, cable channels. **Aluminium plates** bolted in wherever precision or heat matters: gearbox bearing plates, motor mounts (VESC FET heatsinks), steering mount. Upper deck: hole-grid plate (material TBD). Printed covers, sensor mounts, shrouds |
+| M4 | Materials | **Decided** (2026-10-03) | **3D-printed lower deck:** a **PAHT-CF** (high-temperature CF nylon) ribbed tub, not a flat plate, with heat-set inserts. Material may change once the printers are known (see open questions). Built in: battery bay, ground-speed floor window and shroud, ToF pockets, cable channels. **Aluminium plates** bolted in wherever precision or heat matters: gearbox bearing plates, motor mounts, steering mount. Upper deck: hole-grid plate (material TBD). Printed covers, sensor mounts, shrouds |
 | M5 | CAD | **Decided** (2026-10-03) | Fusion 360; STEP exports committed per release. Done by the systems lead and the mechanical engineers |
 
 ## Printed-deck design rules
 
 - Stiffness from geometry (walls, ribs, a closed tub), not plate thickness.
 - No printed bearing bores or gear-mesh features; those live in aluminium.
-- Heat paths (FETs, Orin) stay in aluminium; nothing hot rests directly on the print.
+- Heat paths (the Orin) stay in aluminium; nothing hot rests directly on the print, the motor controllers' heatsinks included (their mounting and airflow wait on the deck model, ADR-0034).
 - Every threaded joint uses a heat-set insert with a wide washer; joints are checked after runs.
 - PAHT-CF needs an enclosed (ideally heated) chamber, a hardened nozzle and dried filament.
 - The tub will be ~400+ mm long (car ≥ 454 mm overall), longer than most print beds. Unless a large-format printer is available, split it into 2–3 sections joined with bolted aluminium splice plates (which can double as motor-mount plates), with the split planned from the start.
