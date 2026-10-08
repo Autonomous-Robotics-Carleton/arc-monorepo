@@ -12,6 +12,9 @@ list(APPEND BOARD_ROOT ${CMAKE_CURRENT_LIST_DIR}/..)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(arc_sync_mcu)
 
+# Sync-link messages, generated from systems/icd/sync-link.xml (ADR-0031)
+target_include_directories(app PRIVATE generated/arc_mavlink)
+
 target_sources(app PRIVATE
   src/main.c
   src/time_base.c

@@ -1,0 +1,4 @@
+tests:
+  sync_mcu.sync_link:
+    platform_allow: native_sim
+    tags: sync_link

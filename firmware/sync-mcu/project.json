@@ -1,8 +1,12 @@
 {
   "name": "sync-mcu",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "tags": ["env:dev-container"],
-  "implicitDependencies": ["systems"],
+  "tags": [
+    "env:dev-container"
+  ],
+  "implicitDependencies": [
+    "systems"
+  ],
   "targets": {
     "build": {
       "executor": "nx:run-commands",
@@ -20,6 +24,12 @@
       "cache": true,
       "options": {
         "command": "west twister -T firmware/sync-mcu/tests -p native_sim --outdir firmware/sync-mcu/build/twister --inline-logs"
+      }
+    },
+    "check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tools/gen-sync-link.sh --check"
       }
     }
   }
