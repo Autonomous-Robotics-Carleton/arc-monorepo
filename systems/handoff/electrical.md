@@ -65,7 +65,13 @@ The starting point for the electrical engineer. It collects, per board, what's d
     - status LEDs
 - **Requirements:** SYS-04, -07, -19, -22, -24, -25, -29.
 - **Open:**
-  - Package and pin-mux check for 12 SPI chip-selects + FDCAN + 5 UARTs + Ethernet + triggers
+  - ~~Package and pin-mux check~~ **Checked (2026-10-07): it fits.** Against Zephyr's pin data for the STM32H723ZG (LQFP144), with SWD, HSE and LSE reserved, everything gets its own pin with 37 to spare: Ethernet RMII, 3 FDCAN, 5 UARTs, 4 SPI buses, 2 I2C, 6 timer outputs (4 triggers, a spare, PPS) and 22 plain GPIO (12 chip-selects, 4 interrupts, e-stop in, 2 LEDs, 3 lighting). One example assignment, to show feasibility only (the pin choice is yours):
+    - Ethernet: REF_CLK PA1, MDIO PA2, MDC PC1, CRS_DV PA7, RXD0 PC4, RXD1 PC5, TX_EN PB11, TXD0 PB12, TXD1 PB13
+    - FDCAN1 PA11/PA12, FDCAN2 PB5/PB6, FDCAN3 PD12/PD13
+    - UARTs: USART1 PA9/PA10, USART2 PD5/PA3, USART3 PB10/PC11, USART6 PC6/PC7, USART10 PE3/PE2
+    - SPI1 PA5/PA6/PD7, SPI2 PD3/PB14/PB15, SPI3 PB3/PB4/PB2, SPI4 PE12/PE13/PE14
+    - I2C1 PB8/PB7, I2C2 PF1/PF0
+    - Timer outputs: TIM2_CH1 PA0, TIM3_CH3 PB0, TIM3_CH4 PB1, TIM4_CH3 PD14, TIM4_CH4 PB9, TIM13_CH1 PF8
   - Connector map and pinouts for every sensor run
   - Camera-trigger connector to the carrier (ICD carrier-sync, not written yet)
   - Isolated vs non-isolated transceivers (follows the grounding decision)
@@ -114,7 +120,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 ### 5. Harness
 
 - **Decided:**
-  - JST-GH for signal; the controllers' own XT30, MR30 and Pico-Clasp on the deck; everything locking (check that the Pico-Clasp latches).
+  - JST-GH for signal; the controllers' own XT30, MR30 and Pico-Clasp on the deck; everything locking. The Pico-Clasp housing (Molex 501189-2010) has an inner positive lock.
   - Corner connector rev E: motor phases and the Hall cable from each corner to the deck.
   - Command-bus trunk terminated at the sync board and the far end in the harness; UART links point to point, twisted with ground.
   - One spare conductor per run; labels match schematic net names; strain relief at every entry.
