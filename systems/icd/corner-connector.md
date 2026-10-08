@@ -29,10 +29,11 @@ The A50S V2.3c (ADR-0034) has an XT30 for power, an MR30 for the motor, a micro-
 | MR30 | Motor phases A, B, C | See above | |
 | Micro-USB | VESC Tool | | Configuration and firmware upload |
 
-**Signal connector, as laid out in Triforce's pinout image** (pin numbers per Molex's drawing, TBC; red-marked pins are 3.3 V max):
+**Signal connector, as laid out in Triforce's pinout image** (red-marked pins are 3.3 V max). Circuit numbers, provisional: Molex's drawing for 501189-2010 numbers the mating face with the latch on top as circuit 1 top-right, circuit 2 bottom-right, odd along the latch row and even along the other, counting leftwards. Assuming Triforce's image is that face, latch on top, position 10 is circuits 1 (top) and 2 (bottom) and position 1 is circuits 19 and 20. Verify on the first unit: the four corners are all GND, so check that 5 V sits at circuit 9 and 3.3 V at circuit 10 (if they're at 11 and 12, the image is mirrored):
 
 | Position | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Circuits (provisional): top / bottom | 19 / 20 | 17 / 18 | 15 / 16 | 13 / 14 | 11 / 12 | 9 / 10 | 7 / 8 | 5 / 6 | 3 / 4 | 1 / 2 |
 | Top row | GND | Hall 3 / CS | Hall 2 / MISO | Hall 1 / SCK | **Motor temp (3.3 V max)** | 5 V out | SWCLK | SWDIO | Servo / PPM | GND |
 | Bottom row | GND | **SCK / ADC1 (3.3 V max)** | **MISO / ADC2 (3.3 V max)** | TX / SCL / MOSI | RX / SDA / NSS | 3.3 V out | CAN H | CAN L | Aux power in, 12–48 V | GND |
 
@@ -65,7 +66,7 @@ Controlled braked stop, then a hardware torque cut (SYS-05, ADR-0012 as amended 
 
 ## Open issues
 
-1. Molex pin numbers for the positions above (Triforce's image shows layout, not numbers).
+1. Confirm the provisional circuit numbers above on the first unit (5 V at circuit 9, 3.3 V at circuit 10).
 2. ESTOP logic level (3.3 or 5 V; the PPM pin takes either) and driver: the power board sources it; the current per controller.
 3. Whether the Aux power input is fed from an always-on rail (telemetry and logging survive the motor-bus cut).
 4. The connector at the corner boundary for the phase leads and the Hall cable; lengths from the CAD layout.

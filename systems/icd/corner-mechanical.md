@@ -38,7 +38,7 @@ A corner is swapped as a unit (SYS-13). This document fixes everything the two s
 
 | Item | Value |
 | --- | --- |
-| Corner power (XT60) and signal (JST-GH 10-pin) connectors: position and access | TBD; electrical side in ICD-corner-connector |
+| Motor phase and Hall cable connectors at the corner boundary (ADR-0034): position and access | TBD; electrical side in ICD-corner-connector rev E |
 | Wheel and suspension sensor cables to the sync board (ADR-0008) | TBD routing and strain relief |
 | Motor phase leads and Hall sensor cable to the controller on the deck (ADR-0034) | TBD routing and strain relief across the suspension; Hall cable away from the phase leads |
 
