@@ -34,7 +34,7 @@ int main(void)
 	safety_watchdog_init(&watchdog, CONFIG_ARC_HEARTBEAT_TIMEOUT_MS, k_uptime_get());
 
 	while (true) {
-		/* No sync link yet, so no heartbeats: this only shows the loop. */
+		/* No heartbeats reach the watchdog yet: this only shows the loop. */
 		k_sleep(K_MSEC(100));
 	}
 

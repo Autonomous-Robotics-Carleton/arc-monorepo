@@ -1,0 +1,15 @@
+{
+  "name": "firmware-in-loop",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "tags": ["env:dev-container"],
+  "implicitDependencies": ["sync-mcu", "ros"],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [{ "projects": ["sync-mcu", "ros"], "target": "build" }],
+      "options": {
+        "command": "tools/firmware-in-loop/smoke.sh"
+      }
+    }
+  }
+}

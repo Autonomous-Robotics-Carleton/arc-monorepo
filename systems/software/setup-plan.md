@@ -75,8 +75,9 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 
 ## Phase 6: Firmware in the loop
 
-- [ ] The sync MCU's `native_sim` build and the ROS sync bridge talk over UDP on one laptop
-- [ ] A CI smoke test: firmware in simulation → bridge → a topic with timestamped samples
+- [x] The sync MCU's `native_sim` build and the ROS car backend talk over UDP on one laptop: `ARC_LINK_STATUS` both ways, over the host's sockets (Zephyr offloaded sockets)
+- [x] A CI smoke test (`nx test firmware-in-loop`): both sides log "sync link up"
+- [ ] Samples through to a ROS topic, once the car interface (`arc_msgs`) and sample messages are implemented
 
 ## Phase 7: Experiments scaffold
 

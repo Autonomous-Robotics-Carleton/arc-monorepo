@@ -19,7 +19,7 @@ Pin and I/O tally: `systems/bom/electrical.md`. Board handoff: `systems/handoff/
 
 | Target | Board | Status |
 | --- | --- | --- |
-| Simulation | `native_sim`: runs as a program on a laptop or in CI | Builds and runs |
+| Simulation | `native_sim`: runs as a program on a laptop or in CI; its sync link uses the host's sockets, so it talks to the ROS car backend (`nx test firmware-in-loop`) | Builds, runs and links up |
 | Development hardware | `nucleo_h723zg`: same MCU, Ethernet and FD-CAN | Builds; no board owned yet |
 | The car | `arc_sync` | Builds from the skeleton; nothing to run on until the board exists |
 

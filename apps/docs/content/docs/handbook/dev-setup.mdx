@@ -233,6 +233,7 @@ npx nx build vesc        # motor controller firmware (A50S, VESC)
 npx nx test vesc         # our additions' host tests
 npx nx build ros         # the ROS 2 workspace (colcon)
 npx nx test ros          # its launch tests
+npx nx test firmware-in-loop   # sync MCU firmware (native_sim) and ROS link up over UDP
 source ros/install/setup.bash
 ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots; or target:=replay, car
 ```

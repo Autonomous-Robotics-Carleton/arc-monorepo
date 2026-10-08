@@ -1,7 +1,8 @@
 /*
- * The link to the Orin over Ethernet: every sample forwarded within
- * 0.25 ms over UDP (ADR-0024, SYS-29); commands and heartbeats back.
- * Protocol in ICD-sync-link (not written yet). Stub.
+ * The link to the Orin over UDP (ICD-sync-link, MAVLink 2, ADR-0031):
+ * every sample forwarded within 0.25 ms (ADR-0024, SYS-29); commands and
+ * heartbeats back. So far it exchanges ARC_LINK_STATUS once a second on
+ * native_sim only; elsewhere it's a stub until the Ethernet stack is set up.
  */
 
 #ifndef ARC_SYNC_LINK_H

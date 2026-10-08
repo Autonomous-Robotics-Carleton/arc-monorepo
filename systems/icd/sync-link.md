@@ -14,7 +14,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | --- | --- |
 | Link | Ethernet, sync MCU ↔ switch (E-06) ↔ Orin (ADR-0023, Proposed) |
 | Protocol | UDP, both directions |
-| Addresses and ports | TBD: fixed addresses on the car's internal network |
+| Addresses and ports | Ports TBC: UDP 52000 into the sync MCU, 52001 into the Orin (mirroring the message IDs). Addresses TBD: fixed addresses on the car's internal network; 127.0.0.1 when the sync MCU runs as `native_sim` |
 | Datagram size | ≤ one Ethernet frame (no IP fragmentation) |
 | Encoding | MAVLink 2 with our own message set (ADR-0031) |
 
@@ -52,7 +52,7 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 ## Open issues
 
 1. ~~Message catalogue~~ **Drafted** in `sync-link.xml`: one message per family above. Field lists to review with both owners.
-2. Addresses and ports.
+2. Addresses: the car's fixed addresses. Ports proposed (TBC): 52000 and 52001.
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. Command rate and the safety-state rate.
 5. Owners on both sides.
