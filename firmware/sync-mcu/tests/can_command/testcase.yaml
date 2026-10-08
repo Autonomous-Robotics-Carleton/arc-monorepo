@@ -1,0 +1,4 @@
+tests:
+  sync_mcu.can_command:
+    platform_allow: native_sim
+    tags: can

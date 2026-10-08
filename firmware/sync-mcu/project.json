@@ -29,7 +29,7 @@
     "check": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "tools/gen-sync-link.sh --check"
+        "command": "tools/gen-interfaces.sh --check"
       }
     }
   }

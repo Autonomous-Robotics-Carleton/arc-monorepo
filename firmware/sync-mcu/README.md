@@ -45,4 +45,4 @@ probe-rs download --chip STM32H723ZGTx firmware/sync-mcu/build/nucleo_h723zg/zep
 ## Rules
 
 - **Safety code** (`app/src/safety.*`: the envelope and the heartbeat watchdog) needs its own tests and a second reviewer for every change.
-- **Generated code** is never edited by hand. The sync-link messages in `app/generated/arc_mavlink/` come from `systems/icd/sync-link.xml` (`tools/gen-sync-link.sh`); `nx check sync-mcu` fails if they're stale. CAN frames will come from `can-command.dbc`.
+- **Generated code** is never edited by hand. The sync-link messages in `app/generated/arc_mavlink/` come from `systems/icd/sync-link.xml` (`tools/gen-interfaces.sh`); The command-bus frames in `app/generated/can_command/` come from `systems/icd/can-command.dbc`. `nx check sync-mcu` fails if either is stale.
