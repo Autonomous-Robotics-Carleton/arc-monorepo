@@ -70,6 +70,11 @@ RUN curl -fsSL -o /tmp/ros2-apt-source.deb \
       ros-jazzy-rosbag2-storage-mcap ros-jazzy-launch-testing-ament-cmake \
     && rm -rf /var/lib/apt/lists/*
 
+# pymavlink's mavgen generates the sync-link code from systems/icd/sync-link.xml
+# (ADR-0031, tools/gen-sync-link.sh)
+ARG PYMAVLINK_VERSION=2.4.50
+RUN pip install --no-cache-dir "pymavlink==${PYMAVLINK_VERSION}"
+
 # The image's own user (uid 1000); devcontainers remap it to the host user on Linux.
 # CI and rootless Docker run as root instead: without safe.directory, git
 # refuses the ubuntu-owned Zephyr repos and west loses its build commands.
