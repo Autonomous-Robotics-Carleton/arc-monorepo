@@ -37,7 +37,7 @@ The car's software, where each part lives in this repo, and how each part runs o
 
 | Component | Simulation | Development hardware | The car |
 | --- | --- | --- | --- |
-| Sync MCU firmware | `native_sim`: runs on a laptop or in CI, loopback CAN, simulated sensors | NUCLEO-H723ZG (none owned yet) | `arc_sync` board definition |
+| Sync MCU firmware | `native_sim`: runs on a laptop or in CI, loopback CAN, simulated sensors | NUCLEO-H723ZG (2 in the order, SQ-5) | `arc_sync` board definition |
 | VESC firmware | Our additions unit-tested on the host | A spare A50S running stock firmware | The A50S with our firmware (upstream target `a50s_v23c_12s`) |
 | Platform software | Simulator backends (Gazebo Harmonic, Webots, F1TENTH gym; ADR-0032); MCAP log replay | The team's F1TENTH car, if useful | The car |
 

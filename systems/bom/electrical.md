@@ -110,4 +110,6 @@ Not on the car, but part of the system: its configuration (DHCP options, WMM pri
 | G-01 | Team router | 1 | Decided: GL.iNet Flint 3 (GL-BE9300), $209.99 (ADR-0015) | Wi-Fi 6 GHz band for the car link; OpenWrt (per-host DHCP options, WMM); ≥ 2 wired ports for laptops; USB tethering for phone internet backup; mounted high at the track | SYS-11, SYS-26, SYS-27, SYS-28 |
 | G-02 | Travel router | 0 (later) | Optional: GL.iNet Slate 7 (GL-BE3600), $159.99 | USB-C powered for away events | SYS-27 |
 | G-03 | Ground-station laptop | 1+ | Team laptops | Ethernet port (or USB-Ethernet); Linux or macOS for the gateway script | SYS-26, SYS-28 |
+| G-04 | Sync MCU development board | 2 | Decided: ST NUCLEO-H723ZG, ~$30 each (SQ-5, 2026-10-08) | Same MCU and package as the sync board (STM32H723ZG, LQFP144); on-board ST-Link and Ethernet. Runs the sync MCU firmware unchanged (ADR-0028's development-hardware target): firmware work before the sync board exists, a known-good reference for its bring-up, a fallback if it needs a respin, and the R1 bench rig. No CAN transceiver on board (G-05) | SYS-33, ADR-0028 |
+| G-05 | CAN transceiver breakout | 2 | TBD: any 3.3 V CAN transceiver module, a few dollars each, plus 120 Ω terminators if the module has none | One per G-04, so a Nucleo can talk to an A50S on the bench command bus | SYS-33 |
 
