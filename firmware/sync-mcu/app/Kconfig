@@ -5,6 +5,25 @@ config ARC_HEARTBEAT_TIMEOUT_MS
 	default 150
 	help
 	  Time without an operator heartbeat before the car starts braking
-	  (SYS-04: rolls <= 2 m first, so ~150 ms at 12 m/s; TBC).
+	  (SYS-04: rolls <= 2 m first; ~150 ms is ~1.4 m at 9 m/s; TBC).
+
+config ARC_SYNC_LINK_PORT_RX
+	int "Sync link: UDP port the sync MCU listens on"
+	default 52000
+	help
+	  ICD-sync-link (TBC). The Orin's car backend sends here.
+
+config ARC_SYNC_LINK_PORT_TX
+	int "Sync link: UDP port the Orin listens on"
+	default 52001
+	help
+	  ICD-sync-link (TBC).
+
+config ARC_SYNC_LINK_PEER
+	string "Sync link: the Orin's IPv4 address"
+	default "127.0.0.1"
+	help
+	  127.0.0.1 for native_sim on one machine; the car's address is TBD
+	  (ICD-sync-link).
 
 source "Kconfig.zephyr"
