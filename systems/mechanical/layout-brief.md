@@ -30,7 +30,7 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | 4S LiPo hardcase (~5,000 mAh) | 1 | TBD (standard 1/10 hardcase) | ~450–550 | **Placed first:** low, central, quick swap |
 | Castle 1010 motor | 4 | Ø28 × 58.4 (+ shaft) | 146.5 | Transverse, inboard, staggered fore/aft per axle |
 | Gearbox (2 stages) + CVD | 4 | TBD from gear layout | TBD | Stage 1 swappable (80 teeth total, mod 0.5); stage 2 ~12/54 steel; precise bearing bores; wheel-encoder magnet pocket |
-| Motor controller, A50S V2.3c (ADR-0034) | 4 | 35.5 × 21 × 13.8 (STEP models from Triforce) | 11 (~30 with heatsink) | On the lower deck, with airflow; XT30, MR30, Pico-Clasp and micro-USB accessible |
+| Motor controller, A50S V2.3c with heatsink (ADR-0034) | 4 | Board 35.5 × 21 × 13.8; heatsink envelope TBC from Triforce's STEP models | ~30 | On the lower deck, with airflow (sized once the deck is modelled); XT30, MR30, Pico-Clasp and micro-USB accessible |
 | Steering actuator (gimbal motor + belt + moteus-c1 38 × 38 × 9) | 1 | TBD | TBD | Front, near the steering linkage; fits beside the staggered front motors |
 | Orin NX + heatsink/fan on the carrier (120 × 60) | 1 | ~120 × 60 × TBD height | TBD | Real airflow path; NVMe reachable for swapping |
 | Sync board + power board (stacked) | 1 | TBD | TBD | Close to the corners (CAN runs) and the battery; e-stop and service connectors reachable |

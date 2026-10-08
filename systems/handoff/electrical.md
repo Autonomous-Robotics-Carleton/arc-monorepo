@@ -85,9 +85,9 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Molex pin numbers for the 20-pin Pico-Clasp layout now in ICD-corner-connector (ESTOP goes on Servo/PPM, which takes 3.3 or 5 V; SWD is on the connector)
   - Whether to feed each controller's Aux power input (12–48 V) from an always-on rail, so telemetry survives the e-stop's motor-bus cut
   - Use Triforce's supplied bulk capacitor on each XT30 cable; never tie the controllers' 5 V outputs together
-  - Deck mounting and airflow; whether the optional heatsink is needed at ~12 A against the 20 A uncooled rating
+  - Deck mounting and airflow: waits on the CAD model. The heatsink option is bought (decided 2026-10-07), giving 40 A continuous against ~12 A
   - Hall cable extensions and phase-lead routing across the suspension, away from CAN and UART lines
-  - Whether the Castle 1010's sensor cable carries motor temperature (the controller has a Motor temp input on its connector), which would make E-28 unnecessary
+  - Motor temperature: Castle doesn't document a thermistor on the 1010's sensor cable, so E-28 is bought as a fallback; meter the sensor port when the motors arrive
   - No datasheet exists: ratings come from Triforce's product page, the electrical design from the upstream hardware config (`hwconf/teamtriforceuk/a50s_v23c/`)
 
 ### 4. Orin carrier (fork of Antmicro's baseboard)

@@ -44,7 +44,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | Message family | Content | Rate | Handling |
 | --- | --- | --- | --- |
 | Drive and steering commands | Speed, acceleration, steering angle | TBD (control rate) | Passed through the safety envelope before any CAN command (SYS-22) |
-| Operator heartbeat | Forwarded from the laptop's heartbeat stream (50–100 Hz, ADR-0015) | 50–100 Hz | Feeds the watchdog; lost heartbeat → braking (SYS-04) |
+| Operator heartbeat | Forwarded by the Orin from the laptop's heartbeat stream (50–100 Hz, ADR-0015). Decided 2026-10-07: always via the Orin, so a hung Orin also stops the car | 50–100 Hz | Feeds the watchdog; lost heartbeat → braking (SYS-04) |
 | Envelope settings | Session limits for speed, acceleration and steering | Per session | Default 3 m/s for new experiments (SYS-22) |
 
 Commands are "latest wins": a dropped command is replaced by the next one, never retransmitted.
@@ -53,6 +53,6 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 
 1. Message catalogue, in MAVLink 2 (ADR-0031).
 2. Addresses and ports.
-3. Heartbeat path: via the Orin (as above) or straight from the laptop to the sync MCU. Via the Orin means a hung Orin also stops the car, which is fail-safe.
+3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. Command rate and the safety-state rate.
 5. Owners on both sides.
