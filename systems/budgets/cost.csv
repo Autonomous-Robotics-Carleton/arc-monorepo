@@ -31,5 +31,7 @@ chassis,Printed parts (CF nylon etc.),1,100,300,estimate,
 chassis,Suspension + steering parts + wheels/tyres (off-the-shelf 1/10),1,200,500,estimate,
 chassis,Fasteners + hardware,1,50,100,estimate,
 ground,Team router GL.iNet Flint 3 + cables,1,240,260,"GL.iNet list $209.99",ADR-0015
+ground,NUCLEO-H723ZG sync MCU development boards (G-04),2,60,70,"Future Electronics $30.45 each (2026-10-08); stock varies",SQ-5
+ground,3.3 V CAN transceiver breakouts + 120 ohm terminators (G-05),2,5,15,estimate,SQ-5
 state,Navigation-grade CG IMU (ADIS1650x / Murata SCHA63T class) - delta over consumer,1,100,600,estimate,decided 2026-10-03
 state,Magnetic suspension angle sensors instead of pots - delta,4,0,100,estimate,decided 2026-10-03
