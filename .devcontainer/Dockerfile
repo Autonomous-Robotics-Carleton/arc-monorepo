@@ -76,6 +76,15 @@ ARG PYMAVLINK_VERSION=2.4.50
 ARG CANTOOLS_VERSION=44.2.1
 RUN pip install --no-cache-dir "pymavlink==${PYMAVLINK_VERSION}" "cantools==${CANTOOLS_VERSION}"
 
+# The motor controllers' VESC firmware (firmware/vesc/, ADR-0033, ADR-0034) builds
+# with Arm's GCC 7 2018-q2, the compiler upstream release_7_00 expects
+ARG VESC_GCC_SHA256=bb17109f0ee697254a5d4ae6e5e01440e3ea8f0277f2e8169bf95d07c7d5fe69
+RUN curl -fsSL -o /tmp/gcc-arm.tar.bz2 \
+      "https://developer.arm.com/-/media/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2" \
+    && echo "${VESC_GCC_SHA256}  /tmp/gcc-arm.tar.bz2" | sha256sum -c - \
+    && tar -xjf /tmp/gcc-arm.tar.bz2 -C /opt && rm /tmp/gcc-arm.tar.bz2
+ENV PATH=$PATH:/opt/gcc-arm-none-eabi-7-2018-q2-update/bin
+
 # The image's own user (uid 1000); devcontainers remap it to the host user on Linux.
 # CI and rootless Docker run as root instead: without safe.directory, git
 # refuses the ubuntu-owned Zephyr repos and west loses its build commands.

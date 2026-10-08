@@ -31,6 +31,9 @@ ros2 pkg prefix rclcpp > /dev/null
 colcon --help > /dev/null
 python3 -c "import rclpy, launch_testing"
 
+echo "== VESC firmware toolchain"
+arm-none-eabi-gcc --version | head -1
+
 echo "== ICD code generators"
 python3 -m pymavlink.tools.mavgen --help > /dev/null
 python3 -m cantools --version
