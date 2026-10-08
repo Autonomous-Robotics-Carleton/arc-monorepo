@@ -82,8 +82,8 @@
       <field type="uint8_t" name="status">Sensor status code; 0 is valid.</field>
     </message>
     <message id="52004" name="ARC_MOTOR_STATUS">
-      <description>One motor controller's full status (ADR-0034), forwarded from its UART link.</description>
-      <field type="uint64_t" name="time_ns" units="ns">Sample time, mapped to sync-MCU time.</field>
+      <description>One motor controller's full status (ADR-0034). Sent by the controller over its UART (ICD-controller-telemetry) with time_ns in its own clock; the sync MCU maps time_ns to its clock and forwards it to the Orin.</description>
+      <field type="uint64_t" name="time_ns" units="ns">Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.</field>
       <field type="int32_t" name="erpm" units="rpm">Electrical speed.</field>
       <field type="int32_t" name="tachometer">Commutation steps since start.</field>
       <field type="float" name="current_q" units="A">Motor q-axis current (torque).</field>

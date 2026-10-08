@@ -7,7 +7,7 @@
 
 
 typedef struct __mavlink_arc_motor_status_t {
- uint64_t time_ns; /*< [ns] Sample time, mapped to sync-MCU time.*/
+ uint64_t time_ns; /*< [ns] Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.*/
  int32_t erpm; /*< [rpm] Electrical speed.*/
  int32_t tachometer; /*<  Commutation steps since start.*/
  float current_q; /*< [A] Motor q-axis current (torque).*/
@@ -76,7 +76,7 @@ typedef struct __mavlink_arc_motor_status_t {
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param msg The MAVLink message to compress the data into
  *
- * @param time_ns [ns] Sample time, mapped to sync-MCU time.
+ * @param time_ns [ns] Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.
  * @param erpm [rpm] Electrical speed.
  * @param tachometer  Commutation steps since start.
  * @param current_q [A] Motor q-axis current (torque).
@@ -138,7 +138,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack(uint8_t system_id, uint
  * @param status MAVLink status structure
  * @param msg The MAVLink message to compress the data into
  *
- * @param time_ns [ns] Sample time, mapped to sync-MCU time.
+ * @param time_ns [ns] Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.
  * @param erpm [rpm] Electrical speed.
  * @param tachometer  Commutation steps since start.
  * @param current_q [A] Motor q-axis current (torque).
@@ -203,7 +203,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_status(uint8_t system_i
  * @param component_id ID of this component (e.g. 200 for IMU)
  * @param chan The MAVLink channel this message will be sent over
  * @param msg The MAVLink message to compress the data into
- * @param time_ns [ns] Sample time, mapped to sync-MCU time.
+ * @param time_ns [ns] Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.
  * @param erpm [rpm] Electrical speed.
  * @param tachometer  Commutation steps since start.
  * @param current_q [A] Motor q-axis current (torque).
@@ -304,7 +304,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_encode_status(uint8_t system
  * @brief Send a arc_motor_status message
  * @param chan MAVLink channel to send the message
  *
- * @param time_ns [ns] Sample time, mapped to sync-MCU time.
+ * @param time_ns [ns] Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.
  * @param erpm [rpm] Electrical speed.
  * @param tachometer  Commutation steps since start.
  * @param current_q [A] Motor q-axis current (torque).
@@ -424,7 +424,7 @@ static inline void mavlink_msg_arc_motor_status_send_buf(mavlink_message_t *msgb
 /**
  * @brief Get field time_ns from arc_motor_status message
  *
- * @return [ns] Sample time, mapped to sync-MCU time.
+ * @return [ns] Sample time: the controller's clock on the UART link, sync-MCU time on the sync link.
  */
 static inline uint64_t mavlink_msg_arc_motor_status_get_time_ns(const mavlink_message_t* msg)
 {
