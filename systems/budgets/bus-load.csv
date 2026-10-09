@@ -1,6 +1,6 @@
 bus,bitrate,traffic,frames_per_s,time_per_frame_us,load_pct,ceiling_pct,source,owner
 command (classic CAN),1 Mbit/s (TBC),motor commands 4 controllers @ 500 Hz,2000,120,24,70,"estimate: extended ID, 4-byte payload, worst-case stuffing (ADR-0009, can-command.dbc)",TBD
-command (classic CAN),1 Mbit/s (TBC),health status (STATUS_1) 4 controllers @ 50 Hz,200,160,3.2,70,"estimate: extended ID, 8-byte payload, worst-case stuffing. STATUS_4 and STATUS_5 (can-command.dbc) not counted: rates TBD; at 50 Hz each they add 6.4%",TBD
+command (classic CAN),1 Mbit/s (TBC),health status (STATUS_1) 4 controllers @ 50 Hz,200,160,3.2,70,"estimate: extended ID, 8-byte payload, worst-case stuffing. STATUS_4 and STATUS_5 are not sent (can-command.dbc): their contents are in the UART telemetry",TBD
 command (classic CAN),1 Mbit/s (TBC),TOTAL,,,27.2,70,,TBD
 steering (CAN-FD),1 / 5 Mbit/s,moteus-c1 command + query @ 1 kHz,2000,60,12,70,"estimate: short FD frames, one command and one reply per cycle (ADR-0019)",TBD
 controller telemetry (UART; each of 4 links),2 Mbit/s,ARC_MOTOR_STATUS @ 1 kHz (59-byte MAVLink 2 frame) + ARC_LINK_STATUS @ 1 Hz,1000,295,29.5,50,"59 bytes x 10 bits at 2 Mbit/s. Ceiling 50%: a data link under SYS-24 (ADR-0034, ICD-controller-telemetry)",TBD
