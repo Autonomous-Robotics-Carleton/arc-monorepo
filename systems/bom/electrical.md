@@ -22,7 +22,7 @@
 
 | ID | Item | Qty | Selection | Requirements | Connects to | Rail | Traces to |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| E-10 | 2D LiDAR | 1 | Decided: Hokuyo UST-10LX (ADR-0001) | 40 Hz, 0.25°, 10 m, 270° field of view clear of the chassis; crash guard | E-06 (Ethernet) | Sensor (12 or 24 V, check datasheet) | SYS-08, SYS-12 |
+| E-10 | 2D LiDAR | 1 | Decided: Hokuyo UST-10LX (ADR-0001) | 40 Hz, 0.25°, 10 m, 270° field of view clear of the chassis; crash guard | E-06 (Ethernet) | Sensor (UST-10LX datasheet: 12 or 24 V nominal, 10–30 V range; ≤ 150 mA running, 450 mA at startup) | SYS-08, SYS-12 |
 | E-11 | Forward stereo camera | 1 kit (2 cams) | Planned: Arducam AR0234 stereo | Global shutter; hardware trigger input; fixed baseline on a rigid bar | CSI port 1; trigger from E-30 | 3.3 V / 5 V | SYS-07, SYS-08 |
 | E-12 | Side/rear cameras | 1 kit (4 cams) | Planned: Arducam quad OV9281 | Global shutter mono; hardware trigger input | CSI port 2; trigger from E-30 | 3.3 V / 5 V | Mission 4 (experiment TBD) |
 | E-13 | Event camera | 1 | Planned: Prophesee GenX320 | 2-lane MIPI; Jetson Orin NX driver; Trigger In pin broken out on the MIPI module and wired to a sync-board trigger output (ADR-0021) | CSI port 3; sync from E-30 | 3.3 V / 5 V | Mission 4 (experiment TBD) |
@@ -77,7 +77,7 @@
 | Rail | Feeds | Requirement |
 | --- | --- | --- |
 | Compute | E-01, E-02, E-03 (and E-04, E-05 via the carrier) | Fixed regulated voltage within the carrier's input range; current for NX Super mode plus carrier, NVMe and Wi-Fi |
-| Sensor | E-10 (and E-06 if powered here) | Voltage per the Hokuyo datasheet |
+| Sensor | E-10 (and E-06 if powered here) | 12 or 24 V nominal (the UST-10LX accepts 10–30 V); ≥ 450 mA for the UST-10LX at startup (≤ 150 mA running), plus E-06 if it's on this rail |
 | 5 V / 3.3 V | Cameras, E-30, vehicle-state sensors, E-29, E-33, E-46 | Low noise for the IMUs and ADC reference |
 
 Loads per rail are in `budgets/power.csv` and the sizing scenarios in `budgets/power-scenarios.md`. Rail currents and regulator choices are the EE's.
