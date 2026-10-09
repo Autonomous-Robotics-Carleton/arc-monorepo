@@ -96,7 +96,7 @@ The sync board's channel counts, from the BOM above, plus the one-spare-per-type
 | PPS / time-sync output | To Orin | 1 | — |
 | PWM output | None (steering moved to CAN, ADR-0019) | 0 | ≥ 1 |
 | CAN | Command bus (classic, 4 motor controllers); steering bus (CAN-FD, moteus-c1) | 2 (of 3 FDCAN, plus the MCP2518FD if steering stays on it) | ≥ 1 |
-| UART | Debug console; telemetry from each motor controller at 3 Mbit/s (TBC, ADR-0034) | 5 | ≥ 1 |
+| UART | Debug console; telemetry from each motor controller at 2 Mbit/s (ADR-0034, ICD-controller-telemetry) | 5 | ≥ 1 |
 | Ethernet | Link to Orin via switch (E-06). **Open:** if the optional i210/i226 is fitted, this link runs point-to-point to it instead (ADR-0021), freeing a switch port. Recommended (ADR-0023, Proposed): don't fit it | 1 | — |
 | GPIO | E-stop status in, status LEDs, ground-speed lighting mode select (3) | TBD + 3 | ≥ 2 |
 | Low-battery shutdown signal to the Orin (SYS-30) | Orin | **Open.** Recommended (ADR-0022, Proposed): 1 E-30 GPIO; E-41 cuts the compute rail after the Orin halts and has its own undervoltage backstop | — |
