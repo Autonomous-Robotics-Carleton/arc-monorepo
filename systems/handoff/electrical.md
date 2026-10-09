@@ -83,7 +83,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - **Decided** (ADR-0034):
   - Team Triforce A50S V2.3c, 12S version, bought, not designed. Mounted on the lower deck, not on the motors.
   - Runs our build of the vendored VESC firmware (ADR-0033); per-unit current calibration stays in the board's EEPROM.
-  - Commands on the classic CAN command bus (ADR-0009); telemetry over one UART per controller to the sync MCU, 3 Mbit/s (TBC).
+  - Commands on the classic CAN command bus (ADR-0009); telemetry over one UART per controller to the sync MCU, 2 Mbit/s (ICD-controller-telemetry).
   - E-stop: our firmware reads ESTOP on a spare input (PPM, TBC) and ramps the brake; the power board's switched motor bus provides the hardware cut (section 1).
   - Motor phases (MR30) and the motor's Hall sensor cable come from each corner to the deck (ICD-corner-connector rev E).
 - **Requirements:** SYS-05, -13, -19, -24, -25; RSK-11, -12, -18, -19, -20.

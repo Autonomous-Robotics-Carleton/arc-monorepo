@@ -42,7 +42,7 @@ How the car uses it:
 | Net | Use |
 | --- | --- |
 | CAN H / CAN L | Command bus (ADR-0009), twisted pair |
-| TX / RX | Telemetry UART to the sync MCU, 3 Mbit/s (TBC), each twisted with GND (ADR-0034) |
+| TX / RX | Telemetry UART to the sync MCU, 2 Mbit/s (ICD-controller-telemetry), each twisted with GND (ADR-0034) |
 | Servo / PPM | **ESTOP** input. Not marked 3.3 V max, so 5 V logic is acceptable per Triforce's marking (TBC with them); the controller MCU's pin (PB6 on the A50S, not the sync MCU's) is 5 V tolerant |
 | Hall 1–3, Motor temp, 5 V, GND | From the motor's sensor cable. The 5 V output powers the motor's Hall sensors only; the controllers' 5 V outputs are never tied together (Triforce: "only use 1 BEC") |
 | SWCLK / SWDIO | **SWD on the connector:** a bad firmware build is recovered with a probe through the harness, no soldering (RSK-20) |
