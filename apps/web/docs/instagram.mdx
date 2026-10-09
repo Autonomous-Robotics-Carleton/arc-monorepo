@@ -56,7 +56,7 @@ The component fetches the 6 most recent posts. Each card shows:
 - The first two lines of the caption
 - A **VIEW POST →** link to the post on Instagram
 
-Clicking a card opens the post directly on Instagram in a new tab.
+The **VIEW POST →** link opens the post on Instagram in a new tab; the rest of the card isn't a link.
 
 ## The component (`components/ui/InstagramFeed.tsx`)
 
@@ -80,7 +80,7 @@ The component fetches from `https://feeds.behold.so/${feedId}`, parses the respo
 - The Behold free tier may take a few minutes to sync on first connect
 
 **Images not loading:**
-- Behold serves images from their CDN. Check if there are any CSP or image domain issues in `next.config.mjs`
+- Images are plain `<img>` tags loaded from Behold's CDN (not `next/image`, so `next.config.mjs` doesn't apply). Check the browser's network tab for blocked or expired URLs
 
 **Account disconnected:**
 - Instagram sessions expire. Log back into Behold and reconnect the Instagram account

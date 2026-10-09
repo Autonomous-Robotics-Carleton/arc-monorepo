@@ -115,11 +115,11 @@ import TransitionLink from '@/components/ui/TransitionLink';
 
 ## Root Layout
 
-`app/layout.tsx` loads fonts and wraps the app in providers:
+`app/layout.tsx` loads fonts and wraps the app in `ClientProviders` (`components/providers/`):
 
 ```tsx
 // Fonts loaded: Chakra Petch (headings), Inter (body), JetBrains Mono (mono)
-// Providers: TransitionProvider (page transitions + loading screen)
+// ClientProviders: TransitionProvider (page transitions), with the LoadingScreen inside it
 ```
 
-The `LoadingScreen` component is rendered by `TransitionProvider` — it shows on first load only and slides away automatically.
+`ClientProviders` renders the `LoadingScreen` inside `TransitionProvider`. It shows on first load only and slides away automatically.

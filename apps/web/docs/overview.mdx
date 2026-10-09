@@ -35,7 +35,7 @@ npx nx dev web
 The site starts at `http://localhost:3001` (the docs site uses 3000).
 
 <Callout type="info" title="Port conflict?">
-If 3001 is taken, Next.js picks the next free port. Check the terminal output.
+The port is fixed, so if 3001 is taken `nx dev web` fails: stop the other process. `nx dev docs` uses 3000 and moves to the next free port if 3000 is busy, which can take 3001, so start web first.
 </Callout>
 
 ## Pages at a Glance
@@ -48,6 +48,7 @@ If 3001 is taken, Next.js picks the next free port. Check the terminal output.
 | `/governance` | Constitution, meeting minutes, current status |
 | `/contact` | Email, location, socials, GitHub, docs |
 | `/blueprint` | Easter egg — GSAP scroll exploded car view |
+| `/projects` | An older copy of `/robots` without the modal; not in the nav |
 
 ## Key Directories
 
