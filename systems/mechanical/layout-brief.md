@@ -29,7 +29,7 @@ Model every component as a box first. TBD: needs a datasheet or drawing. TBC: fr
 | --- | --- | --- | --- | --- |
 | 4S LiPo hardcase (~5,000 mAh; E-40 not chosen) | 1 | 138 × 47 × 40–50 (TBC, two makers' packs) | 495–589 (TBC) | **Placed first:** low, central, quick swap; bay sized for the 50 mm pack |
 | Castle 1010 motor | 4 | Ø28 × 58.4 (+ shaft) | 146.5 | Transverse, inboard, staggered fore/aft per axle |
-| Gearbox (2 stages) + CVD | 4 | TBD from gear layout | TBD | Stage 1 swappable (80 teeth total, mod 0.5); stage 2 ~12/54 steel; precise bearing bores; wheel-encoder magnet pocket |
+| Gearbox (2 stages) + CVD | 4 | TBD from the CAD. Fixed by the gears: stage-1 shafts 20 mm apart; stage-2 shafts 33 × module apart; largest gears Ø34 (66 T stage-1 spur) and Ø56 × module (54 T) | TBD | Stage 1 swappable (80 teeth total, mod 0.5); stage 2 ~12/54 steel, module TBD (sized for the output torque); a 12 T pinion needs profile shift to avoid undercut; precise bearing bores; the output takes Arrma's steel diff outdrive (AR310439, ADR-0040); wheel-encoder magnet pocket |
 | Motor controller, A50S V2.3c with heatsink (ADR-0034) | 4 | Board 35.5 × 21 × 13.8; heatsink case from Triforce's 3D models | 30 with the heatsink | On the lower deck, with airflow (sized once the deck is modelled); XT30, MR30, Pico-Clasp and micro-USB accessible |
 | Steering actuator (gimbal motor + belt + moteus-c1 38 × 38 × 9) | 1 | TBD | TBD | Front, near the steering linkage; fits beside the staggered front motors |
 | Orin NX + heatsink/fan (E-03) on the carrier | 1 | Carrier 120 × 60 × 36 with the module; the heatsink adds 17–30 (TBC, E-03 not chosen) | TBD | Real airflow path; NVMe reachable for swapping |
@@ -103,7 +103,7 @@ Sources for the envelopes (checked 2026-10-09):
 
 | # | Question | Blocks |
 | --- | --- | --- |
-| MQ-1 | **Which printers are available?** Model, bed size, maximum nozzle and chamber temperatures, continuous-fibre capability | Final tub material and whether the tub is split. If continuous fibre is available: Onyx + continuous carbon. If PPS-CF is printable: PPS-CF tub with tough PA-CF bumpers. Otherwise: PAHT-CF (current) |
+| MQ-1 | **Which printers are available?** Model, bed size, maximum nozzle and chamber temperatures, continuous-fibre capability. No list is published (checked 2026-10-09): ask the engineering makerspace and the library's Discovery Centre | Final tub material and whether the tub is split. If continuous fibre is available: Onyx + continuous carbon. If PPS-CF is printable: PPS-CF tub with tough PA-CF bumpers. Otherwise: PAHT-CF (current) |
 | MQ-2 | Ride height / floor clearance (M3) | Ground-speed window distance, ToF minimum range, aero floor. Placeholder ~10–15 mm |
 | MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
 | MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
