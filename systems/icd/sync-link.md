@@ -23,9 +23,9 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 
 | Field | Why |
 | --- | --- |
-| Protocol version | Carried in `ARC_LINK_STATUS` (1 Hz each way) as the schema's `<version>`; a mismatch is logged and the link refused. A changed message definition is also rejected per message by MAVLink's CRC_EXTRA |
+| Protocol version | Carried in `ARC_LINK_STATUS` (1 Hz each way) as the schema's `<version>`; a mismatch is logged as a fault, and the sync MCU refuses drive commands, so the car stays stopped, until both sides match (decided 2026-10-08). This is a safety function: its own tests and a second reviewer. A changed message definition is also rejected per message by MAVLink's CRC_EXTRA |
 | Message type | Which payload follows |
-| Sequence number (MAVLink's, per link and direction) | UDP can drop or reorder; gaps are counted, reported in `ARC_LINK_STATUS` and logged as faults (SYS-19) |
+| Sequence number (MAVLink's, per link and direction) | UDP can drop or reorder; gaps are counted from the sequence numbers (not from the MAVLink library's receive-error counters), reported in `ARC_LINK_STATUS` as `rx_gaps` and logged as faults (SYS-19). Frames rejected by CRC or as unknown messages are `rx_bad` |
 | Time, in sync-MCU nanoseconds | `time_ns`, the first field of every message: for samples, when the data was sampled, not sent (SYS-07, SYS-29, ADR-0021); for link status, commands and heartbeats, as each message defines in `sync-link.xml` |
 
 ## Sync MCU → Orin

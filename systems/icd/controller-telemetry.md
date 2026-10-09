@@ -36,7 +36,8 @@ At 59 bytes per `ARC_MOTOR_STATUS` frame (47-byte payload plus the 10-byte MAVLi
 
 ## Faults (SYS-19, SYS-25)
 
-- Gaps in MAVLink's sequence numbers and rejected frames are counted on both sides and reported in `ARC_LINK_STATUS`.
+- Gaps in MAVLink's sequence numbers and rejected frames are counted on both sides and reported in `ARC_LINK_STATUS`, as on the sync link (ICD-sync-link).
+- A protocol version mismatch on any controller link is handled as on the sync link: logged as a fault, and the sync MCU refuses drive commands until it's fixed.
 - The sync MCU stops all four corners (SYS-25, ADR-0035) when any controller has sent no valid `ARC_MOTOR_STATUS` for 5 ms (TBC), or reports a non-zero `fault` or any `state` bit (`ESTOP`, `COMMAND_TIMEOUT`).
 - The controller sets `COMMAND_TIMEOUT` and brakes on the e-stop ramp after 150 ms (TBC) without a command on the command bus (ADR-0035).
 - A corner reporting `ESTOP` while the sync MCU's e-stop status input shows the button released is logged as an ESTOP wiring fault (SYS-19).
