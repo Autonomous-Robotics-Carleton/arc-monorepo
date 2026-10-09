@@ -78,5 +78,7 @@ Changing a parameter must regenerate the car without broken references. This is 
 - [ ] SYS-02: overall width 238–341 mm and length 454–654 mm, measured in the assembly
 - [ ] SYS-15: aero volume reserved under the floor
 - [ ] RSK-04: front corners clear at full lock and full bump, steering actuator included
+- [ ] Each corner's phase leads and Hall cable reach the deck at full bump and full lock, with their connectors accessible (ICD-corner-mechanical, ADR-0034)
+- [ ] The motor controllers' heatsinks have an airflow path and don't rest on the print (ADR-0034, `layout-brief.md`)
 - [ ] Every machined part has a drawing, a material and a quantity (plus spares) in the BOM
 - [ ] Every bearing bore and gear mesh is in aluminium, never printed (`layout-brief.md`, printed-deck rules)
