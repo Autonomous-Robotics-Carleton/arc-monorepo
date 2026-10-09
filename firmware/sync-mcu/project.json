@@ -30,7 +30,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "tools/gen-interfaces.sh --check"
-      }
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/tools/gen-interfaces.sh",
+        "{workspaceRoot}/ros/src/arc_backend_car/include/arc_mavlink/**/*"
+      ]
     }
   }
 }
