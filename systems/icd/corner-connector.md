@@ -15,7 +15,7 @@ Two connections per corner, both crossing the suspension.
 | Item | Value |
 | --- | --- |
 | Motor phases | 3 leads, motor to its controller on the deck. Connector at the corner boundary `TBD` (the A50S end is an MR30) |
-| Phase current | ~12 A per corner at 1 g (TBC, `budgets/power-scenarios.md`); bursts set by the controller's current limit |
+| Phase current | Per corner at 1 g: `budgets/power-scenarios.md` (TBC); bursts set by the controller's current limit |
 | Hall sensor cable | The Castle 1010's 6-pin sensor cable (210 mm supplied), extended to the deck. Halls A, B, C, 5 V and GND; whether it carries a motor thermistor is undocumented (the 1010 isn't ROAR certified), so check on arrival; otherwise E-28 on the can. Routed away from the phase leads |
 | Length | Corner to deck, `TBD` from the CAD layout; as short as the layout allows |
 
