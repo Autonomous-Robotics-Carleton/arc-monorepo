@@ -55,7 +55,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - STM32H723 + Ethernet PHY (ADR-0011); firmware on Zephyr (ADR-0017).
   - Time sync: µs-critical sensors timestamped in the sync MCU's clock; camera triggers and periodic pulses to each GenX320's Trigger In; Orin synced in software, PPS to an Orin GPIO as cross-check (ADR-0021).
   - Buses: one classic command CAN bus and a CAN-FD steering bus (ADR-0019); one UART per motor controller for telemetry (ADR-0034). The steering bus can move from the MCP2518FD to a freed internal FDCAN: your call.
-  - SO-8 CAN transceivers with SIC drop-in; unpopulated split termination, common-mode choke and TVS footprints on the steering bus (ADR-0013).
+  - SO-8 CAN transceivers with SIC drop-in; unpopulated split termination, common-mode choke and TVS footprints on the steering bus (ADR-0036).
   - I/O per the tally in `bom/electrical.md`:
     - 12 SPI devices (2 IMUs, 4 wheel encoders, 4 suspension angle sensors, 2 knuckle encoders), each with a data-ready or chip-select line as needed
     - I2C + mux for 5 ToF sensors

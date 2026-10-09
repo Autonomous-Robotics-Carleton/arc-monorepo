@@ -18,7 +18,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted |
 | [0011](0011-vesc-telemetry-link.md) | VESC 6.4 fork; telemetry on two CAN-FD buses, commands on the classic bus | Superseded by 0034 |
 | [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Accepted, amended by 0019 and 0034 |
-| [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Accepted, amended by 0034 |
+| [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Superseded by 0036 |
 | [0014](0014-ground-speed-event-camera.md) | Ground speed: downward event camera with three lighting modes; dead-wheel pod as fallback | Accepted |
 | [0015](0015-ground-link.md) | Ground link: team router (Flint 3), laptop gateway, button hotspot, wired service port | Accepted |
 | [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted |
@@ -41,4 +41,5 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted, amended by 0034 |
 | [0034](0034-off-the-shelf-motor-controllers.md) | Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s | Accepted, amended by 0035 |
 | [0035](0035-corner-state-and-command-timeout.md) | Each corner reports its state in its telemetry; the controllers brake on command loss | Accepted |
+| [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
 
