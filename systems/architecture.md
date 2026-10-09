@@ -42,14 +42,14 @@ The motor mount clamps a 28 mm can on this bolt pattern, so any 28 mm motor drop
 - Stage 2 (fixed): about 4.5:1 to the wheel, steel spur gears (around 12/54). Not printed; this stage carries the highest torque. A belt is the fallback only if the motor stagger offset gets too large for gears.
 - Bearing bores are held precisely (aluminium plate or press-fit inserts), not raw printed holes.
 
-| Pinion/spur | Stage 1 | Overall | Approx. top speed |
-| --- | --- | --- | --- |
-| 14/66 | 4.71:1 | 21.2:1 | 8 m/s |
-| 16/64 | 4.00:1 | 18.0:1 | 9.5 m/s |
-| 18/62 | 3.44:1 | 15.5:1 | 11 m/s |
-| 20/60 | 3.00:1 | 13.5:1 | 12.5 m/s |
+| Pinion/spur | Stage 1 | Overall | Approx. top speed | With the eRPM cap (ADR-0034) |
+| --- | --- | --- | --- | --- |
+| 14/66 | 4.71:1 | 21.2:1 | 8 m/s | ~6 m/s |
+| 16/64 | 4.00:1 | 18.0:1 | 9.5 m/s | ~7 m/s |
+| 18/62 | 3.44:1 | 15.5:1 | 11 m/s | ~8 m/s |
+| 20/60 | 3.00:1 | 13.5:1 | 12.5 m/s | ~9–9.5 m/s |
 
-Assumes 4S, about 50,000 rpm loaded and a 65 mm tire. Peak wheel speed at 13.5:1 is about 3,700 rpm. Front and rear may run different ratios on purpose. SYS-01 requires ≥ 9 m/s. The controllers cap motor speed at ~37,500 rpm (~75k eRPM, ADR-0034), so real top speeds are about 25% below the table: ~9 m/s at 13.5:1.
+Assumes 4S, about 50,000 rpm loaded and a 65 mm tire. Peak wheel speed at 13.5:1 is about 3,700 rpm uncapped, ~2,800 rpm with the cap. Front and rear may run different ratios on purpose. SYS-01 requires ≥ 9 m/s. The controllers cap motor speed at ~37,500 rpm (~75k eRPM, ADR-0034), so real top speeds are about 25% below the table (last column), and only 13.5:1 reaches SYS-01's 9 m/s. The margin depends on the tire's rolling diameter: ~9.0 m/s at 62 mm (ADR-0034's figure), ~9.45 m/s at 65 mm.
 
 **Motor control:** four off-the-shelf A50S V2.3c controllers (35.5 × 21 × 13.8 mm, VESC firmware) on the lower deck, running our build of the vendored VESC firmware (ADR-0033, ADR-0034).
 
