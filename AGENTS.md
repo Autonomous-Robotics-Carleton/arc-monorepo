@@ -9,8 +9,8 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | Path | What | Format |
 | --- | --- | --- |
 | `systems/` | **Source of truth for the car**: requirements, decisions (ADRs), interfaces (ICDs), budgets, risks, BOM, verification. Read [`systems/README.md`](systems/README.md) first | Markdown + CSV |
-| `ros/` | ROS 2 Jazzy workspace for the Orin NX: the car interface, a backend per target (Gazebo, Webots, gym, replay, car) and `arc_bringup` (`target:=`, `sim:=`) | colcon |
-| `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west / make |
+| `ros/` | ROS 2 Jazzy workspace for the Orin NX: the car interface, a backend per target (Gazebo, Webots, gym, replay, car) and `arc_bringup` (`target:=`, `sim:=`, `sensors:=`) | colcon |
+| `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west, make, CMake |
 | `experiments/` | Team experiments and their template (scaffold) | |
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
 | `hardware/` | Board designs and mechanical exports (no boards started yet) | |
@@ -34,12 +34,12 @@ npx nx dev docs                          # http://localhost:3000
 node tools/systems-ids.mts SYS-04 ADR-0012   # look up IDs (or a kind: RSK)
 ```
 
-Firmware and ROS build only inside the dev container (`.devcontainer/`, ADR-0029):
+Firmware and ROS are built in the dev container (`.devcontainer/`, ADR-0029: the supported path, and what CI uses):
 
 ```bash
-npx nx build sync-mcu && npx nx test sync-mcu   # three targets; twister on native_sim
+npx nx build sync-mcu && npx nx test sync-mcu   # three boards in one build; twister on native_sim
 npx nx build vesc && npx nx test vesc           # A50S firmware; host tests for vesc/arc/
-npx nx build ros && npx nx test ros             # colcon; launch tests per backend
+npx nx build ros && npx nx test ros             # colcon; launch tests per backend, sync-link round trip
 npx nx test firmware-in-loop                    # native_sim firmware and ROS link up over UDP
 tools/gen-interfaces.sh                         # regenerate code from systems/icd/ (--check in CI)
 ```
@@ -55,10 +55,10 @@ tools/gen-interfaces.sh                         # regenerate code from systems/i
 
 ## Firmware, ROS and generated code
 
-- **Generated code is never edited by hand.** `systems/icd/sync-link.xml` (MAVLink 2) and `systems/icd/can-command.dbc` generate C into `firmware/sync-mcu/app/generated/` and `ros/src/arc_backend_car/include/arc_mavlink/` via `tools/gen-interfaces.sh`. Change the schema, regenerate, commit both; `nx check sync-mcu` fails on stale code.
+- **Generated code is never edited by hand.** `tools/gen-interfaces.sh` generates C from `systems/icd/sync-link.xml` (MAVLink 2) into `firmware/sync-mcu/app/generated/arc_mavlink/` and `ros/src/arc_backend_car/include/arc_mavlink/`, and from `systems/icd/can-command.dbc` into `firmware/sync-mcu/app/generated/can_command/`. Change the schema, regenerate, commit both; `nx check sync-mcu` and `nx check ros` fail on stale code.
 - **`firmware/vesc/bldc/` is upstream VESC firmware, GPL-3.0** (ADR-0033). Our changes are ordinary commits there; upstream updates go through `tools/vesc-upstream.sh update <ref>` in a PR of their own. Never copy code from `firmware/vesc/` into MIT parts of the repo. Don't touch its USB, CAN or firmware-upload code: a broken build can then only be recovered over SWD (RSK-20).
 - **Safety functions** (e-stop routine, watchdog, safety envelope) stay fail-safe until implemented, and every change gets its own tests and a second reviewer.
-- **The dev container image is tagged by the hash of its inputs** (`.devcontainer/**`, `west.yml`); CI builds a new one when they change and runs firmware and ROS jobs in it, so a PR that changes the image is tested in its own image.
+- **The dev container image is tagged by the hash of its inputs** (`.devcontainer/**`, `west.yml`); CI builds and smoke-tests a new one when they change, and runs the affected firmware and ROS projects in it. A change to `.devcontainer/` alone affects no Nx project, so run `npx nx run-many -t build test -p sync-mcu vesc ros firmware-in-loop` in the new image yourself. Fork PRs run in `:latest`.
 
 Gotchas:
 - With rootless Docker, the container's root is your own user: run containers with `--user root` to write to the repo, and never `chown` files to uid 1000 inside one (that maps to a different user on the host, and git can no longer delete them).
@@ -66,7 +66,7 @@ Gotchas:
 
 ## Docs site
 
-- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (handbook, MDX), `systems/` (→ `/docs/car`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
+- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology; MDX), `systems/` (→ `/docs/car`; its sidebar is `carSidebar` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
 - **Format:** MDX for site-written pages; plain Markdown for `systems/` and `CONTRIBUTING.md`. Don't convert between them.
 - **Links are written as relative file paths** (`../systems/risks.md`) so they work on GitHub too; the site turns them into page URLs, or GitHub links for files that aren't pages.
 - **IDs are linked automatically** (remark plugin in `apps/docs/lib/remark-system-ids.ts`); don't hand-link them.
@@ -83,7 +83,7 @@ Gotchas:
 
 - Open work is in GitHub issues, indexed in #110 and labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`) plus `needs-decision` / `blocked`. No ground-station software exists yet (#71).
 - Branch from `main`: `yourname/<type>/<issue>-<short-name>` (issue number optional).
-- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `hardware`, `platform`, `ci`. One logical change per commit.
+- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `systems-model`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `devcontainer`, `experiments`, `hardware`, `platform`, `ci`. One logical change per commit.
 - Rebase on `origin/main`; never merge `main` into a branch, and don't use GitHub's "Update branch" (it creates a merge commit).
 - PRs use the template in `.github/pull_request_template.md`. They're merged **once**, with "Rebase and merge" (or "Squash and merge" for messy branches). If a PR's commits are already on `main`, close it instead.
 - Check `git status` before committing: files already staged by `git mv` or `git rm` get swept into the next commit.

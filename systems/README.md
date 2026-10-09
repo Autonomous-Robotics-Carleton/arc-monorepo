@@ -30,6 +30,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `ADR-nnnn` | Decision record | ADR-0002 |
 | `RSK-nn` | Risk | RSK-01 |
 | `LIM-nn` | Accepted limit (hardware deliberately limiting software) | LIM-01 |
+| `E-nn` | Electrical BOM item (`bom/electrical.md`) | E-01 |
 
 IDs are never reused. A deleted requirement keeps its row with status `Deleted`.
 

@@ -167,10 +167,10 @@ npx nx dev docs   # docs site → http://localhost:3000
 npx nx dev web    # website   → http://localhost:3001
 ```
 
-Open the repo in your editor (`code .` for VS Code) and install the recommended extensions when prompted.
+Open the repo in your editor (`code .` for VS Code). The dev container installs its own extensions (C/C++, CMake, Nx Console).
 
 <Callout type="info" title="Working on hardware or CAD exports?">
-STEP, gerber and PDF files under `hardware/` go through [git LFS](https://git-lfs.com). Install it (`sudo apt install git-lfs` or `brew install git-lfs`) and run `git lfs install` once before committing any.
+STEP, PDF and zip files under `hardware/` (zip your gerbers) go through [git LFS](https://git-lfs.com). Install it (`sudo apt install git-lfs` or `brew install git-lfs`) and run `git lfs install` once before committing any.
 </Callout>
 
 The repo is an [Nx](https://nx.dev) workspace, so every project is run through `npx nx`:
@@ -224,7 +224,7 @@ Containers can't reach USB on macOS and Windows, so boards are flashed from your
 <Step>
 ### Build and test
 
-Each project builds for every target from the same source ([ADR-0028](../../../../../systems/adr/0028-software-targets.md)):
+Each project builds for its targets from the same source ([ADR-0028](../../../../../systems/adr/0028-software-targets.md)):
 
 ```sh title="Terminal (in the container)"
 npx nx build sync-mcu    # sync MCU firmware: native_sim, NUCLEO-H723ZG, the car's board
@@ -232,11 +232,14 @@ npx nx test sync-mcu     # its tests, on native_sim
 npx nx build vesc        # motor controller firmware (A50S, VESC)
 npx nx test vesc         # our additions' host tests
 npx nx build ros         # the ROS 2 workspace (colcon)
-npx nx test ros          # its launch tests
+npx nx test ros          # its launch tests and the sync-link round trip
+npx nx check sync-mcu    # generated code matches systems/icd/ (also: nx check ros)
 npx nx test firmware-in-loop   # sync MCU firmware (native_sim) and ROS link up over UDP
 source ros/install/setup.bash
-ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots; or target:=replay, car
+ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots; or target:=replay, car; sensors:=lidar|stereo|all
 ```
+
+Flashing a NUCLEO-H723ZG from your own computer: see `firmware/sync-mcu/README.md`.
 
 Everything is scaffolding so far: it builds and starts, and the sync MCU and ROS link up, but nothing else is implemented yet.
 </Step>

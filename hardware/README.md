@@ -16,4 +16,4 @@ Mechanical CAD lives in Fusion. `mechanical/` here holds STEP and drawing export
 
 - Nothing is fabbed, machined or bought until it passes `systems/reviews/fab-gate.md`.
 - Fab outputs (gerbers, BOM, pick-and-place) are committed only at a release tag, e.g. `power-board-r1`.
-- Large binaries (STEP, gerbers, PDFs) go through git LFS.
+- Large binaries (STEP, PDFs, zips: zip your gerbers) go through git LFS.

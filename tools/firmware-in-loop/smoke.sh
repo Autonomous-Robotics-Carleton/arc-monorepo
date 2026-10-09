@@ -2,7 +2,8 @@
 # Firmware in the loop (phase 6): the sync MCU firmware on native_sim and
 # the ROS car backend exchange ARC_LINK_STATUS over UDP on this machine
 # (ICD-sync-link). Passes when both log "sync link up". Needs the
-# native_sim firmware and the ROS workspace built (nx build sync-mcu ros).
+# native_sim firmware and the ROS workspace built (nx test firmware-in-loop
+# builds both first).
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
