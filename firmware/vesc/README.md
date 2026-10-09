@@ -13,7 +13,7 @@ It's stock VESC firmware plus four additions:
 
 ## Upstream and updates (ADR-0033)
 
-Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. `bldc/` is unmodified so far: our additions are developed as modules in `arc/`, and the edits that join them to the build will be ordinary commits in `bldc/`.
+Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. `bldc/` is unmodified so far: our additions are developed as modules in `arc/`, and the edits that join them to the build will be ordinary commits in `bldc/` (ADR-0037).
 
 ```bash
 tools/vesc-upstream.sh import <ref>   # first import: done, at release_7_00 (SQ-3)

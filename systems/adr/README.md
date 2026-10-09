@@ -38,8 +38,9 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0030](0030-vesc-firmware-in-repo.md) | VESC firmware fork in this repo as a git subtree of upstream (GPL-3.0 subdirectory) | Superseded by 0033 |
 | [0031](0031-sync-link-encoding.md) | Sync link encoded as MAVLink 2 with our own message set | Accepted |
 | [0032](0032-simulator.md) | Simulators as pluggable backends: Gazebo Harmonic, Webots, F1TENTH gym | Accepted |
-| [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted, amended by 0034 |
+| [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted, amended by 0034 and 0037 |
 | [0034](0034-off-the-shelf-motor-controllers.md) | Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s | Accepted, amended by 0035 |
 | [0035](0035-corner-state-and-command-timeout.md) | Each corner reports its state in its telemetry; the controllers brake on command loss | Accepted |
 | [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
+| [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
 
