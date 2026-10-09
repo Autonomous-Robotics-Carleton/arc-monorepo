@@ -9,7 +9,7 @@
 | Req | Mechanical consequence |
 | --- | --- |
 | SYS-01 ≥ 9 m/s | Gearing per `architecture.md`; stiff, aligned drivetrain |
-| SYS-02 size box | Overall width 238–341 mm, **length 454–654 mm** (F1TENTH/Roboracer). A 1/10 touring car (~260 mm wheelbase) is far too short; even ~310 mm is borderline (RSK-16) |
+| SYS-02 size box | Overall width 238–341 mm, **length 454–654 mm** (F1TENTH/Roboracer). Check the overall length in the layout (RSK-16) |
 | SYS-05 e-stop | Physical button reachable on the car while it's moving or just stopped |
 | SYS-12 crash survival | Crash guard for the LiDAR, cameras and front corners (impact speed TBD) |
 | SYS-13 corner swap | A corner (motor, gearbox) removable without disturbing the rest (time TBD); its phase leads and Hall cable unplug at the corner boundary (ADR-0034) |
