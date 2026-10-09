@@ -362,7 +362,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
     <div class="sheet">
       <figure>
         <div class="scroll">
-<svg class="wide" viewBox="0 0 980 230" role="img" aria-label="Stop timelines at 9 metres per second: the e-stop begins its brake ramp immediately and stops in about 1.9 seconds, then the power board cuts the motor bus at the delay T; a heartbeat loss rolls at most 150 milliseconds, about 1.4 metres, before the same brake ramp starts.">
+<svg class="wide" viewBox="0 0 980 230" role="img" aria-label="Stop timelines at 9 metres per second: the e-stop begins its brake ramp immediately and stops in about 1.9 seconds, then the power board cuts the motor bus at the delay T, 2.4 seconds (to be confirmed); a heartbeat loss rolls at most 150 milliseconds, about 1.4 metres, before the same brake ramp starts.">
   <!-- axis: x = 180 + t*300 -->
   <line class="grid-l" x1="180" y1="40" x2="180" y2="196"/>
   <line class="grid-l" x1="330.0" y1="40" x2="330.0" y2="196"/>
@@ -386,8 +386,8 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <text class="tn c-ink" x="233.0" y="84">controller firmware brakes at ~5 m/s² until stopped</text>
   <line class="w w-safety" x1="742.5" y1="56" x2="742.5" y2="104"/>
   <text class="tn c-safety" x="749.5" y="60">stopped ≈ 1.9 s</text>
-  <line class="w w-open" x1="840.0" y1="68" x2="840.0" y2="110"/>
-  <text class="tn c-power" x="846.0" y="122" text-anchor="end">power board cuts the motor bus at T (TBC)</text>
+  <line class="w w-open" x1="900.0" y1="68" x2="900.0" y2="110"/>
+  <text class="tn c-power" x="906.0" y="122" text-anchor="end">power board cuts the motor bus at T (2.4 s, TBC)</text>
 
   <!-- Lane 2: heartbeat -->
   <text class="tb" x="16" y="160">Heartbeat lost</text>
@@ -401,7 +401,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <text class="tn c-safety" x="794.5" y="150">≈ 2.0 s</text>
 </svg>
         </div>
-        <figcaption>At 9 m/s (SYS-01) and ~5 m/s² (TBC). The brake ramp (the darker wedge, ~150 ms) keeps braking from being instant. On heartbeat loss the car rolls at most 150 ms, about 1.4 m, before braking starts, which meets the 2 m rolling limit. Total distance, ramp included, is about 9 m for the e-stop and about 10 m for heartbeat loss. The motor-bus cut T is TBC: it must come after the stop, with margin (ADR-0012 as amended by ADR-0034); its position here is illustrative.</figcaption>
+        <figcaption>At 9 m/s (SYS-01) and ~5 m/s² (TBC). The brake ramp (the darker wedge, ~150 ms) keeps braking from being instant. On heartbeat loss the car rolls at most 150 ms, about 1.4 m, before braking starts, which meets the 2 m rolling limit. Total distance, ramp included, is about 9 m for the e-stop and about 10 m for heartbeat loss. The motor-bus cut T is 2.4 s (TBC): after the stop, with ~25% margin (ADR-0012 as amended by ADR-0034, ICD-corner-connector).</figcaption>
       </figure>
     </div>
   </section>
