@@ -60,7 +60,7 @@ Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) are built in th
 ## How PRs are accepted
 
 - CI passes.
-- A code owner approves (see [`.github/CODEOWNERS`](CODEOWNERS)).
+- A code owner approves (see [`.github/CODEOWNERS`](CODEOWNERS)): the software team for software paths; the systems lead for `systems/`, the safety code and everything else.
 - A change to a requirement, ICD or budget links the ADR or issue that justifies it.
 - A change to an ICD is approved by the owners on both sides of the interface.
 - A change to a safety function (e-stop, watchdog, safety envelope) has its own tests and a second reviewer.
