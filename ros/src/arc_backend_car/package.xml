@@ -2,7 +2,7 @@
 <package format="3">
   <name>arc_backend_car</name>
   <version>0.0.0</version>
-  <description>The car backend: the bridge to the sync MCU over the sync link (ADR-0028, ICD-sync-link, ADR-0024). Stub.</description>
+  <description>The car backend: the bridge to the sync MCU over the sync link (ADR-0028, ICD-sync-link, MAVLink 2 per ADR-0031, ADR-0024). Exchanges ARC_LINK_STATUS; the car interface itself is a stub.</description>
   <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
   <license>MIT</license>
 
