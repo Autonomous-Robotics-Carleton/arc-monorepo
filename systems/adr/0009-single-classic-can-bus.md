@@ -1,6 +1,6 @@
 # ADR-0009: One classic CAN bus to the four corner VESCs
 
-- **Status:** Accepted, amended by ADR-0011 (this bus carries commands and health status only; telemetry moves to two CAN-FD buses) and ADR-0034 (telemetry moves to a UART per controller instead; the bus now runs on the deck to off-the-shelf controllers)
+- **Status:** Accepted, amended by ADR-0011 (this bus carries commands and health status only; telemetry moves to two CAN-FD buses) and ADR-0034 (telemetry moves to a UART per controller instead; the bus now runs on the deck to off-the-shelf controllers). Bitrate confirmed at 1 Mbit/s on 2026-10-08
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-06, RSK-03
@@ -30,7 +30,7 @@ One classic CAN bus between the sync MCU and the four VESCs.
 | Bitrate | 1 Mbit/s (TBC; VESC supports 125 kbit/s–1 Mbit/s) |
 | Topology | Linear trunk in the harness, stubs to each VESC ≤ 0.3 m |
 | Termination | 120 Ω at the sync board and 120 Ω at the far end of the trunk, both off the corner boards |
-| Frames | VESC protocol, extended IDs. Message set and rates live in `icd/can.dbc` |
+| Frames | VESC protocol, extended IDs. Message set and rates live in [`icd/can-command.dbc`](../icd/can-command.dbc) |
 
 ## Consequences
 
