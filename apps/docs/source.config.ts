@@ -56,6 +56,20 @@ export const repoDocs = defineCollections({
   schema: pageSchema,
 });
 
+// Software READMEs, next to the code they describe (Markdown); lib/source.ts
+// mounts them under software/. One collection per top-level folder, each
+// rooted at that folder, since collections are watched in dev.
+function readmes(dir: string, files = ['README.md']) {
+  return defineCollections({ type: 'doc', dir: `../../${dir}`, files, schema: pageSchema });
+}
+
+export const rosDocs = readmes('ros');
+export const firmwareDocs = readmes('firmware', ['README.md', 'sync-mcu/README.md', 'vesc/README.md']);
+export const toolsDocs = readmes('tools');
+export const libsDocs = readmes('libs', ['*/README.md']);
+export const platformDocs = readmes('platform');
+export const experimentsDocs = readmes('experiments');
+
 // The page title is rendered by the layout, so a leading `# heading`
 // (which Markdown files keep for GitHub) would show twice. Its text is
 // exported as `headingTitle`, the title for pages without frontmatter.

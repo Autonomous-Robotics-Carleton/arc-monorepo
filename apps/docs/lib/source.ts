@@ -1,4 +1,16 @@
-import { devKitDocs, docs, repoDocs, systemsDocs, webDocs } from '@/.source';
+import {
+  devKitDocs,
+  docs,
+  experimentsDocs,
+  firmwareDocs,
+  libsDocs,
+  platformDocs,
+  repoDocs,
+  rosDocs,
+  systemsDocs,
+  toolsDocs,
+  webDocs,
+} from '@/.source';
 import { loader, type Source, type VirtualFile } from 'fumadocs-core/source';
 import { createMDXSource } from 'fumadocs-mdx';
 
@@ -30,8 +42,38 @@ const carSidebar: Record<string, { title: string; pages?: string[] }> = {
   'car/icd': { title: 'Interfaces' },
   'car/budgets': { title: 'Budgets' },
   'car/tests': { title: 'Tests' },
-  'car/software': { title: 'Software', pages: ['architecture', 'setup-plan'] },
+  'car/software': { title: 'Software design', pages: ['architecture', 'setup-plan'] },
 };
+
+// Software READMEs (see source.config.ts) and their page under software/. Their
+// own `# heading` is the folder name, as GitHub shows it, so the sidebar title
+// is set here. A README not listed is named after its folder.
+const softwareReadmes: [Parameters<typeof createMDXSource>[0], Record<string, [string, string]>][] = [
+  [rosDocs, { 'README.md': ['ros', 'ROS workspace'] }],
+  [
+    firmwareDocs,
+    {
+      'README.md': ['firmware', 'Firmware'],
+      'sync-mcu/README.md': ['sync-mcu', 'Sync MCU firmware'],
+      'vesc/README.md': ['vesc', 'Motor controller firmware'],
+    },
+  ],
+  [experimentsDocs, { 'README.md': ['experiments', 'Experiments'] }],
+  [platformDocs, { 'README.md': ['platform', 'Platform'] }],
+  [toolsDocs, { 'README.md': ['tools', 'Tools'] }],
+  [libsDocs, { 'systems-model/README.md': ['systems-model', 'systems-model library'] }],
+];
+
+function softwareFiles(): VirtualFile[] {
+  return softwareReadmes.flatMap(([collection, pages]) =>
+    filesOf(createMDXSource(collection)).map((file) => {
+      const fallback = file.path.replace(/\/?README\.md$/, '') || 'readme';
+      const [name, title] = pages[file.path] ?? [fallback, undefined];
+      const moved = { ...file, path: `software/${name}.md` };
+      return title ? setTitle(moved, title) : moved;
+    }),
+  );
+}
 
 const carMeta: VirtualFile[] = Object.entries(carSidebar).map(([folder, data]) => ({
   type: 'meta',
@@ -77,6 +119,7 @@ const files: VirtualFile[] = [
     return file.path === 'architecture.md' ? setTitle(moved, 'Overview') : moved;
   }),
   ...carMeta,
+  ...softwareFiles(),
   ...filesOf(createMDXSource(repoDocs)).map((file) => {
     const page = repoPages[file.path];
     return page ? setTitle({ ...file, path: page.path }, page.title) : file;

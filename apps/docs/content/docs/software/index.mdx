@@ -1,0 +1,81 @@
+---
+title: Overview
+description: How the car's software fits together, what runs where, and where each part is documented.
+---
+
+The car's software runs on four kinds of computer, plus the operator's laptop. This page is the map. The design and the decisions behind it are in the [software architecture](../../../../../systems/software/architecture.md); each part's own page in this section is the README next to its code.
+
+<Callout type="warn" title="Mostly scaffolding">
+Every component builds, starts and runs in CI, and the sync MCU firmware and the ROS car backend already link up over the sync link. Almost nothing else is implemented yet: each page says what works and what's a stub. Open work is indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110).
+</Callout>
+
+## What runs where
+
+| Computer | Software | Page |
+| --- | --- | --- |
+| Operator's laptop | Ground station: teleop and the operator heartbeat. Nothing exists yet ([#71](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/71)) | — |
+| Orin NX | ROS 2 Jazzy platform software, with one backend per target; experiments in containers | [ROS workspace](../../../../../ros/README.md), [Experiments](../../../../../experiments/README.md), [Platform](../../../../../platform/README.md) |
+| Sync MCU (STM32H723) | Zephyr firmware: the time base, sensor sampling, the safety functions, both CAN buses, the links to the Orin and the motor controllers | [Sync MCU firmware](../../../../../firmware/sync-mcu/README.md) |
+| 4 × A50S motor controllers | Upstream VESC firmware plus our e-stop routine, command timeout, UART telemetry and speed limit | [Motor controller firmware](../../../../../firmware/vesc/README.md) |
+| moteus-c1 steering controller | mjbots' firmware; only its configuration is ours (ADR-0019) | [Firmware](../../../../../firmware/README.md) |
+
+Developer tools (code generation, the `systems/` checker, the firmware-in-the-loop test) are in [Tools](../../../../../tools/README.md) and the [systems-model library](../../../../../libs/systems-model/README.md).
+
+## How data and commands move
+
+**Sensor data**
+
+1. The vehicle-state sensors (IMUs, wheel, suspension and steering encoders, ride height) are wired to the sync MCU, which timestamps every sample in its own clock (ADR-0021).
+2. Each motor controller streams its full status at 1 kHz over its own UART; the steering controller answers on the steering bus.
+3. The sync MCU forwards every sample to the Orin within 0.25 ms (ADR-0024), over Ethernet: UDP, encoded as MAVLink 2 (ADR-0031). The ROS car backend receives it; that's where sensor latency is measured (SYS-29).
+4. The cameras and the LiDAR connect to the Orin directly. The sync MCU triggers the cameras, so their frames line up with its clock.
+
+**Commands**
+
+1. A policy (an experiment or the classical controller) commands through the car interface, the ROS messages in `arc_msgs` (not defined yet). Experiments never command the motors directly (SYS-22).
+2. The car backend sends `ARC_DRIVE_COMMAND` to the sync MCU.
+3. The sync MCU clamps it to the safety envelope and sends it on: to the motor controllers on the classic CAN command bus, and to the steering controller on the CAN-FD steering bus.
+
+**Safety.** Nothing safety-related runs on the Orin. Each layer works without the ones above it:
+
+| Layer | Runs on | What it does |
+| --- | --- | --- |
+| E-stop | The button on the car, each motor controller's firmware, the power board | Brakes on a ramp, then the power board cuts motor power (ADR-0012, ADR-0034) |
+| Command timeout | Each motor controller | Brakes on the same ramp when commands stop arriving, e.g. if the sync MCU hangs (ADR-0035) |
+| Heartbeat watchdog | Sync MCU | Brakes when the operator's heartbeat stops (SYS-04) |
+| Safety envelope | Sync MCU | Limits speed, acceleration and steering, whatever is commanded (SYS-22) |
+| Any-corner stop | Sync MCU | Stops all four corners when one corner, the command bus or the steering fails, and stays stopped until it's reset at the car (SYS-25, ADR-0035, ADR-0038, ADR-0039) |
+
+## Running it
+
+Set up first: [Dev setup](../handbook/dev-setup.mdx). Firmware and ROS build in the dev container.
+
+| Target | Command | What you get |
+| --- | --- | --- |
+| Simulation | `ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym` | The platform on a simulator (also `gazebo`, `webots`); the backends are stubs so far |
+| Firmware in the loop | `npx nx test firmware-in-loop` | The sync MCU firmware, built for `native_sim`, and the ROS car backend exchange messages over UDP on your machine |
+| Development hardware | `npx nx build sync-mcu`, then flash a NUCLEO-H723ZG from your own computer | The sync MCU firmware on the same MCU as the car ([Sync MCU firmware](../../../../../firmware/sync-mcu/README.md)) |
+| The car | `target:=car` | Nothing to run on until the boards exist |
+
+Every project's build, test and check commands: [Projects and commands](./reference/projects.mdx). What CI runs: [CI](./reference/ci.mdx).
+
+## Interfaces and generated code
+
+Two schemas in `systems/icd/` define the links between computers, and code is generated from them:
+
+| Schema | Defines | Generated into |
+| --- | --- | --- |
+| [`sync-link.xml`](../../../../../systems/icd/sync-link.xml) (MAVLink 2) | The sync link (sync MCU ↔ Orin) and the motor controllers' telemetry | The sync MCU firmware and the ROS car backend |
+| [`can-command.dbc`](../../../../../systems/icd/can-command.dbc) | The command bus: stock VESC frames | The sync MCU firmware |
+
+Every message and field is listed in [Messages](./reference/messages.mdx). To change one, edit the schema, run `tools/gen-interfaces.sh` in the dev container, and commit the schema and the generated code together. Never edit generated code: `nx check sync-mcu` and `nx check ros` fail if it doesn't match its schema. How each link behaves (rates, timing, faults) is in its interface document: [sync link](../../../../../systems/icd/sync-link.md), [controller telemetry](../../../../../systems/icd/controller-telemetry.md).
+
+## Rules for software
+
+- **`systems/` wins.** If code disagrees with a requirement, ADR or interface document, the `systems/` file is right: flag the conflict in your PR.
+- **Safety functions** (the e-stop routine, command timeout, watchdog, safety envelope, any-corner stop) stay fail-safe until they're implemented. Every change has its own tests and is approved by the systems lead (`.github/CODEOWNERS`).
+- **`firmware/vesc/` is GPL-3.0**, the rest of the repo MIT: never copy code out of it (ADR-0033). Don't touch upstream's USB, CAN or firmware-upload code there; a broken build can then only be recovered over SWD (RSK-20).
+- **Say where a value comes from.** Where code follows a decision or an interface, cite it in a comment, as the existing code does: `// UDP ports: ICD-sync-link (TBC)`.
+- **Docs live next to the code.** A change in behaviour, configuration or commands updates that folder's README in the same PR; this section shows those READMEs.
+
+Commits, branches and pull requests: [Contributing](../../../../../.github/CONTRIBUTING.md).

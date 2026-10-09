@@ -1,0 +1,15 @@
+{
+  "title": "Software",
+  "pages": [
+    "index",
+    "ros",
+    "firmware",
+    "sync-mcu",
+    "vesc",
+    "experiments",
+    "platform",
+    "tools",
+    "systems-model",
+    "reference"
+  ]
+}
