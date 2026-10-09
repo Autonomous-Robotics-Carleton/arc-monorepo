@@ -108,4 +108,4 @@ Sources for the envelopes (checked 2026-10-09):
 | MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
 | MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
 | MQ-5 | **Which off-the-shelf suspension family?** **Closed by ADR-0040:** we design the corners; ADR-0027's bought-corner recommendation was never accepted | — |
-| MQ-6 | **Tyre rolling diameter:** ADR-0034's speed figures use 62 mm. With ADR-0040's ~100 mm tyres the figure changes, and with it the gear ratio (RSK-21); the rolling diameter of the chosen tyre, new and worn, is TBD | SYS-01's margin, RSK-18, RSK-21, the eRPM cap |
+| MQ-6 | **Tyre rolling diameter:** the speed figures in `architecture.md` assume 100 mm (ADR-0040). The chosen tyre's rolling diameter, new and worn, is TBD | SYS-01's margin, RSK-18, RSK-21, the eRPM cap |
