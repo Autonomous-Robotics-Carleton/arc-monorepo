@@ -18,6 +18,13 @@
         "cwd": "ros",
         "command": ". /opt/ros/jazzy/setup.sh && colcon test --event-handlers console_cohesion+ && colcon test-result --verbose"
       }
+    },
+    "check": {
+      "executor": "nx:run-commands",
+      "inputs": ["default", "^default", "{workspaceRoot}/tools/gen-interfaces.sh", "{workspaceRoot}/firmware/sync-mcu/app/generated/**/*"],
+      "options": {
+        "command": "tools/gen-interfaces.sh --check"
+      }
     }
   }
 }
