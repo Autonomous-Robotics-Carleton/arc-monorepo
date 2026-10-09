@@ -16,6 +16,20 @@ ros2 launch arc_bringup platform.launch.py target:=car      # the sync MCU over 
 
 Defaults: `target:=sim sim:=gym sensors:=lidar`, so a bare `ros2 launch arc_bringup platform.launch.py` runs the gym. `sim:=` only matters with `target:=sim`; `sensors:=` picks what a simulator renders, and the replay and car backends ignore it.
 
+## What a backend provides
+
+`arc_bringup/launch/platform.launch.py` finds the backend by name and includes its launch file, so every backend package follows the same shape:
+
+| Item | Convention |
+| --- | --- |
+| Package name | `arc_backend_<target>` (`replay`, `car`), or `arc_backend_sim_<sim>` for a simulator |
+| Launch file | `launch/backend.launch.py`, installed to the package's `share/`. It declares a `sensors` argument, which the platform always passes (a simulator renders that profile; the others ignore it) |
+| Executable | `backend` |
+| Car interface | Publishes and subscribes to `arc_msgs` only, so no platform node knows which backend is running (ADR-0028) |
+| Launch test | `arc_bringup/CMakeLists.txt` starts the platform once per backend and waits for the backend's startup line (`<target> backend: …`, or `sim (<sim>) backend: …`); update `test/test_target.py` when a backend's startup line changes |
+
+A new simulator also needs its name in `SIMS` in `platform.launch.py` and in the test loop in `arc_bringup/CMakeLists.txt`.
+
 ## Packages
 
 Scaffolding: every package builds and starts; apart from the car backend's sync-link handshake, nothing is implemented yet.
