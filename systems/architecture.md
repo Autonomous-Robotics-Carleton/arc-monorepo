@@ -20,7 +20,7 @@ v1 is tightly integrated; modular hardware is a v2 goal. The car runs on an indo
 
 ## Drive
 
-**Corners.** Each corner is a motor and gearbox; its motor controller sits on the lower deck (ADR-0034), and there's no corner module or corner sensor board (ADR-0006). Wheel encoders and suspension sensors wire directly to the sync board (ADR-0008).
+**Corners.** Each corner is a motor and gearbox; we design its knuckle or upright, arms and mounts, and buy the shocks, CVDs and wheels (ADR-0040). Its motor controller sits on the lower deck (ADR-0034), and there's no corner module or corner sensor board (ADR-0006). Wheel encoders and suspension sensors wire directly to the sync board (ADR-0008).
 
 **Motor:** [Castle 1010-4400kV](https://www.powerhobby.com/products/castle-creations-060-0098-00-4-pole-sensored-brushless-motor-1010-4400kv), sensored, 2S–4S.
 
@@ -130,10 +130,10 @@ Every connection locks; every run carries a spare conductor; every wire is label
 
 ## Mechanical
 
-Mechanical design hasn't started. Constraints carried from the original spec and the decisions since:
+Mechanical design is at the block layout (`mechanical/layout-brief.md`, `mechanical/cad-workflow.md`). Constraints from the original spec and the decisions since:
 
 - **Wheels:** ~Ø100 × 42 mm belted on-road tyres on a 17 mm hex (ADR-0040). Tire compound for tile is TBD.
-- **Size:** F1TENTH/Roboracer box: width 238–341 mm, length 454–654 mm (SYS-02). A ~310 mm wheelbase may come in under the 454 mm minimum length (RSK-16).
+- **Size:** F1TENTH/Roboracer box: width 238–341 mm, length 454–654 mm (SYS-02). The overall length must reach 454 mm (RSK-16).
 - **Battery bay:** placed first in the layout, low and central, sized to a 1/10 hardcase; ~5,000 mAh 4S is the starting point.
 - **Mass:** heavy parts (battery, motors, motor controllers) on the lower deck. The upper deck carries a hole grid for sensors.
 - **Front corners must fit:** staggered motors, both gear stages, CVDs, wheel encoders, suspension sensors, knuckle encoders and the steering actuator, at full lock and full bump (RSK-04).
