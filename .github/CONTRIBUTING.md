@@ -44,7 +44,7 @@ Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) are built in th
 
 ## Making a change
 
-1. **Start from an issue.** Open work is indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110); issues are labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`), and `needs-decision` or `blocked` when they can't start yet. For a new issue, use the issue forms: *Failure report* for any hardware or firmware failure during a run, *Bug* for software, *Proposal* for features and design changes.
+1. **Start from an issue.** Open work is indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110); issues are labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`), and `needs-decision` or `blocked` when they can't start yet. For a new issue, use the issue forms: *Failure report* for any hardware or firmware failure during a run, *Bug* for software, *Proposal* for features and design changes. A new issue is added to #110 automatically, under "New, not sorted yet"; move it into its area there.
 2. **Branch from `main`** as `yourname/<type>/<issue>-<short-name>`, e.g. `jdoe/feat/42-imu-driver`. Leave out the issue number if there isn't one.
 3. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary` in the imperative, under 72 characters. The scope is usually the project: `systems`, `systems-model`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `devcontainer`, `experiments`, `hardware`, `platform`, `ci`. One logical change per commit.
 

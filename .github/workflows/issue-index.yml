@@ -1,0 +1,67 @@
+name: Issue Index
+
+# Adds every new issue to the index issue (#110) under "New, not sorted yet",
+# with its labels, so none is missed. Whoever opened it then moves the line
+# into its area section, with what it waits on (AGENTS.md).
+# Only the issue number and label names are read; titles and bodies are
+# untrusted and never touched.
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+# One run at a time: each run rewrites the index's body.
+concurrency:
+  group: issue-index
+  cancel-in-progress: false
+
+jobs:
+  add:
+    if: github.event.issue.number != 110
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      INDEX: "110"
+      NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Add the issue to the index
+        shell: python
+        run: |
+          import json, os, re, subprocess
+
+          repo, index, n = os.environ["REPO"], os.environ["INDEX"], os.environ["NUMBER"]
+          HEAD = "## New, not sorted yet"
+
+          def api(*args):
+              return subprocess.run(["gh", "api", *args], check=True, capture_output=True, text=True).stdout
+
+          body = (json.loads(api(f"repos/{repo}/issues/{index}"))["body"] or "").replace("\r\n", "\n")
+          if re.search(rf"^- #{n}\b", body, re.M):
+              print(f"#{n} is already in the index")
+              raise SystemExit
+
+          labels = [label["name"] for label in json.loads(api(f"repos/{repo}/issues/{n}"))["labels"]]
+          item = f"- #{n}" + "".join(f" `{name}`" for name in labels)
+
+          lines = body.split("\n")
+          if HEAD in lines:
+              # append to the end of the section's list
+              i = lines.index(HEAD) + 1
+              while i < len(lines) and lines[i].strip() and not lines[i].startswith("## "):
+                  i += 1
+              lines.insert(i, item)
+          else:
+              # a new section before the closing "Labels:" line, or at the end
+              section = [HEAD, "Added automatically. Move each into its area, with what it waits on.", item, ""]
+              j = next((k for k, line in enumerate(lines) if line.startswith("Labels:")), None)
+              if j is None:
+                  lines += [""] + section[:-1]
+              else:
+                  lines[j:j] = section
+
+          api("-X", "PATCH", f"repos/{repo}/issues/{index}", "-f", "body=" + "\n".join(lines), "--silent")
+          print(f"added #{n} to #{index}")
