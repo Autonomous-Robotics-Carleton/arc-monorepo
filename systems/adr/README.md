@@ -24,7 +24,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted |
 | [0017](0017-sync-mcu-rtos.md) | Sync MCU firmware on Zephyr | Accepted |
 | [0018](0018-steering-actuator.md) | Steering: VESC-driven brushless actuator, belt reduction, return-to-centre on e-stop | Superseded by 0019 |
-| [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted, amended by 0034 |
+| [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted, amended by 0034 and 0038 |
 | [0020](0020-time-sync-ptp.md) | Time sync: PTP with hardware timestamping through a PTP-aware switch | Superseded by 0021 |
 | [0021](0021-time-sync-sync-mcu-domain.md) | Time sync: µs-critical sensors timestamped in the sync MCU's clock; Orin synced in software; optional i210/i226 | Accepted |
 | [0022](0022-power-board-telemetry-and-shutdown.md) | Power-board data to the sync MCU over I2C with fault interrupts; two-tier low-battery shutdown | Proposed (recommendation) |
@@ -43,4 +43,5 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0035](0035-corner-state-and-command-timeout.md) | Each corner reports its state in its telemetry; the controllers brake on command loss | Accepted |
 | [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
 | [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
+| [0038](0038-steering-loss-stops-the-car.md) | Losing steering stops the car, and the car doesn't drive without it | Accepted |
 
