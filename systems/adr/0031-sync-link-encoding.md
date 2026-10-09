@@ -1,6 +1,6 @@
 # ADR-0031: The sync link uses MAVLink 2 with our own message set
 
-- **Status:** Accepted
+- **Status:** Accepted. In practice mavgen generates C only (`tools/gen-interfaces.sh`): the Orin bridge, in C++, uses the same C headers, and nothing in Python uses the message set yet. Since ADR-0034 the same schema also encodes the controller telemetry links (ICD-controller-telemetry)
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-07, SYS-19, SYS-24, SYS-29, ADR-0017, ADR-0024, ADR-0028, ICD-sync-link
