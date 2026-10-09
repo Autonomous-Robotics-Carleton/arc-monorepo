@@ -5,9 +5,9 @@
 
 - **Retires:** RSK-03
 - **Verifies:** ADR-0011, ADR-0013, ICD-corner-connector rev D, SYS-24 (bus load ≤ 70%)
-- **Must pass before:** VESC fork layout
+- **Must pass before:** — (was the VESC fork layout, dropped by ADR-0034)
 - **Owner:** TBD
-- **Status:** Not started
+- **Status:** Retired (ADR-0034)
 
 ## Objective
 

@@ -20,7 +20,7 @@
 | Scenario | Battery-side estimate | What it sizes |
 | --- | --- | --- |
 | Bench on 19 V wall supply | ~90 W low-voltage peak | Wall brick (~150 W for margin), OR-ing parts |
-| Idle on battery (logging, compute) | ~60–90 W, ~5–6 A | Idle run time |
+| Idle on battery (logging, compute) | ~60–90 W, ~4–6 A | Idle run time |
 | Average hard driving | ~230–330 W total | Pack capacity: 10 min ≈ 38–55 Wh ≈ 2.6–3.7 Ah, so ~4–5 Ah usable. A 5,000 mAh 4S hardcase is the starting point |
 | **Peak: ~1 g acceleration at 9 m/s** | ~35 N × 9 m/s ≈ 315 W at the wheels, ~390 W from the motor path, plus LV → **~30–35 A** | Pack C rating (trivial at 5 Ah), wire gauge, pack connector (ICD-battery-pack), the XT30 at each motor controller, anti-spark switch, distribution |
 | Beyond grip | Wheelspin; no useful work | Enforced by the motor controllers' current limits. The old "~120 A peak" was motor capability, not what the car can use; `architecture.md` and BOM E-40 now size to ~30–35 A |
