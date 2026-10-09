@@ -22,10 +22,10 @@ Each of the four motor controllers streams its full status to the sync MCU over 
 
 | Message | Content | Rate | Timing |
 | --- | --- | --- | --- |
-| `ARC_MOTOR_STATUS` | Speed, tachometer, q/d/input currents, duty, bus voltage, FET and motor temperatures, fault code | 1 kHz | `time_ns` is the sample time in the **controller's** clock, taken when the frame is built (ADR-0024). The sync MCU maps it to its own clock and forwards the message to the Orin unchanged in shape |
+| `ARC_MOTOR_STATUS` | Speed, tachometer, q/d/input currents, duty, bus voltage, FET and motor temperatures, fault code, state (braking on e-stop or on command timeout, ADR-0035) | 1 kHz | `time_ns` is the sample time in the **controller's** clock, taken when the frame is built (ADR-0024). The sync MCU maps it to its own clock and forwards the message to the Orin unchanged in shape |
 | `ARC_LINK_STATUS` | Protocol version, receive gaps and rejects | 1 Hz | |
 
-At 58 bytes per `ARC_MOTOR_STATUS` frame (46-byte payload plus the 10-byte MAVLink 2 header and 2-byte CRC), 1 kHz is 0.58 Mbit/s: ~29% of the 2 Mbit/s link.
+At 59 bytes per `ARC_MOTOR_STATUS` frame (47-byte payload plus the 10-byte MAVLink 2 header and 2-byte CRC), 1 kHz is 0.59 Mbit/s: ~30% of the 2 Mbit/s link.
 
 ## Sync MCU → controller
 
@@ -37,7 +37,9 @@ At 58 bytes per `ARC_MOTOR_STATUS` frame (46-byte payload plus the 10-byte MAVLi
 ## Faults (SYS-19, SYS-25)
 
 - Gaps in MAVLink's sequence numbers and rejected frames are counted on both sides and reported in `ARC_LINK_STATUS`.
-- ~5 ms without a valid `ARC_MOTOR_STATUS` from any controller counts as losing that corner (SYS-25): all four brake.
+- The sync MCU stops all four corners (SYS-25, ADR-0035) when any controller has sent no valid `ARC_MOTOR_STATUS` for 5 ms (TBC), or reports a non-zero `fault` or any `state` bit (`ESTOP`, `COMMAND_TIMEOUT`).
+- The controller sets `COMMAND_TIMEOUT` and brakes on the e-stop ramp after 150 ms (TBC) without a command on the command bus (ADR-0035).
+- A corner reporting `ESTOP` while the sync MCU's e-stop status input shows the button released is logged as an ESTOP wiring fault (SYS-19).
 
 ## Open issues
 

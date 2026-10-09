@@ -284,7 +284,7 @@ static void mavlink_test_arc_motor_status(uint8_t system_id, uint8_t component_i
         uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
         uint16_t i;
     mavlink_arc_motor_status_t packet_in = {
-        93372036854775807ULL,963497880,963498088,129.0,157.0,185.0,213.0,241.0,269.0,297.0,137,204
+        93372036854775807ULL,963497880,963498088,129.0,157.0,185.0,213.0,241.0,269.0,297.0,137,204,15
     };
     mavlink_arc_motor_status_t packet1, packet2;
         memset(&packet1, 0, sizeof(packet1));
@@ -300,6 +300,7 @@ static void mavlink_test_arc_motor_status(uint8_t system_id, uint8_t component_i
         packet1.temp_motor = packet_in.temp_motor;
         packet1.corner = packet_in.corner;
         packet1.fault = packet_in.fault;
+        packet1.state = packet_in.state;
         
         
 #ifdef MAVLINK_STATUS_FLAG_OUT_MAVLINK1
@@ -314,12 +315,12 @@ static void mavlink_test_arc_motor_status(uint8_t system_id, uint8_t component_i
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-    mavlink_msg_arc_motor_status_pack(system_id, component_id, &msg , packet1.time_ns , packet1.erpm , packet1.tachometer , packet1.current_q , packet1.current_d , packet1.current_in , packet1.duty , packet1.voltage_in , packet1.temp_fet , packet1.temp_motor , packet1.corner , packet1.fault );
+    mavlink_msg_arc_motor_status_pack(system_id, component_id, &msg , packet1.time_ns , packet1.erpm , packet1.tachometer , packet1.current_q , packet1.current_d , packet1.current_in , packet1.duty , packet1.voltage_in , packet1.temp_fet , packet1.temp_motor , packet1.corner , packet1.fault , packet1.state );
     mavlink_msg_arc_motor_status_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
         memset(&packet2, 0, sizeof(packet2));
-    mavlink_msg_arc_motor_status_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.time_ns , packet1.erpm , packet1.tachometer , packet1.current_q , packet1.current_d , packet1.current_in , packet1.duty , packet1.voltage_in , packet1.temp_fet , packet1.temp_motor , packet1.corner , packet1.fault );
+    mavlink_msg_arc_motor_status_pack_chan(system_id, component_id, MAVLINK_COMM_0, &msg , packet1.time_ns , packet1.erpm , packet1.tachometer , packet1.current_q , packet1.current_d , packet1.current_in , packet1.duty , packet1.voltage_in , packet1.temp_fet , packet1.temp_motor , packet1.corner , packet1.fault , packet1.state );
     mavlink_msg_arc_motor_status_decode(&msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 
@@ -332,7 +333,7 @@ static void mavlink_test_arc_motor_status(uint8_t system_id, uint8_t component_i
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
         
         memset(&packet2, 0, sizeof(packet2));
-    mavlink_msg_arc_motor_status_send(MAVLINK_COMM_1 , packet1.time_ns , packet1.erpm , packet1.tachometer , packet1.current_q , packet1.current_d , packet1.current_in , packet1.duty , packet1.voltage_in , packet1.temp_fet , packet1.temp_motor , packet1.corner , packet1.fault );
+    mavlink_msg_arc_motor_status_send(MAVLINK_COMM_1 , packet1.time_ns , packet1.erpm , packet1.tachometer , packet1.current_q , packet1.current_d , packet1.current_in , packet1.duty , packet1.voltage_in , packet1.temp_fet , packet1.temp_motor , packet1.corner , packet1.fault , packet1.state );
     mavlink_msg_arc_motor_status_decode(last_msg, &packet2);
         MAVLINK_ASSERT(memcmp(&packet1, &packet2, sizeof(packet1)) == 0);
 

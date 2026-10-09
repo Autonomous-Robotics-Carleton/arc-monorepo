@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #ifndef MAVLINK_MESSAGE_CRCS
-#define MAVLINK_MESSAGE_CRCS {{52000, 7, 18, 18, 0, 0, 0}, {52001, 54, 33, 33, 0, 0, 0}, {52002, 100, 13, 13, 0, 0, 0}, {52003, 243, 14, 14, 0, 0, 0}, {52004, 231, 46, 46, 0, 0, 0}, {52005, 76, 25, 25, 0, 0, 0}, {52006, 17, 13, 13, 0, 0, 0}, {52007, 171, 32, 32, 0, 0, 0}, {52008, 127, 22, 22, 0, 0, 0}, {52009, 43, 15, 15, 0, 0, 0}, {52050, 17, 20, 20, 0, 0, 0}, {52051, 49, 12, 12, 0, 0, 0}, {52052, 102, 20, 20, 0, 0, 0}}
+#define MAVLINK_MESSAGE_CRCS {{52000, 7, 18, 18, 0, 0, 0}, {52001, 54, 33, 33, 0, 0, 0}, {52002, 100, 13, 13, 0, 0, 0}, {52003, 243, 14, 14, 0, 0, 0}, {52004, 76, 47, 47, 0, 0, 0}, {52005, 76, 25, 25, 0, 0, 0}, {52006, 17, 13, 13, 0, 0, 0}, {52007, 171, 32, 32, 0, 0, 0}, {52008, 127, 22, 22, 0, 0, 0}, {52009, 43, 15, 15, 0, 0, 0}, {52050, 17, 20, 20, 0, 0, 0}, {52051, 49, 12, 12, 0, 0, 0}, {52052, 102, 20, 20, 0, 0, 0}}
 #endif
 
 #include "../protocol.h"
@@ -88,6 +88,17 @@ typedef enum ARC_WATCHDOG_STATE
 } ARC_WATCHDOG_STATE;
 #endif
 
+/** @brief Why a motor controller is braking on its own (ADR-0035). Any bit set stops all four corners (SYS-25). */
+#ifndef HAVE_ENUM_ARC_MOTOR_STATE
+#define HAVE_ENUM_ARC_MOTOR_STATE
+typedef enum ARC_MOTOR_STATE
+{
+   ARC_MOTOR_STATE_ESTOP=1, /* The e-stop input is active; braking on the e-stop ramp. | */
+   ARC_MOTOR_STATE_COMMAND_TIMEOUT=2, /* No command on the command bus within the timeout; braking on the e-stop ramp. | */
+   ARC_MOTOR_STATE_ENUM_END=3, /*  | */
+} ARC_MOTOR_STATE;
+#endif
+
 /** @brief Where a fault was detected (SYS-19). */
 #ifndef HAVE_ENUM_ARC_FAULT_SOURCE
 #define HAVE_ENUM_ARC_FAULT_SOURCE
@@ -106,12 +117,12 @@ typedef enum ARC_FAULT_SOURCE
 // MAVLINK VERSION
 
 #ifndef MAVLINK_VERSION
-#define MAVLINK_VERSION 1
+#define MAVLINK_VERSION 2
 #endif
 
 #if (MAVLINK_VERSION == 0)
 #undef MAVLINK_VERSION
-#define MAVLINK_VERSION 1
+#define MAVLINK_VERSION 2
 #endif
 
 // MESSAGE DEFINITIONS
