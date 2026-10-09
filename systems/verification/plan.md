@@ -21,7 +21,7 @@
 | Rig | Contents | Used for |
 | --- | --- | --- |
 | **R1 Sync-board HIL** | Sync board + power board on the stacking header; real sensors where cheap (IMUs, AS5047s on hand-turned shafts, ToF over a moving target); a second MCU acting as fake CAN nodes and controller UART links; signal generator; scope; fault injection (pull connectors, short a bus, drop the Ethernet link) | SYS-04, -07, -19, -22, -24, -25, -29, -31, -32 |
-| **R2 Motor bench** | One corner (A50S + 1010 + gearbox, ADR-0034) driving a flywheel or brake load; second corner for bus tests; current probe; e-stop button; power board's motor-bus cut; bus clamp | SYS-05, -25, RSK-11, RSK-12, RSK-18 |
+| **R2 Motor bench** | One corner (A50S + 1010 + gearbox, ADR-0034) driving a flywheel or brake load; second corner for bus tests; a moteus-c1 on the steering bus (RSK-03); current probe; e-stop button; power board's motor-bus cut; bus clamp | SYS-05, -25, RSK-03, RSK-11, RSK-12, RSK-18 |
 | **R3 CAN-FD harness** | Retired with the drive CAN-FD buses (ADR-0034); `tests/rsk-03-canfd-bench.md` is kept for the record | — |
 | **R4 Power** | Electronic load, bench supply standing in for the pack, 19 V brick, scope with current probe | SYS-14, -30, -31, power scenarios |
 | **R5 Timing and latency** | Scope; LED + photodiode in front of each camera; GPIO toggles timestamped by both the sync MCU and the Orin | SYS-06, -07, -29 |
