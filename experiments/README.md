@@ -15,7 +15,7 @@ One directory per experiment, copied from [`_template/`](_template/):
 ```
 experiments/<name>/
   README.md     what it tries, who owns it, how to run it
-  Dockerfile    its container, built on the platform's ROS image
+  Dockerfile    its container, on ros:jazzy-ros-base until the platform image exists (TBD)
   src/          its code
 ```
 

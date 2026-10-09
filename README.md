@@ -40,9 +40,9 @@ We’re keeping this project **fully open source**, so current and future member
 
 ### 🌐 `apps/web` — Public Website  
 The ARC marketing and showcase site built with **Next.js 15**, **Tailwind CSS v4**, and **GSAP** animations.  
-- 🏎 **Home page** — interactive hero, sponsors, and team highlights  
+- 🏎 **Home page** — interactive hero, mission and sponsors  
 - 📐 **Blueprint page** — animated exploded-view car visualization  
-- 👥 **Projects & team pages** — showcasing members and ongoing work  
+- 👥 **Robots & team pages** — showcasing members and ongoing work  
 
 ### 📚 `apps/docs` — Documentation Hub  
 **[docs.arcarleton.ca](https://docs.arcarleton.ca)**, built with **Fumadocs** + **Next.js**.  
@@ -79,7 +79,7 @@ On every merge to `main` that affects the docs:
   * `ghcr.io/autonomous-robotics-carleton/2026:<commit-sha>`
 * ARC infrastructure auto-deploys it to **docs.arcarleton.ca** via Watchtower
 
-Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) build and test inside the dev container image, `ghcr.io/autonomous-robotics-carleton/arc-dev`. CI tags it by the hash of its inputs, so a PR that changes the image is tested in its own image; `main` publishes it as `:latest`.
+Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) build and test inside the dev container image, `ghcr.io/autonomous-robotics-carleton/arc-dev`. CI tags it by the hash of its inputs and builds and smoke-tests a new one when they change; the affected firmware and ROS projects are tested in it (a change to `.devcontainer/` alone affects none, so run them yourself). `main` publishes it as `:latest`.
 
 Website and docs contributors never touch Docker; firmware and ROS contributors use the dev container.
 
@@ -112,6 +112,8 @@ arc-monorepo/                 # Nx monorepo root
 │       ├── docs/             # Website docs (shown on the docs site)
 │       ├── app/              # Next.js App Router (pages)
 │       ├── components/       # UI + layout components
+│       ├── context/          # React context (page transitions)
+│       ├── data/             # Site content: sponsors, projects, team
 │       ├── lib/              # Animation utilities
 │       ├── hooks/            # Custom React hooks
 │       ├── public/           # Static assets (images, video)
@@ -219,13 +221,13 @@ import { something } from '@arc/config';
 | `npx nx lint <app>` | Lint an app |
 | `npx nx show projects` | List all registered projects |
 | `npx nx graph` | Open interactive dependency graph |
-| `npx nx run-many -t build` | Build all projects |
+| `npx nx run-many -t build` | Build all projects (firmware and ROS only in the dev container) |
 | `npx nx affected -t lint test check build` | What CI runs: only projects your changes touch |
 | `npx nx check systems` | Check `systems/`: links, IDs, ADRs, verification coverage |
 | `node tools/systems-ids.mts SYS-04` | Look up an ID: definition, status, references |
-| `npx nx build sync-mcu` / `test sync-mcu` | Sync MCU firmware: three targets; tests on `native_sim` (dev container) |
+| `npx nx build sync-mcu` / `test sync-mcu` | Sync MCU firmware: three boards; tests on `native_sim` (dev container) |
 | `npx nx build vesc` / `test vesc` | Motor controller firmware (A50S); host tests for our modules (dev container) |
-| `npx nx build ros` / `test ros` | ROS 2 workspace; launch tests per backend (dev container) |
+| `npx nx build ros` / `test ros` | ROS 2 workspace; launch tests per backend and the sync-link round trip (dev container) |
 | `npx nx test firmware-in-loop` | Sync MCU firmware on `native_sim` and ROS link up over UDP (dev container) |
 | `tools/gen-interfaces.sh` | Regenerate code from `systems/icd/` (`--check` in CI) |
 
