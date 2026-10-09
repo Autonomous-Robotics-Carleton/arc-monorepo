@@ -49,7 +49,7 @@ Model every component as a box first. TBD: needs a datasheet or drawing. TBC: fr
 | Knuckle encoders (AS5047) | 2 | small | — | On both front knuckles |
 | Wi-Fi antennas | 2 | TBD | — | High, clear of motors and carbon |
 | E-stop button, hotspot button, service port, loop key | 1 each | TBD | — | Reachable on the outside of the car |
-| Wheels (1/10 touring, 64–65 Ø, 24–26 wide, 12 mm hex) | 4 | Ø65 × 26 | TBD | Steering lock and suspension travel clear |
+| Wheels (17 mm hex, belted on-road; ADR-0040) | 4 | Ø100 × 42 (TBC: dBoots Hoons 42/100) | TBD | Steering lock and suspension travel clear |
 
 Sources for the envelopes (checked 2026-10-09):
 
@@ -84,7 +84,7 @@ Sources for the envelopes (checked 2026-10-09):
 
 | # | Decision | Status | Choice |
 | --- | --- | --- | --- |
-| M1 | Base | **Decided** (2026-10-03) | Custom chassis on off-the-shelf 1/10 suspension parts (arms, knuckles, hubs, shocks, wheels) |
+| M1 | Base | **Superseded by ADR-0040** (2026-10-09) | Was: custom chassis on off-the-shelf 1/10 suspension parts (2026-10-03). Now: we design the corners (knuckles and uprights, arms, mounts) and buy only generic parts: shocks, driveshafts, wheels and tyres from Arrma 6S; bearings, rod ends and pins from industrial suppliers |
 | M2 | Wheelbase and track | Open: block layout | Start at ~330–350 mm wheelbase so overall length clears 454 mm; track to suit the width box and steering lock |
 | M3 | Ride height / floor clearance | Open: with the aero capstone | Also fixes the ground-speed window distance and ToF minimum range |
 | M4 | Materials | **Decided** (2026-10-03) | **3D-printed lower deck:** a **PAHT-CF** (high-temperature CF nylon) ribbed tub, not a flat plate, with heat-set inserts. Material may change once the printers are known (see open questions). Built in: battery bay, ground-speed floor window and shroud, ToF pockets, cable channels. **Aluminium plates** bolted in wherever precision or heat matters: gearbox bearing plates, motor mounts, steering mount. Upper deck: hole-grid plate (material TBD). Printed covers, sensor mounts, shrouds |
@@ -107,5 +107,5 @@ Sources for the envelopes (checked 2026-10-09):
 | MQ-2 | Ride height / floor clearance (M3) | Ground-speed window distance, ToF minimum range, aero floor. Placeholder ~10–15 mm |
 | MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
 | MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
-| MQ-5 | **Which off-the-shelf suspension family?** M1 says off-the-shelf arms, knuckles, hubs, shocks and wheels, but not which platform's. **Recommendation in ADR-0027 (Proposed):** competition touring car parts (XRAY X4 family), Tamiya TB-05/TRF as the fallback | Layout step 1 (track, wheel offset), the knuckle envelope for steering and encoders (RSK-04), CVD choice, shock mounts |
-| MQ-6 | **Tyre rolling diameter:** ADR-0034's speed figures use 62 mm; this brief and `architecture.md` use 64–65 mm. At the controllers' ~75k eRPM cap and 13.5:1, 62 mm gives exactly 9.0 m/s (no margin on SYS-01) and 65 mm ~9.45 m/s | SYS-01's margin, RSK-18, the eRPM cap |
+| MQ-5 | **Which off-the-shelf suspension family?** **Closed by ADR-0040:** we design the corners; ADR-0027's bought-corner recommendation was never accepted | — |
+| MQ-6 | **Tyre rolling diameter:** ADR-0034's speed figures use 62 mm. With ADR-0040's ~100 mm tyres the figure changes, and with it the gear ratio (RSK-21); the rolling diameter of the chosen tyre, new and worn, is TBD | SYS-01's margin, RSK-18, RSK-21, the eRPM cap |
