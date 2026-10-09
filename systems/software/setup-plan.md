@@ -3,7 +3,7 @@
 - **Status:** Draft (2026-10-08). The scaffolding is done: every phase has landed except the unticked items below, which wait on hardware, simulators or implementation work. Open work is tracked as GitHub issues (index: #110).
 - **Goal:** the repo ready for software work: every component scaffolded, building and tested in CI for its targets, before the hardware arrives. Writing the drivers, estimator and controllers comes after this plan.
 - **Order:** firmware first (current focus), then interfaces, then platform software.
-- **How it's built:** [`architecture.md`](architecture.md), ADR-0028, ADR-0029, ADR-0033.
+- **How it's built:** [`architecture.md`](architecture.md), ADR-0028, ADR-0029, ADR-0031, ADR-0032, ADR-0033, ADR-0034.
 
 Each phase ends with something that builds and passes CI. Tick items as they land.
 
@@ -38,7 +38,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
   - `arc_sync`: a board definition skeleton in this repo, pins TBD from the EE
 - [x] Tests on `native_sim` with Zephyr's test runner (twister): safety, sync link, CAN command packing
 - [ ] Loopback CAN tests, once the CAN module is implemented
-- [x] Nx targets: build per board, test; CI runs them on every affected PR
+- [x] Nx targets: `build` (all three boards), `test` (twister), `check` (generated code); CI runs them on every affected PR
 
 ## Phase 3: Interfaces
 
@@ -47,7 +47,9 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 - [x] Decision on the sync-link encoding: MAVLink 2 (ADR-0031)
 - [x] `can-command.dbc` (stock VESC frames from `release_7_00`: set current, brake, RPM; status 1, 4, 5; controller IDs 1–4 draft) with cantools code generation into the sync MCU and a test against VESC's own packing
 - [x] ICD controller-telemetry: the UART link, drafted (reuses `ARC_MOTOR_STATUS` from the sync-link message set; clock alignment open)
-- [x] CI fails if generated code doesn't match its source (`nx check sync-mcu`, in the dev-container job)
+- [x] CI fails if generated code doesn't match its source (`nx check sync-mcu`, `nx check ros`, in the dev-container job)
+- [ ] Generate the controller-telemetry messages into the VESC firmware, with the telemetry module
+- [ ] ICDs for the steering bus (moteus-c1, ADR-0019) and the laptop–Orin link (ADR-0015)
 
 ## Phase 4: VESC firmware
 
@@ -62,11 +64,12 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 - [x] Stubs for the e-stop brake routine, UART telemetry and the eRPM limit, with host unit tests (`firmware/vesc/arc/`, fail-safe)
 - [x] Nx targets (`nx build vesc`, `nx test vesc`); CI builds `a50s_v23c_12s` in the dev-container job
 - [ ] Our modules wired into the `bldc/` build as they're implemented
+- [ ] The moteus-c1 configuration (timeout mode, limits, belt ratio; ADR-0019) kept in the repo
 
 ## Phase 5: Platform software scaffold
 
 - [x] ROS 2 Jazzy added to the dev container (ros-base, colcon, rosdep, MCAP storage, launch_testing)
-- [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_replay` and `arc_backend_car` (the simulator backends are below)
+- [x] Colcon workspace in `ros/`: `arc_msgs` (car interface, placeholder message), `arc_bringup` (launch with `target:=sim | replay | car`, a launch test per target), stub backends `arc_backend_replay` and `arc_backend_car` (the car backend gained the sync-link handshake in phase 6; the simulator backends are below)
 - [x] `sim:=gazebo | webots | gym`, with one backend package each for Gazebo Harmonic, Webots and the F1TENTH gym (ADR-0032): stubs, a launch test each
 - [ ] Each simulator installed and wired to its backend (Gazebo Harmonic and the gym in the dev container; Webots on the host)
 - [ ] `arc_description`: one URDF of the car, the source for every simulator's model

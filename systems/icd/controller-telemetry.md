@@ -14,7 +14,7 @@ Each of the four motor controllers streams its full status to the sync MCU over 
 | --- | --- |
 | Link | One UART per controller, point to point: the A50S's TX/RX pins (ICD-corner-connector) to a sync MCU UART |
 | Electrical | 3.3 V logic, each line twisted with GND |
-| Rate | 3 Mbit/s (TBC), 8N1; 2 Mbit/s fallback |
+| Rate | 3 Mbit/s (TBC), 8N1; 2 Mbit/s fallback (TBC) |
 | Load ceiling | ≤ 50% (SYS-24, a data link) |
 | Encoding | MAVLink 2, the ARC message set in [`sync-link.xml`](sync-link.xml) (ADR-0031): one schema and one generated library for both links |
 
@@ -25,7 +25,7 @@ Each of the four motor controllers streams its full status to the sync MCU over 
 | `ARC_MOTOR_STATUS` | Speed, tachometer, q/d/input currents, duty, bus voltage, FET and motor temperatures, fault code | 1 kHz | `time_ns` is the sample time in the **controller's** clock, taken when the frame is built (ADR-0024). The sync MCU maps it to its own clock and forwards the message to the Orin unchanged in shape |
 | `ARC_LINK_STATUS` | Protocol version, receive gaps and rejects | 1 Hz | |
 
-At ~60 bytes per `ARC_MOTOR_STATUS` frame (46-byte payload plus the 12-byte MAVLink 2 header and 2-byte CRC), 1 kHz is ~0.6 Mbit/s: ~20% of a 3 Mbit/s link, ~30% at 2 Mbit/s.
+At 58 bytes per `ARC_MOTOR_STATUS` frame (46-byte payload plus the 10-byte MAVLink 2 header and 2-byte CRC), 1 kHz is 0.58 Mbit/s: ~19% of a 3 Mbit/s link, ~29% at 2 Mbit/s.
 
 ## Sync MCU → controller
 
@@ -42,5 +42,7 @@ At ~60 bytes per `ARC_MOTOR_STATUS` frame (46-byte payload plus the 12-byte MAVL
 ## Open issues
 
 1. Clock alignment method between each controller and the sync MCU.
-2. Final link rate (3 Mbit/s TBC) once the harness is built.
+2. Final link rate (3 Mbit/s TBC) once the harness is built. On the A50S, the UART (USART3) is clocked from APB1 at 42 MHz, and upstream's ChibiOS drivers use 16× oversampling: their maximum is 2.625 Mbit/s, and 2 Mbit/s divides exactly. 3 Mbit/s needs 8× oversampling (exact at 42 MHz), set up outside upstream's driver.
 3. Owners on both sides.
+4. How a controller knows its corner for the `corner` field (presumably its VESC controller ID, 1–4 as in `can-command.dbc`): TBD.
+5. MAVLink system and component IDs on this link: TBD.
