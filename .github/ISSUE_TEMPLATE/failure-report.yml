@@ -20,7 +20,7 @@ body:
       label: Subsystem
       description: Best guess is fine
       options:
-        - Drive (motor, gearbox, VESC)
+        - Drive (motor, gearbox, A50S motor controller)
         - Steering
         - Power (battery, power board, e-stop circuit)
         - Sync MCU board
