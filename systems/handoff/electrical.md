@@ -41,6 +41,8 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Rail current ratings and regulator choices (yours, from `power.csv`)
   - ESTOP logic level, driver and current per controller; the motor-bus switch part
   - Bus clamp threshold and resistor sizing (~140 J, ~160 W peak estimate from 9 m/s)
+  - **Bus clamp position relative to the motor-bus switch.** The topology draws the clamp on the battery side of the switch, but it's sized for braking with the pack disconnected. If the switch opens while the controllers are still braking (the switch opens when unpowered, or T comes early) and it blocks reverse current (back-to-back FETs, a relay), the braking energy goes only into the controllers' input capacitors: they reach overvoltage, fault, and those corners coast. Options: the clamp on the controllers' side of the switch; a switch that conducts in reverse (a single high-side FET's body diode); or accept it. Yours to decide
+  - **Inrush when the motor-bus switch closes again** after an e-stop: the anti-spark loop key (E-42) is upstream of it, so the four controllers' bulk capacitors charge through the switch. A controlled turn-on, or a switch rated for the surge
   - Low-battery thresholds (on the lowest cell) and the clean-shutdown signal to the Orin (SYS-30)
   - Cell-monitor part and balance-lead connection while the pack is installed (E-46)
   - Stacking-header pinout with the sync board (ICD power-sync-stack, not written yet)
@@ -89,7 +91,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - **Requirements:** SYS-05, -13, -19, -24, -25; RSK-11, -12, -18, -19, -20.
 - **Open (integration, not design):**
   - Circuit numbers for the 20-pin Pico-Clasp are in ICD-corner-connector, provisional until checked on the first unit (ESTOP goes on Servo/PPM, which takes 3.3 or 5 V; SWD is on the connector)
-  - Whether to feed each controller's Aux power input (12–48 V) from an always-on rail, so telemetry survives the e-stop's motor-bus cut
+  - Whether to feed each controller's Aux power input (12–48 V) from an always-on rail, so telemetry survives the e-stop's motor-bus cut. If it isn't, every e-stop silences all four controllers at T and the sync MCU logs four lost corners (SYS-25) per e-stop, which buries real faults in the failure records (SYS-18). The alternative is in software: the sync MCU ignores corner loss while its e-stop status input is active. Not decided
   - Use Triforce's supplied bulk capacitor on each XT30 cable; never tie the controllers' 5 V outputs together
   - Deck mounting and airflow: waits on the CAD model. The heatsink option is bought (decided 2026-10-07), giving 40 A continuous against ~12 A
   - Hall cable extensions and phase-lead routing across the suspension, away from CAN and UART lines
@@ -131,7 +133,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 
 | Question | Who decides | Blocks |
 | --- | --- | --- |
-| **Grounding strategy:** motor ground vs logic ground vs CAN/FD returns; isolated transceivers or a single-point ground | EE, with the systems lead | Harness, transceiver choice, all boards |
+| **Grounding strategy:** motor ground vs logic ground vs CAN/FD returns; isolated transceivers or a single-point ground. Includes the four telemetry UARTs: single-ended 3.3 V at 2 Mbit/s from each controller's ground (the motor-bus negative) to the sync board's, with each ground wire forming a parallel return for motor current. Options: a digital isolator per link (its controller side powered from the A50S's 3.3 V output), RS-422 transceivers, or a single-point ground checked on rig R2 | EE, with the systems lead | Harness, transceiver choice, all boards |
 | **Mass and CG** (SYS-16) | Mechanical | Power scenarios, bus clamp, pack choice |
 | Steering motor peak current | Mechanical (actuator design) | Steering switched output |
 | Aero fan power (SYS-15) | Capstone | Motor bus reserve |
