@@ -1,7 +1,7 @@
 rail,load,bom_id,qty,nominal_v,typ_w_each,peak_w_each,peak_duration,inrush_or_notes,source,owner
 motor_bus,Drive controller (A50S) + Castle 1010 (per corner),E-50/E-51,4,12-16.8,see scenarios,see scenarios,seconds,"input caps charge on connect: anti-spark switch (E-42); grip-limited, see power-scenarios.md",estimate,EE
 motor_bus,Steering actuator (moteus-c1 + gimbal motor) via switched output,E-31,1,12-16.8,5,60,< 0.2 s per steering move,"moteus 20 A peak phase; battery-side current much lower; final from actuator design",estimate,EE
-motor_bus,Bus clamp board,E-43,1,12-16.8,0,160,~1.8 s (e-stop from 9 m/s with pack disconnected),"absorbs ~140 J; threshold just above 16.8 V",estimate,EE
+motor_bus,Bus clamp board,E-43,1,12-16.8,0,160,~1.9 s (e-stop from 9 m/s with pack disconnected),"absorbs ~140 J; threshold just above 16.8 V",estimate,EE
 motor_bus,Future aero fan (reserve),SYS-15,1,12-16.8,TBD,TBD,TBD,from capstone,TBD,capstone
 compute,Jetson Orin NX 16GB,E-01,1,carrier input,15,40,sustained,"25 W mode typical ceiling; ~40 W Super mode",NVIDIA mode table (verify),EE
 compute,Carrier board (Antmicro fork),E-02,1,carrier input,3,5,sustained,,estimate,EE
