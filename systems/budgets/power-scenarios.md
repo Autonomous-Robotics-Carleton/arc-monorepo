@@ -24,6 +24,7 @@
 | Average hard driving | ~230–330 W total | Pack capacity: 10 min ≈ 38–55 Wh ≈ 2.6–3.7 Ah, so ~4–5 Ah usable. A 5,000 mAh 4S hardcase is the starting point |
 | **Peak: ~1 g acceleration at 9 m/s** | ~35 N × 9 m/s ≈ 315 W at the wheels, ~390 W from the motor path, plus LV → **~30–35 A** | Pack C rating (trivial at 5 Ah), wire gauge, pack connector (ICD-battery-pack), the XT30 at each motor controller, anti-spark switch, distribution |
 | Beyond grip | Wheelspin; no useful work | Enforced by the motor controllers' current limits. The old "~120 A peak" was motor capability, not what the car can use; `architecture.md` and BOM E-40 now size to ~30–35 A |
+| **Phase current per corner at ~1 g** | 3.5 kg × 9.81 ≈ 34 N, ~8.6 N per wheel; × 0.031 m (62 mm wheel) ≈ 0.27 N·m; ÷ 13.5 gearing ÷ ~0.8 efficiency ≈ 0.025 N·m at the motor; ÷ Kt ≈ 60 / (2π × 4400 kV) ≈ 0.0022 N·m/A → **~11.5 A, written ~12 A (TBC)**. Kt from kV is the ideal-motor estimate | Motor controller choice (ADR-0034), LIM-07's current resolution, the XT30 and phase wiring |
 | **E-stop from 9 m/s, pack disconnected** | ~½ × 3.5 × 9² ≈ **140 J** over ~1.9 s, **~160 W peak** at brake onset | Bus clamp resistor (energy and peak), heatsink, threshold above 16.8 V |
 | Voltage sag at peak | ~35 A × 20 mΩ ≈ 0.7 V | Brownout immunity of the LV rails (SYS-31) |
 | Connect / disconnect | Motor controller input capacitors charging | Anti-spark / loop key (E-42) |
