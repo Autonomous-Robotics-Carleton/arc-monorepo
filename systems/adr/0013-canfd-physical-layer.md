@@ -1,6 +1,6 @@
 # ADR-0013: CAN-FD telemetry physical layer: daisy-chained, discrete transceivers, rework-only fallbacks
 
-- **Status:** Accepted, amended by ADR-0034 (the drive telemetry FD buses are gone; the transceiver choice and rework footprints apply to the steering bus only)
+- **Status:** Superseded by ADR-0036 (the steering bus is the only CAN-FD bus left; the discrete transceiver and rework footprints carry over to it). Previously amended by ADR-0034 (the drive telemetry FD buses are gone)
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-19, SYS-24, RSK-03
