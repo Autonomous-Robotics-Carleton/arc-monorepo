@@ -1,9 +1,12 @@
 # ADR-0027: Suspension, steering and wheel parts from a competition 1/10 touring car (XRAY X4 family)
 
-- **Status:** Proposed (recommendation, not yet decided)
+- **Status:** Superseded by ADR-0040 (never accepted)
 - **Date:** 2026-10-03
 - **Deciders:** TBD (recommended by Shrikar Vempati; for review by the mechanical team)
 - **Traces to:** SYS-01, SYS-02, SYS-06, SYS-10, SYS-12, SYS-13, ADR-0019, ADR-0026, RSK-04, MQ-5
+
+> [!NOTE]
+> **Superseded by ADR-0040 before it was accepted.** We design the corners ourselves and buy only generic parts, because the per-wheel drivetrain, encoders and steering don't fit any bought car's corners; touring-car parts are also under-built for a car of 4 kg or more. The text below is the original recommendation, kept for the record.
 
 > [!IMPORTANT]
 > **This is a recommendation, not a decision.** It answers MQ-5 in `mechanical/layout-brief.md` so the block layout can start from real parts. Prices, Canadian availability and the exact current model are to be checked before it's accepted.

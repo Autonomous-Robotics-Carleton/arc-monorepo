@@ -32,7 +32,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0024](0024-telemetry-latency.md) | Telemetry stamped at sampling, forwarded within 0.25 ms; SYS-29 measured at the driver process, p99 | Accepted, amended by 0034 |
 | [0025](0025-orin-carrier-antmicro-fork.md) | Orin carrier is a fork of Antmicro's open Jetson baseboard | Accepted (backfilled) |
 | [0026](0026-staggered-transverse-motors.md) | One motor per wheel; transverse, inboard, staggered fore and aft | Accepted (backfilled) |
-| [0027](0027-suspension-family.md) | Suspension, steering and wheel parts from a competition touring car (XRAY X4 family) | Proposed (recommendation) |
+| [0027](0027-suspension-family.md) | Suspension, steering and wheel parts from a competition touring car (XRAY X4 family) | Superseded by 0040 (never accepted) |
 | [0028](0028-software-targets.md) | Every software component builds for simulation, development hardware and the car, from one source | Accepted, amended by 0034 |
 | [0029](0029-dev-environment.md) | One dev container for every toolchain; boards flashed from the host | Accepted |
 | [0030](0030-vesc-firmware-in-repo.md) | VESC firmware fork in this repo as a git subtree of upstream (GPL-3.0 subdirectory) | Superseded by 0033 |
@@ -45,4 +45,4 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
 | [0038](0038-steering-loss-stops-the-car.md) | Losing steering stops the car, and the car doesn't drive without it | Accepted |
 | [0039](0039-fault-stop-reset.md) | A fault stop latches, and only an e-stop cycle on the car resets it | Accepted |
-
+| [0040](0040-custom-corners.md) | We design the corners; only generic parts are bought (Arrma 6S drivetrain and wheel parts, industrial bearings and rod ends) | Accepted |

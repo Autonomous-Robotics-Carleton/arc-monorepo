@@ -47,7 +47,7 @@ Anything still open, or used by more than one design, is a **user parameter** in
 | `wheelbase` | M2 | ~330–350 mm (start) |
 | `track_front`, `track_rear` | M2 | TBD |
 | `ride_height` | M3 | ~10–15 mm placeholder |
-| `wheel_dia`, `wheel_width` | MQ-5 | 65, 26 mm |
+| `wheel_dia`, `wheel_width` | MQ-5, MQ-6 | 100, 42 mm (TBC) |
 | `deck_grid_pitch` | ICD-deck-grid | TBD |
 | `motor_stagger` | ADR-0026 | TBD from the corner layout |
 
