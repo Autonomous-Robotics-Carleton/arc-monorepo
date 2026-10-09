@@ -1,0 +1,32 @@
+---
+title: CI
+description: What runs on every pull request and every push to main, and where.
+---
+
+The workflows are in [`.github/workflows/`](../../../../../../.github/workflows/ci-and-publish.yml).
+
+## Pull requests and pushes to main
+
+`ci-and-publish.yml` runs three jobs. Each runs only what your branch affects: Nx compares a pull request with `main`, and a push to `main` with the last commit that passed CI. A newer push to the same pull request cancels the older run.
+
+| Job | Runs on | What |
+| --- | --- | --- |
+| `test-and-build` | GitHub's Ubuntu runner | `npx nx affected -t lint test check build --exclude='tag:env:dev-container'`: the docs site, the website, `systems/` and its library. When `systems/` changed, it also checks the HTML pages in `systems/` |
+| `dev-image` | GitHub's Ubuntu runner | Picks the dev container image for this branch: it's tagged by a hash of `.devcontainer/` and `firmware/sync-mcu/west.yml`, and built and smoke-tested only if that tag doesn't exist yet. A pull request that changes the image is tested in its own image. Pull requests from forks can't push images, so they use `:latest` |
+| `dev-container` | Inside that image | `npx nx affected -t check build test` for the projects tagged `env:dev-container`: the sync MCU firmware, the VESC firmware, ROS and the firmware-in-the-loop test |
+
+On pushes to `main`, it also publishes the dev container image as `:latest`, which `devcontainer.json` uses as its build cache, and, when the docs site is affected, builds its image and updates [docs.arcarleton.ca](https://docs.arcarleton.ca).
+
+A change to `.devcontainer/` alone affects no Nx project, so CI only smoke-tests the new image. Build and test the firmware and ROS in it yourself: `npx nx run-many -t build test -p sync-mcu vesc ros firmware-in-loop`.
+
+## Other workflows
+
+| Workflow | When | What |
+| --- | --- | --- |
+| `issue-index.yml` | An issue is opened | Adds it to the index in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110), under "New, not sorted yet" |
+| `auto-assign.yml` | An issue is opened; a pull request is opened, reopened or marked ready | Assigns issues to the maintainer and pull requests to their author |
+| `discord.yml` | Pushes to `main`, pull request and issue activity | Posts to the team Discord |
+
+## Before you push
+
+Run what CI runs: `npx nx affected -t lint test check build` on your machine, and the firmware and ROS targets in the dev container. Every project's commands: [Projects and commands](./projects.mdx).

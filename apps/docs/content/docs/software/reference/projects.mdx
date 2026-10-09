@@ -1,0 +1,14 @@
+---
+title: Projects and commands
+description: Every Nx project in the repo and what each of its targets runs, read from its project.json.
+---
+
+import { NxProjects } from '@/components/reference/Projects';
+
+Everything in the repo is run through [Nx](https://nx.dev): `npx nx <target> <project>`, from the repo root. This page is read from each project's `project.json` when the site is built.
+
+- **Where it runs:** projects tagged `env:dev-container` need the firmware or ROS toolchains, so run them in the dev container (ADR-0029). The rest run anywhere with Node and pnpm ([Dev setup](../../handbook/dev-setup.mdx)).
+- **What changed:** `npx nx affected -t lint test check build` runs those targets for every project your branch changes and every project that depends on them. CI runs the same command ([CI](./ci.mdx)).
+- **Order and caching:** a `build` runs its dependencies' `build` first, and `build`, `lint` and `check` results are cached locally (`nx.json`).
+
+<NxProjects />

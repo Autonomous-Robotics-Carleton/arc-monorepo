@@ -1,0 +1,20 @@
+---
+title: Messages
+description: Every message on the sync link, the motor controllers' telemetry links and the command bus, generated from the schemas in systems/icd/.
+---
+
+import { CanCommandMessages, SyncLinkMessages } from '@/components/reference/Messages';
+
+These tables are generated from the schemas when the site is built, so they always match the code generated from the same files. How each link behaves (rates, timing, faults) is in its interface document.
+
+## Sync link and controller telemetry
+
+Source: [`systems/icd/sync-link.xml`](../../../../../../systems/icd/sync-link.xml), MAVLink 2 with our own message set (ADR-0031). The sync link between the sync MCU and the Orin ([interface](../../../../../../systems/icd/sync-link.md)) and each motor controller's telemetry UART ([interface](../../../../../../systems/icd/controller-telemetry.md)) share this message set: a controller sends `ARC_MOTOR_STATUS` and `ARC_LINK_STATUS`.
+
+<SyncLinkMessages />
+
+## Command bus
+
+Source: [`systems/icd/can-command.dbc`](../../../../../../systems/icd/can-command.dbc). Classic CAN at 1 Mbit/s between the sync MCU and the four motor controllers (ADR-0009, ADR-0034).
+
+<CanCommandMessages />

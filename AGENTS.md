@@ -68,6 +68,7 @@ Gotchas:
 
 - Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology, the software overview and reference; MDX), `systems/` (→ `/docs/car`; its sidebar is `carSidebar` in `lib/source.ts`), the software READMEs in `ros/`, `firmware/`, `experiments/`, `platform/`, `tools/` and `libs/*/` (→ `/docs/software`; their page names and titles are `softwareReadmes` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
 - **A new source of pages** also goes in the docs build's `inputs` in `apps/docs/project.json`: that's how `nx affected` knows to rebuild the site when it changes.
+- **Software reference pages are generated at build time**: the message tables from `systems/icd/sync-link.xml` and `can-command.dbc`, and the project list from every `project.json` (`apps/docs/components/reference/`).
 - **Format:** MDX for site-written pages; plain Markdown for `systems/`, READMEs and `CONTRIBUTING.md`. Don't convert between them.
 - **Links are written as relative file paths** (`../systems/risks.md`) so they work on GitHub too; the site turns them into page URLs, or GitHub links for files that aren't pages.
 - **IDs are linked automatically** (remark plugin in `apps/docs/lib/remark-system-ids.ts`); don't hand-link them.
