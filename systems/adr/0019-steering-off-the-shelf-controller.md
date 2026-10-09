@@ -1,6 +1,6 @@
 # ADR-0019: Steering actuator driven by an off-the-shelf controller (moteus-c1) on its own CAN-FD bus
 
-- **Status:** Accepted, amended by ADR-0034 (the steering bus can use a freed internal FDCAN instead of the MCP2518FD; the EE's call)
+- **Status:** Accepted, amended by ADR-0034 (the steering bus can use a freed internal FDCAN instead of the MCP2518FD; the EE's call). Since ADR-0034 the "fourth CAN-FD bus" below is the only one, with its physical layer in ADR-0036; the steering power cut at T + ~1 s is ~3.4 s with T at 2.4 s (TBC, ICD-corner-connector), not "about 4 s"
 - **Date:** 2026-10-03
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-05, SYS-06, SYS-08, SYS-10, SYS-22, SYS-24, SYS-29, ADR-0012, ADR-0013
