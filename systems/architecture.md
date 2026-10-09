@@ -120,6 +120,7 @@ Wi-Fi is the only wireless link (ADR-0005). The car joins the team's Flint 3 rou
 | Any-corner stop | One corner silent for 5 ms on its UART or ~60 ms on the command bus (TBC), braking on its own (e-stop or command timeout) or faulted; or the command bus failing | Sync MCU | All four corners brake within 20 ms (SYS-25, ADR-0035) |
 | Sync MCU silent | No command for 150 ms (TBC) | Each motor controller | Brakes on the e-stop ramp (ADR-0035) |
 | Steering lost | No steering reply for 5 ms (TBC), a steering fault, steering-bus bus-off, or an untrusted steering angle | Sync MCU | All four corners brake within 20 ms (SYS-25, ADR-0038); no drive until steering is healthy |
+| Fault-stop reset | After any SYS-25 stop: the e-stop button on the car pressed past T and released, the power-on checks pass, and the operator re-arms from the laptop | Sync MCU | Drive allowed again, from zero commands, with the envelope back at 3 m/s; some faults need a full restart and an inspection (ADR-0039) |
 | Physical e-stop | Button, or the e-stop circuit losing power. A broken or unplugged ESTOP wire brakes that controller, which reports it, and the sync MCU stops the car through SYS-25, without the hardware cut (ICD-corner-connector, ADR-0035) | Controller firmware + power-board timer | Ramped brake (~5 m/s²), motor-bus power cut at T (TBC 2.4 s, after the ~1.9 s stop); steering returns to centre, cut ~1 s later (ADR-0012, ADR-0019) |
 | Command timeout | Corners stop hearing commands | Controller (VESC) / moteus firmware | Brake / hold |
 

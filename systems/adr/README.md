@@ -40,8 +40,9 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0032](0032-simulator.md) | Simulators as pluggable backends: Gazebo Harmonic, Webots, F1TENTH gym | Accepted |
 | [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted, amended by 0034 and 0037 |
 | [0034](0034-off-the-shelf-motor-controllers.md) | Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s | Accepted, amended by 0035 |
-| [0035](0035-corner-state-and-command-timeout.md) | Each corner reports its state in its telemetry; the controllers brake on command loss | Accepted |
+| [0035](0035-corner-state-and-command-timeout.md) | Each corner reports its state in its telemetry; the controllers brake on command loss | Accepted, amended by 0039 |
 | [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
 | [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
 | [0038](0038-steering-loss-stops-the-car.md) | Losing steering stops the car, and the car doesn't drive without it | Accepted |
+| [0039](0039-fault-stop-reset.md) | A fault stop latches, and only an e-stop cycle on the car resets it | Accepted |
 

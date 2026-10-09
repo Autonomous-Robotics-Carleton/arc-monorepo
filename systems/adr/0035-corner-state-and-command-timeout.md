@@ -1,6 +1,6 @@
 # ADR-0035: Each corner reports its state, and the controllers brake on command loss
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0039 (how a run resumes after a SYS-25 stop)
 - **Date:** 2026-10-08
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-05, SYS-19, SYS-25, ADR-0009, ADR-0012, ADR-0034, RSK-11, ICD-controller-telemetry, ICD-corner-connector
@@ -51,5 +51,5 @@ SYS-25's listed triggers can't separate one corner from another on the command b
 - **The sync MCU must command continuously** while drive is enabled, zero included, so the timeout trips only on real loss.
 - **A hung controller still coasts** until the motor-bus cut (RSK-11); its telemetry stops, so SYS-25 brakes the other three.
 - **Safety functions:** the command-timeout routine and the SYS-25 triggers need their own tests and a second reviewer, like the e-stop routine.
-- **Not decided:** how a run resumes after a SYS-25 stop (sync MCU).
+- **How a run resumes** after a SYS-25 stop: ADR-0039.
 - **Reopen if:** rig R2 or the track shows false command timeouts at 150 ms.
