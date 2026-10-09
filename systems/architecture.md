@@ -53,7 +53,7 @@ Assumes 4S, about 50,000 rpm loaded and a 65 mm tire. Peak wheel speed at 13.5:1
 
 **Motor control:** four off-the-shelf A50S V2.3c controllers (35.5 × 21 × 13.8 mm, VESC firmware) on the lower deck, running our build of the vendored VESC firmware (ADR-0033, ADR-0034).
 
-- Commands arrive over one classic CAN bus (1 Mbit/s, TBC per ADR-0009) using the stock VESC path.
+- Commands arrive over one classic CAN bus (1 Mbit/s, ADR-0009) using the stock VESC path.
 - Full telemetry at 1 kHz goes to the sync MCU over one UART per controller, stamped at sampling.
 - A maximum-eRPM limit in each controller keeps the motors in the range where its control loop is stable.
 - Each corner sends its motor phases and Hall sensor cable to the deck (ICD-corner-connector rev E).
