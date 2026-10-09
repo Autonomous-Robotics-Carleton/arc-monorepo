@@ -1,7 +1,7 @@
 # TEST: RSK-03 CAN-FD telemetry bus bench test
 
 > [!NOTE]
-> **Retired.** ADR-0034 replaced the drive CAN-FD telemetry buses with a UART per motor controller, so this bench test no longer gates any layout. Kept for the record and in case CAN-FD returns.
+> **Retired.** ADR-0034 replaced the drive CAN-FD telemetry buses with a UART per motor controller, so this bench test no longer gates any layout. Kept for the record and in case CAN-FD returns. RSK-03 now covers the steering bus (ADR-0036); its bench test is in `risks.md`.
 
 - **Retires:** RSK-03
 - **Verifies:** ADR-0011, ADR-0013, ICD-corner-connector rev D, SYS-24 (bus load ≤ 70%)
