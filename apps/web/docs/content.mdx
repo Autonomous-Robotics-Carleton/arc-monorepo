@@ -94,11 +94,10 @@ Each project appears as a card on `/robots`. Clicking a card opens a modal with 
 ## Sponsors (`data/sponsors.ts`)
 
 ```ts
-export const sponsors = [
-  { name: 'Vexal' },
+export const sponsors: Sponsor[] = [
+  { name: 'KEFC' },
   { name: 'Notion' },
-  { name: 'KSRC' },
-  { name: 'Chorus' },
+  { name: 'Altium Designer' },
 ];
 ```
 
@@ -112,13 +111,13 @@ Logos are mapped in `components/ui/SponsorLogos.tsx`. To add a new sponsor:
     ```
   </Step>
   <Step>
-    ### Add the logo SVG to SponsorLogos.tsx
-    Add a new `case` in the `getSponsorLogo` switch:
+    ### Optional: add an SVG logo to SponsorLogos.tsx
+    A sponsor without a logo renders as a text wordmark, so this step is optional. For an SVG, add a `NewSponsorLogo({ className })` component that uses `fill={FILL}`, and a `case` in the `getSponsorLogo` switch:
     ```tsx
     case 'NewSponsor':
-      return <NewSponsorSvg fill="currentColor" />;
+      return <NewSponsorLogo className={logoClass} />;
     ```
-    Logos render with `fill="currentColor"` so they inherit the parent text colour automatically.
+    `FILL` is `currentColor`, so logos inherit the parent text colour.
   </Step>
 </Steps>
 
@@ -154,7 +153,7 @@ Make sure the Google Drive link is set to "Anyone with the link can view" before
 
 ## Contact Page Links (`app/contact/page.tsx`)
 
-GitHub repo and docs links are also hardcoded. Find the GitHub and Docs rows and update the `href` values:
+GitHub repo and docs links are also hardcoded. The GitHub row's two links, and the LinkedIn and GitHub entries in `SOCIAL_LINKS`, are still `href="#"`: set them like this:
 
 ```tsx
 {/* GitHub row */}
