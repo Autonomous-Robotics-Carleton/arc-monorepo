@@ -66,8 +66,9 @@ Gotchas:
 
 ## Docs site
 
-- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology; MDX), `systems/` (→ `/docs/car`; its sidebar is `carSidebar` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
-- **Format:** MDX for site-written pages; plain Markdown for `systems/` and `CONTRIBUTING.md`. Don't convert between them.
+- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology, the software overview and reference; MDX), `systems/` (→ `/docs/car`; its sidebar is `carSidebar` in `lib/source.ts`), the software READMEs in `ros/`, `firmware/`, `experiments/`, `platform/`, `tools/` and `libs/*/` (→ `/docs/software`; their page names and titles are `softwareReadmes` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
+- **A new source of pages** also goes in the docs build's `inputs` in `apps/docs/project.json`: that's how `nx affected` knows to rebuild the site when it changes.
+- **Format:** MDX for site-written pages; plain Markdown for `systems/`, READMEs and `CONTRIBUTING.md`. Don't convert between them.
 - **Links are written as relative file paths** (`../systems/risks.md`) so they work on GitHub too; the site turns them into page URLs, or GitHub links for files that aren't pages.
 - **IDs are linked automatically** (remark plugin in `apps/docs/lib/remark-system-ids.ts`); don't hand-link them.
 - For LLMs: `/llms.txt`, `/llms-full.txt`, `/ids.json`, and every page as Markdown at its URL + `.md`.
@@ -75,7 +76,7 @@ Gotchas:
 Gotchas:
 - After changing a remark plugin, delete `apps/docs/.next`: compiled pages are cached by content.
 - Don't run `nx build docs` (or `nx affected … build`) while `nx dev docs` is running: both write `apps/docs/.next`, and the dev server starts returning 500s. Stop it, or restart it after with a clean `.next`.
-- Never point a docs collection at the repo root: fumadocs watches each collection's directory in dev, and the root includes `node_modules`.
+- Never point a docs collection at the repo root: fumadocs watches each collection's directory in dev, and the root includes `node_modules`. `ros/` and `firmware/` are watched too, so a firmware or ROS build while `nx dev docs` runs makes it rescan its pages; that's harmless.
 - `libs/systems-model` is TypeScript that Node runs directly (imports use `.ts`). The site bundles it; `source.config.ts` code must import it by relative path, not by package name.
 - The production server doesn't run fumadocs-mdx; anything that reads files must happen at build time (static routes, prerendered pages).
 

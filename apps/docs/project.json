@@ -21,7 +21,15 @@
         "^default",
         "{workspaceRoot}/.github/CONTRIBUTING.md",
         "{workspaceRoot}/platform/dev-kit/**/*",
-        "{workspaceRoot}/apps/web/docs/**/*"
+        "{workspaceRoot}/apps/web/docs/**/*",
+        "{workspaceRoot}/ros/README.md",
+        "{workspaceRoot}/firmware/README.md",
+        "{workspaceRoot}/firmware/*/README.md",
+        "{workspaceRoot}/tools/README.md",
+        "{workspaceRoot}/libs/*/README.md",
+        "{workspaceRoot}/platform/README.md",
+        "{workspaceRoot}/experiments/README.md",
+        "{workspaceRoot}/**/project.json"
       ],
       "outputs": ["{projectRoot}/.next"]
     },
