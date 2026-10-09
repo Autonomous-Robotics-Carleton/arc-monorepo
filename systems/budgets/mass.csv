@@ -1,5 +1,5 @@
 item,bom_id,qty,mass_each_g,mass_total_g,x_mm,y_mm,z_mm,source,owner
-4S LiPo hardcase (~5000 mAh),E-40,1,450-550,450-550,TBD,TBD,TBD,estimate (layout-brief.md),mech
+4S LiPo hardcase (5000-6500 mAh),E-40,1,495-589,495-589,TBD,TBD,TBD,"two 5000 mAh packs: 495 g and 589 g (layout-brief.md); larger packs weigh more",mech
 Castle 1010-4400kV motor,E-51,4,146.5,586,TBD,TBD,TBD,datasheet (architecture.md),mech
 Gearbox + CVD per corner,,4,TBD,TBD,TBD,TBD,TBD,from CAD,mech
 A50S V2.3c motor controller with heatsink,E-50,4,30,120,TBD,TBD,TBD,"Triforce product page: ~30 g with heatsink, 11 g bare (ADR-0034)",EE
@@ -11,7 +11,8 @@ Ethernet switch,E-06,1,TBD,TBD,TBD,TBD,TBD,datasheet,EE
 Hokuyo UST-10LX,E-10,1,130,130,TBD,TBD,TBD,"datasheet: 130 g, 50 x 50 x 70 mm",mech
 Cameras (stereo + quad + 2 event) and mounts,E-11/E-12/E-13/E-25,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech
 IMUs + encoders + ToF + magnets,E-20/E-21/E-22/E-23/E-24/E-26,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech
-Suspension + wheels + tires (MQ-5),,1 set,TBD,TBD,TBD,TBD,TBD,vendor,mech
+Corner parts we design: knuckles + uprights + arms + mounts (ADR-0040),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
+Bought corner parts: shocks + CVDs + wheels + tires (ADR-0040),,1 set,TBD,TBD,TBD,TBD,TBD,vendor,mech
 Lower tub (printed PAHT-CF),,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech
 Upper deck + sensor mounts + crash guard (printed),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
 Aluminium plates (gearbox + motor mounts + splices),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech

@@ -32,7 +32,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Wall (19 V) / battery ideal-diode OR-ing with no reboot.
   - Regulators rated ≥ 30 V with TVS.
   - E-stop circuit sourcing ESTOP to the four motor controllers (ADR-0012).
-  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC 2.4 s: after the ~1.9 s stop from 9 m/s, with margin), rated for peak pack current (~30–35 A).** This is the hardware torque cut (ADR-0034). **It opens when unpowered**, so a dead e-stop circuit also cuts the bus. A broken ESTOP wire to one controller brakes that corner, which reports it in its telemetry, and the sync MCU stops the car (SYS-25, ADR-0035) without the cut; accepted, so no per-line wire detection is needed.
+  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC 2.4 s: after the ~1.9 s stop from 9 m/s, with margin), rated for peak pack current (~36–43 A at 4–5 kg, `budgets/power-scenarios.md`).** This is the hardware torque cut (ADR-0034). **It opens when unpowered**, so a dead e-stop circuit also cuts the bus. A broken ESTOP wire to one controller brakes that corner, which reports it in its telemetry, and the sync MCU stops the car (SYS-25, ADR-0035) without the cut; accepted, so no per-line wire detection is needed.
   - Switched, fused motor-bus output for steering, cut at T + ~1 s (ADR-0019).
   - Bus clamp on the motor distribution bus.
   - Per-cell battery monitor through the balance lead, ≥ 100 Hz to ±10 mV, data to the sync MCU (SYS-32, E-46).
@@ -40,7 +40,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - **Open:**
   - Rail current ratings and regulator choices (yours, from `power.csv`)
   - ESTOP logic level, driver and current per controller; the motor-bus switch part
-  - Bus clamp threshold and resistor sizing (~140 J, ~160 W peak estimate from 9 m/s)
+  - Bus clamp threshold and resistor sizing (~160–200 J, ~185–230 W peak estimate from 9 m/s at 4–5 kg)
   - **Bus clamp position relative to the motor-bus switch.** The topology draws the clamp on the battery side of the switch, but it's sized for braking with the pack disconnected. If the switch opens while the controllers are still braking (the switch opens when unpowered, or T comes early) and it blocks reverse current (back-to-back FETs, a relay), the braking energy goes only into the controllers' input capacitors: they reach overvoltage, fault, and those corners coast. Options: the clamp on the controllers' side of the switch; a switch that conducts in reverse (a single high-side FET's body diode); or accept it. Yours to decide
   - **Inrush when the motor-bus switch closes again** after an e-stop: the anti-spark loop key (E-42) is upstream of it, so the four controllers' bulk capacitors charge through the switch. A controlled turn-on, or a switch rated for the surge
   - Low-battery thresholds (on the lowest cell) and the clean-shutdown signal to the Orin (SYS-30)
@@ -93,7 +93,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Circuit numbers for the 20-pin Pico-Clasp are in ICD-corner-connector, provisional until checked on the first unit (ESTOP goes on Servo/PPM, which takes 3.3 or 5 V; SWD is on the connector)
   - Whether to feed each controller's Aux power input (12–48 V) from an always-on rail, so telemetry survives the e-stop's motor-bus cut. If it isn't, every e-stop silences all four controllers at T and the sync MCU logs four lost corners (SYS-25) per e-stop, which buries real faults in the failure records (SYS-18). The alternative is in software: the sync MCU ignores corner loss while its e-stop status input is active. Not decided
   - Use Triforce's supplied bulk capacitor on each XT30 cable; never tie the controllers' 5 V outputs together
-  - Deck mounting and airflow: waits on the CAD model. The heatsink option is bought (decided 2026-10-07), giving 40 A continuous against ~12 A
+  - Deck mounting and airflow: waits on the CAD model. The heatsink option is bought (decided 2026-10-07), giving 40 A continuous against ~16–20 A
   - Hall cable extensions and phase-lead routing across the suspension, away from CAN and UART lines
   - Motor temperature: Castle doesn't document a thermistor on the 1010's sensor cable, so E-28 is bought as a fallback; meter the sensor port when the motors arrive
   - No datasheet exists: ratings come from Triforce's product page, the electrical design from the upstream hardware config (`hwconf/teamtriforceuk/a50s_v23c/`)

@@ -44,12 +44,12 @@ The motor mount clamps a 28 mm can on this bolt pattern, so any 28 mm motor drop
 
 | Pinion/spur | Stage 1 | Overall | Approx. top speed | With the eRPM cap (ADR-0034) |
 | --- | --- | --- | --- | --- |
-| 14/66 | 4.71:1 | 21.2:1 | 8 m/s | ~6 m/s |
-| 16/64 | 4.00:1 | 18.0:1 | 9.5 m/s | ~7 m/s |
-| 18/62 | 3.44:1 | 15.5:1 | 11 m/s | ~8 m/s |
-| 20/60 | 3.00:1 | 13.5:1 | 12.5 m/s | ~9–9.5 m/s |
+| 14/66 | 4.71:1 | 21.2:1 | 12.3 m/s | 9.3 m/s |
+| 16/64 | 4.00:1 | 18.0:1 | 14.5 m/s | 10.9 m/s |
+| 18/62 | 3.44:1 | 15.5:1 | 16.9 m/s | 12.7 m/s |
+| 20/60 | 3.00:1 | 13.5:1 | 19.4 m/s | 14.5 m/s |
 
-Assumes 4S, about 50,000 rpm loaded and a 65 mm tire. Peak wheel speed at 13.5:1 is about 3,700 rpm uncapped, ~2,800 rpm with the cap. Front and rear may run different ratios on purpose. SYS-01 requires ≥ 9 m/s. The controllers cap motor speed at ~37,500 rpm (~75k eRPM, ADR-0034), so real top speeds are about 25% below the table (last column), and only 13.5:1 reaches SYS-01's 9 m/s. The margin depends on the tire's rolling diameter: ~9.0 m/s at 62 mm (ADR-0034's figure), ~9.45 m/s at 65 mm.
+Assumes 4S, about 50,000 rpm loaded and a ~100 mm tyre (ADR-0040). The controllers cap motor speed at ~37,500 rpm (~75k eRPM, ADR-0034), so real top speeds are the last column. **16/64 (18:1) is the baseline:** ~10.9 m/s at the cap (~10.5 m/s on a tyre worn to 96 mm), a ~17–21% margin on SYS-01's 9 m/s, with the motor at ~83% of the cap at 9 m/s (RSK-18). 14/66 has almost no margin. Peak wheel speed at 18:1 is about 2,800 rpm uncapped, ~2,100 rpm with the cap. Front and rear may run different ratios on purpose. These replace the 65 mm figures (RSK-21).
 
 **Motor control:** four off-the-shelf A50S V2.3c controllers (35.5 × 21 × 13.8 mm, VESC firmware) on the lower deck, running our build of the vendored VESC firmware (ADR-0033, ADR-0034).
 
@@ -77,7 +77,7 @@ A gimbal-style brushless motor drives the steering through a ~4–6:1 belt (zero
   - regulators rated ≥ 30 V with TVS
   - the e-stop circuit
 - **Low battery:** the lowest cell triggers a warning, then a clean Orin shutdown before cutoff (SYS-30). Voltage sag at peak current must never reset anything (SYS-31).
-- **Sizing inputs:** `budgets/power.csv` and `budgets/power-scenarios.md`. The tires limit useful peak current to roughly 30–35 A at the 9 m/s top speed (40–45 A at the old 12 m/s), not the old 120 A figure. Rail sizing is the EE's.
+- **Sizing inputs:** `budgets/power.csv` and `budgets/power-scenarios.md`. The tires limit useful peak current to roughly 36–43 A at the 9 m/s top speed for a 4–5 kg car, not the old 120 A figure. Rail sizing is the EE's.
 
 ## Compute and software
 
@@ -132,7 +132,7 @@ Every connection locks; every run carries a spare conductor; every wire is label
 
 Mechanical design hasn't started. Constraints carried from the original spec and the decisions since:
 
-- **Wheels:** 1/10 touring, about 64–65 mm diameter, 24–26 mm wide, 12 mm hex. Tire compound for tile is TBD.
+- **Wheels:** ~Ø100 × 42 mm belted on-road tyres on a 17 mm hex (ADR-0040). Tire compound for tile is TBD.
 - **Size:** F1TENTH/Roboracer box: width 238–341 mm, length 454–654 mm (SYS-02). A ~310 mm wheelbase may come in under the 454 mm minimum length (RSK-16).
 - **Battery bay:** placed first in the layout, low and central, sized to a 1/10 hardcase; ~5,000 mAh 4S is the starting point.
 - **Mass:** heavy parts (battery, motors, motor controllers) on the lower deck. The upper deck carries a hole grid for sensors.
@@ -141,7 +141,7 @@ Mechanical design hasn't started. Constraints carried from the original spec and
 - **Clear sightlines:** LiDAR with a clear 270°+ field of view and a crash guard; rigid stereo bar; positions for side/rear and event cameras; Wi-Fi antennas high and clear of carbon-filled parts.
 - **Mounting:** IMU at the CG and the second IMU near the front axle, both vibration-isolated.
 - **Access:** service port, hotspot button and e-stop button on the chassis.
-- **Cooling:** for the Orin, and airflow over the motor controllers on the deck (~12 A each against 40 A continuous with the heatsink; airflow is sized once the deck is modelled).
+- **Cooling:** for the Orin, and airflow over the motor controllers on the deck (~16–20 A each against 40 A continuous with the heatsink; airflow is sized once the deck is modelled).
 - **Reserved:** an encoder pocket behind each motor for a future rear-shaft motor.
 
 ## Where to look next
