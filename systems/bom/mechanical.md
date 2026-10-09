@@ -51,7 +51,7 @@ Checked 2026-10-09 at [Great Hobbies](https://www.greathobbies.com/) (in stock o
 
 | Item | Qty | How | Selection | Requirements | Traces to |
 | --- | --- | --- | --- | --- | --- |
-| Gimbal-style brushless motor | 1 | Buy | TBD | ≥ 1.5 N·m at the output with the belt ratio (TBC) | ADR-0019 |
+| Steering motor | 1 | Buy | TBD; recommended: mjbots mj5208 (330 kV, Ø63 × 25 mm, 193 g, US$74). On the moteus-c1's 20 A it gives ~0.5 N·m, ~2.5 N·m at the output through 5:1, and ~900 rpm there. Gimbal-wound motors (e.g. T-motor GB54-1, 33 kV) reach only ~110 rpm at the output on 4S through 5:1, short of the ~170 rpm lock to lock in 0.1 s needs | ≥ 1.5 N·m at the output with the belt ratio (TBC); at 5 kg, steering from standstill on tile takes ~0.4–0.5 N·m (estimate: ~12 N per front wheel, grip 1, 15 mm scrub radius) | ADR-0019 |
 | Belt and pulleys, ~4–6:1 | 1 set | Buy | TBD | Zero backlash; lock to lock ≤ 0.1 s | ADR-0019 |
 | Actuator mount | 1 | Machine or print | TBD | Stiff; beside the staggered front motors (RSK-04) | ADR-0019 |
 

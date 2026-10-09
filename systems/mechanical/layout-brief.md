@@ -31,11 +31,11 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | Castle 1010 motor | 4 | Ø28 × 58.4 (+ shaft) | 146.5 | Transverse, inboard, staggered fore/aft per axle |
 | Gearbox (2 stages) + CVD | 4 | First estimate (TBC), shafts in a line: motor to output axis 46 mm (stage-2 module 0.8) or 53 mm (module 1.0); ~83 × 45 or ~95 × 56 in the gear plane, ~25–30 thick; folding the gear train shortens it. Shaft centres: stage 1 20 mm (mod 0.5, 80 teeth); stage 2 26.4 or 33 mm. Largest gears: Ø34 (stage-1 66 T spur), Ø45 or Ø56 (stage-2 54 T) | TBD | Stage 1 swappable (80 teeth total, mod 0.5); stage 2 ~12/54 steel, **module TBD**: a Lewis bending estimate (steel, 6 mm face, 200 MPa, no dynamic or fatigue factors) gives ~5.1 N·m at the output for module 0.8 and ~7.9 N·m for 1.0, against ~3.1 N·m from the controller's 80 A burst at 18:1 and ~0.6 N·m at 1 g grip; a 12 T pinion needs profile shift to avoid undercut; precise bearing bores; the output takes Arrma's steel diff outdrive (AR310439, ADR-0040); wheel-encoder magnet pocket |
 | Motor controller, A50S V2.3c with heatsink (ADR-0034) | 4 | Board 35.5 × 21 × 13.8 without connectors; the heatsink case's size isn't published: take it from Triforce's 3D models | 30 with the heatsink (Triforce) | On the lower deck, with airflow (sized once the deck is modelled); XT30, MR30, Pico-Clasp and micro-USB accessible |
-| Steering actuator (gimbal motor + belt + moteus-c1 38 × 38 × 9) | 1 | TBD | TBD | Front, near the steering linkage; fits beside the staggered front motors |
-| Orin NX (69.6 × 45 module) + heatsink/fan (E-03, not chosen) on the carrier | 1 | Carrier 120 × 60, 36 high with the module fitted (Antmicro baseboard); the heatsink adds TBD: active heatsinks rated for Super mode are 57–59 × 38–51 × 17–30 (TBC) | TBD | Real airflow path; NVMe reachable for swapping |
+| Steering actuator (motor + belt + moteus-c1 38 × 38 × 9) | 1 | Motor Ø63 × 25 (TBC: mj5208, recommended) plus belt and pulleys TBD | 193 motor + 8.9 controller; belt TBD | Front, near the steering linkage; fits beside the staggered front motors |
+| Orin NX (69.6 × 45 module) + heatsink/fan (E-03, not chosen) on the carrier | 1 | Carrier 120 × 60, 36 high with the module fitted (Antmicro baseboard); the heatsink adds TBD: active heatsinks are 57–59 × 38–51 × 17–30 (TBC); the recommended ATS-NVA2-3554-C3-R0 is 57.5 × 40 × 23 plus a 10 mm fan, ~33 above the module | TBD | Real airflow path; NVMe reachable for swapping |
 | Sync board + power board (stacked) | 1 | TBD | TBD | Close to the motor controllers on the deck (CAN and UART runs) and the battery; e-stop and service connectors reachable |
 | Bus clamp board + resistor | 1 | TBD | TBD | On the motor bus; resistor needs airflow or a heatsink |
-| Ethernet switch | 1 | TBD | TBD | Near the Orin and sync board |
+| Ethernet switch | 1 | 45 × 45 × 16 (TBC: GigaBlox, recommended) | 18 | Near the Orin and sync board |
 | Hokuyo UST-10LX | 1 | 50 × 50 × 70 | 130 without cable | High, clear 270°+ view, crash guard |
 | Stereo AR0234 bar | 1 | Two 40 × 40 camera boards, M12 lenses (14 × 15.6, TBC); bar length set by the baseline (TBD: the kit's baseline isn't fixed, our bar sets it) | TBD | Front, rigid, forward view |
 | Quad OV9281 cameras | 4 | 40 × 40 board each; M12 lens 14 × 15.6, 4 g (TBC) | TBD | Sides and rear on the deck grid |
@@ -47,7 +47,7 @@ Dimensions marked TBD need a datasheet or vendor drawing. Model them as boxes fi
 | Ride-height ToF | 4 | small | — | Underside at each corner; minimum range ≤ distance to floor at full compression |
 | Suspension angle sensors (AS5047) | 4 | small | — | At each suspension pivot |
 | Knuckle encoders (AS5047) | 2 | small | — | On both front knuckles |
-| Wi-Fi antennas | 2 | TBD | — | High, clear of motors and carbon |
+| Wi-Fi antennas | 2 | 35 × 15 flex (TBC: Molex 219611, recommended) | — | High, clear of motors and carbon: the PAHT-CF tub is carbon-filled, so mount them on a non-CF printed mast |
 | E-stop button, hotspot button, service port, loop key | 1 each | TBD | — | Reachable on the outside of the car |
 | Wheels (17 mm hex, belted on-road; ADR-0040) | 4 | Ø100 × 42 (TBC: dBoots Hoons 42/100) | TBD | Steering lock and suspension travel clear |
 
@@ -107,7 +107,7 @@ Sources for the envelopes (checked 2026-10-09):
 
 | # | Question | Blocks |
 | --- | --- | --- |
-| MQ-1 | **Which printers are available?** Model, bed size, maximum nozzle and chamber temperatures, continuous-fibre capability | Final tub material and whether the tub is split. If continuous fibre is available: Onyx + continuous carbon. If PPS-CF is printable: PPS-CF tub with tough PA-CF bumpers. Otherwise: PAHT-CF (current) |
+| MQ-1 | **Which printers are available?** Model, bed size, maximum nozzle and chamber temperatures, continuous-fibre capability. No current list is published (checked 2026-10-09): ask the Faculty of Engineering and Design's makerspace and the library's Discovery Centre, and check the team's own | Final tub material and whether the tub is split. If continuous fibre is available: Onyx + continuous carbon. If PPS-CF is printable: PPS-CF tub with tough PA-CF bumpers. Otherwise: PAHT-CF (current) |
 | MQ-2 | Ride height / floor clearance (M3) | Ground-speed window distance, ToF minimum range, aero floor. Placeholder ~10–15 mm |
 | MQ-3 | Aero capstone underfloor volume and fan power (SYS-15) | Underfloor layout, motor-bus reserve |
 | MQ-4 | Crash speed (SYS-12) and corner swap time (SYS-13) | Crash guard and corner design |
