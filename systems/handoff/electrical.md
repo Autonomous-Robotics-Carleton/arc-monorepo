@@ -32,7 +32,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Wall (19 V) / battery ideal-diode OR-ing with no reboot.
   - Regulators rated ≥ 30 V with TVS.
   - E-stop circuit sourcing ESTOP to the four motor controllers (ADR-0012).
-  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC ~1.8 s from 9 m/s), rated for peak pack current (~30–35 A).** This is the hardware torque cut (ADR-0034). **It opens when unpowered**, so a dead e-stop circuit also cuts the bus. A broken ESTOP wire to one controller brakes the car (SYS-25) without the cut; accepted, so no per-line wire detection is needed.
+  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC ~1.8 s from 9 m/s), rated for peak pack current (~30–35 A).** This is the hardware torque cut (ADR-0034). **It opens when unpowered**, so a dead e-stop circuit also cuts the bus. A broken ESTOP wire to one controller brakes that corner, which reports it in its telemetry, and the sync MCU stops the car (SYS-25, ADR-0035) without the cut; accepted, so no per-line wire detection is needed.
   - Switched, fused motor-bus output for steering, cut at T + ~1 s (ADR-0019).
   - Bus clamp on the motor distribution bus.
   - Per-cell battery monitor through the balance lead, ≥ 100 Hz to ±10 mV, data to the sync MCU (SYS-32, E-46).

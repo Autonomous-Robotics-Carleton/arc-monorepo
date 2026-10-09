@@ -8,7 +8,7 @@
   MAVLink's CRC_EXTRA. Generated code: tools/gen-interfaces.sh.
 -->
 <mavlink>
-  <version>1</version>
+  <version>2</version>
   <dialect>0</dialect>
   <enums>
     <enum name="ARC_IMU">
@@ -41,6 +41,11 @@
       <entry value="0" name="ARC_WATCHDOG_OK"><description>Heartbeat arriving.</description></entry>
       <entry value="1" name="ARC_WATCHDOG_ROLLING"><description>Heartbeat lost; within the roll-out before braking.</description></entry>
       <entry value="2" name="ARC_WATCHDOG_BRAKING"><description>Braking on the e-stop ramp.</description></entry>
+    </enum>
+    <enum name="ARC_MOTOR_STATE" bitmask="true">
+      <description>Why a motor controller is braking on its own (ADR-0035). Any bit set stops all four corners (SYS-25).</description>
+      <entry value="1" name="ARC_MOTOR_STATE_ESTOP"><description>The e-stop input is active; braking on the e-stop ramp.</description></entry>
+      <entry value="2" name="ARC_MOTOR_STATE_COMMAND_TIMEOUT"><description>No command on the command bus within the timeout; braking on the e-stop ramp.</description></entry>
     </enum>
     <enum name="ARC_FAULT_SOURCE">
       <description>Where a fault was detected (SYS-19).</description>
@@ -95,6 +100,7 @@
       <field type="float" name="temp_motor" units="degC">Motor temperature.</field>
       <field type="uint8_t" name="corner" enum="ARC_CORNER">Which corner.</field>
       <field type="uint8_t" name="fault">VESC fault code; 0 is none.</field>
+      <field type="uint8_t" name="state" enum="ARC_MOTOR_STATE" display="bitmask">Why the controller is braking on its own; 0 is neither.</field>
     </message>
     <message id="52005" name="ARC_STEERING_STATUS">
       <description>Steering actuator status from the moteus-c1 (ADR-0019).</description>

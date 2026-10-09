@@ -36,7 +36,7 @@
 | SYS-01 Top speed | A, T | S0, S4 | Gearing/power analysis; then timed runs between markers | ≥ 9 m/s on tile, within the controllers' eRPM limit (ADR-0034) | Not started |
 | SYS-02 Footprint | I | S0 (CAD), S3 | Measure | Width 238–341 mm, length 454–654 mm | Not started |
 | SYS-03 Run time | A, T | S0, S4 | `budgets/power-scenarios.md`; then a hard-driving run to the low-battery warning | ≥ 10 min | Not started |
-| SYS-04 Heartbeat stop | T | S2, S4 | R1: cut the heartbeat, measure watchdog reaction. R7: cut heartbeat at speed, measure roll before braking and stop distance | Watchdog ≤ 150 ms (TBC, RSK-09); ≤ 2 m rolled before braking at top speed; same brake ramp as e-stop | Not started |
+| SYS-04 Heartbeat stop | T | S2, S4 | R1: cut the heartbeat, measure watchdog reaction. R2: halt the sync MCU, measure each controller's command timeout. R7: cut heartbeat at speed, measure roll before braking and stop distance | Watchdog ≤ 150 ms (TBC, RSK-09); controller command timeout ≤ 150 ms (TBC, ADR-0035); ≤ 2 m rolled before braking at top speed; same brake ramp as e-stop | Not started |
 | SYS-05 E-stop | T, I | S2, S3, S4 | R2: press e-stop; scope the brake current and the motor-bus voltage; repeat with the controller firmware halted. R7 at speed | Ramped brake, no free rolling; motor-bus power off by T (TBC ~1.8 s, ADR-0034) whatever the firmware does; steering returns to centre, its power cut ~1 s after T (TBC, ADR-0019) | Not started |
 | SYS-06 State estimate | T | S2, S3 | R5 + R1: timestamp a sensor event and the estimate that reflects it | ≥ 200 Hz; age ≤ 5 ms p99 | Not started |
 | SYS-07 Time alignment | T | S2 | R5: one physical event seen by several sensors (light flash for cameras, tap for IMUs, edge for encoders); compare timestamps | ≤ 10 µs between sensors; LiDAR ≤ 1 ms | Not started |
@@ -56,7 +56,7 @@
 | SYS-22 Safety envelope | T | S2, S3 | R1: send commands beyond each limit, including from a "malicious" experiment | Nothing beyond the limits reaches the actuators; default 3 m/s; limits raisable to the physical maximum | Not started |
 | SYS-23 Command logging | D | S3 | Check logs for operator commands and policy outputs on the sensor time base | Present, same time base | Not started |
 | SYS-24 Full-rate data | A, T | S0, S2 | Bus-load and storage budgets; R1/R2 measured bus load and dropped-sample counts at full rate | Every sensor at native rate; links ≤ 50%, CAN ≤ 70% | Not started |
-| SYS-25 Any-corner stop | T | S2, S3 | R1/R2: unplug one controller's command bus, telemetry link, or power mid-run | All four corners begin a controlled stop ≤ 20 ms after 5 ms (TBC) of silence; a single dropped frame never triggers | Not started |
+| SYS-25 Any-corner stop | T | S2, S3 | R1/R2: unplug one controller's command bus, telemetry link, ESTOP wire, or power mid-run; inject a controller fault | All four corners begin a controlled stop ≤ 20 ms after detection (5 ms of silence, TBC; or a corner reporting e-stop, command timeout or a fault); a single dropped frame never triggers | Not started |
 | SYS-26 Laptop internet | D | S1 | R6: laptop wired to the router keeps internet; other devices get no gateway | Pass on Linux and macOS | Not started |
 | SYS-27 Reachability | D | S3 | R6: reach the car via router, button hotspot, and service port, each with no outside network | All three paths work | Not started |
 | SYS-28 Car internet | T | S3 | R6: bulk download during teleop; check control-traffic priority and the parked-only rule | No teleop degradation; bulk only while parked | Not started |

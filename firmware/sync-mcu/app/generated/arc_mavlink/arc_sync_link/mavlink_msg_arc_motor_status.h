@@ -19,15 +19,16 @@ typedef struct __mavlink_arc_motor_status_t {
  float temp_motor; /*< [degC] Motor temperature.*/
  uint8_t corner; /*<  Which corner.*/
  uint8_t fault; /*<  VESC fault code; 0 is none.*/
+ uint8_t state; /*<  Why the controller is braking on its own; 0 is neither.*/
 } mavlink_arc_motor_status_t;
 
-#define MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN 46
-#define MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN 46
-#define MAVLINK_MSG_ID_52004_LEN 46
-#define MAVLINK_MSG_ID_52004_MIN_LEN 46
+#define MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN 47
+#define MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN 47
+#define MAVLINK_MSG_ID_52004_LEN 47
+#define MAVLINK_MSG_ID_52004_MIN_LEN 47
 
-#define MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC 231
-#define MAVLINK_MSG_ID_52004_CRC 231
+#define MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC 76
+#define MAVLINK_MSG_ID_52004_CRC 76
 
 
 
@@ -35,7 +36,7 @@ typedef struct __mavlink_arc_motor_status_t {
 #define MAVLINK_MESSAGE_INFO_ARC_MOTOR_STATUS { \
     52004, \
     "ARC_MOTOR_STATUS", \
-    12, \
+    13, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_motor_status_t, time_ns) }, \
          { "erpm", NULL, MAVLINK_TYPE_INT32_T, 0, 8, offsetof(mavlink_arc_motor_status_t, erpm) }, \
          { "tachometer", NULL, MAVLINK_TYPE_INT32_T, 0, 12, offsetof(mavlink_arc_motor_status_t, tachometer) }, \
@@ -48,12 +49,13 @@ typedef struct __mavlink_arc_motor_status_t {
          { "temp_motor", NULL, MAVLINK_TYPE_FLOAT, 0, 40, offsetof(mavlink_arc_motor_status_t, temp_motor) }, \
          { "corner", NULL, MAVLINK_TYPE_UINT8_T, 0, 44, offsetof(mavlink_arc_motor_status_t, corner) }, \
          { "fault", NULL, MAVLINK_TYPE_UINT8_T, 0, 45, offsetof(mavlink_arc_motor_status_t, fault) }, \
+         { "state", NULL, MAVLINK_TYPE_UINT8_T, 0, 46, offsetof(mavlink_arc_motor_status_t, state) }, \
          } \
 }
 #else
 #define MAVLINK_MESSAGE_INFO_ARC_MOTOR_STATUS { \
     "ARC_MOTOR_STATUS", \
-    12, \
+    13, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_motor_status_t, time_ns) }, \
          { "erpm", NULL, MAVLINK_TYPE_INT32_T, 0, 8, offsetof(mavlink_arc_motor_status_t, erpm) }, \
          { "tachometer", NULL, MAVLINK_TYPE_INT32_T, 0, 12, offsetof(mavlink_arc_motor_status_t, tachometer) }, \
@@ -66,6 +68,7 @@ typedef struct __mavlink_arc_motor_status_t {
          { "temp_motor", NULL, MAVLINK_TYPE_FLOAT, 0, 40, offsetof(mavlink_arc_motor_status_t, temp_motor) }, \
          { "corner", NULL, MAVLINK_TYPE_UINT8_T, 0, 44, offsetof(mavlink_arc_motor_status_t, corner) }, \
          { "fault", NULL, MAVLINK_TYPE_UINT8_T, 0, 45, offsetof(mavlink_arc_motor_status_t, fault) }, \
+         { "state", NULL, MAVLINK_TYPE_UINT8_T, 0, 46, offsetof(mavlink_arc_motor_status_t, state) }, \
          } \
 }
 #endif
@@ -88,10 +91,11 @@ typedef struct __mavlink_arc_motor_status_t {
  * @param temp_motor [degC] Motor temperature.
  * @param corner  Which corner.
  * @param fault  VESC fault code; 0 is none.
+ * @param state  Why the controller is braking on its own; 0 is neither.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_motor_status_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
-                               uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault)
+                               uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault, uint8_t state)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN];
@@ -107,6 +111,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack(uint8_t system_id, uint
     _mav_put_float(buf, 40, temp_motor);
     _mav_put_uint8_t(buf, 44, corner);
     _mav_put_uint8_t(buf, 45, fault);
+    _mav_put_uint8_t(buf, 46, state);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
 #else
@@ -123,6 +128,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack(uint8_t system_id, uint
     packet.temp_motor = temp_motor;
     packet.corner = corner;
     packet.fault = fault;
+    packet.state = state;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
 #endif
@@ -150,10 +156,11 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack(uint8_t system_id, uint
  * @param temp_motor [degC] Motor temperature.
  * @param corner  Which corner.
  * @param fault  VESC fault code; 0 is none.
+ * @param state  Why the controller is braking on its own; 0 is neither.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_motor_status_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
-                               uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault)
+                               uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault, uint8_t state)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN];
@@ -169,6 +176,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_status(uint8_t system_i
     _mav_put_float(buf, 40, temp_motor);
     _mav_put_uint8_t(buf, 44, corner);
     _mav_put_uint8_t(buf, 45, fault);
+    _mav_put_uint8_t(buf, 46, state);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
 #else
@@ -185,6 +193,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_status(uint8_t system_i
     packet.temp_motor = temp_motor;
     packet.corner = corner;
     packet.fault = fault;
+    packet.state = state;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
 #endif
@@ -215,11 +224,12 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_status(uint8_t system_i
  * @param temp_motor [degC] Motor temperature.
  * @param corner  Which corner.
  * @param fault  VESC fault code; 0 is none.
+ * @param state  Why the controller is braking on its own; 0 is neither.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_motor_status_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
                                mavlink_message_t* msg,
-                                   uint64_t time_ns,int32_t erpm,int32_t tachometer,float current_q,float current_d,float current_in,float duty,float voltage_in,float temp_fet,float temp_motor,uint8_t corner,uint8_t fault)
+                                   uint64_t time_ns,int32_t erpm,int32_t tachometer,float current_q,float current_d,float current_in,float duty,float voltage_in,float temp_fet,float temp_motor,uint8_t corner,uint8_t fault,uint8_t state)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN];
@@ -235,6 +245,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_chan(uint8_t system_id,
     _mav_put_float(buf, 40, temp_motor);
     _mav_put_uint8_t(buf, 44, corner);
     _mav_put_uint8_t(buf, 45, fault);
+    _mav_put_uint8_t(buf, 46, state);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
 #else
@@ -251,6 +262,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_chan(uint8_t system_id,
     packet.temp_motor = temp_motor;
     packet.corner = corner;
     packet.fault = fault;
+    packet.state = state;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
 #endif
@@ -269,7 +281,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_pack_chan(uint8_t system_id,
  */
 static inline uint16_t mavlink_msg_arc_motor_status_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_arc_motor_status_t* arc_motor_status)
 {
-    return mavlink_msg_arc_motor_status_pack(system_id, component_id, msg, arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault);
+    return mavlink_msg_arc_motor_status_pack(system_id, component_id, msg, arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault, arc_motor_status->state);
 }
 
 /**
@@ -283,7 +295,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_encode(uint8_t system_id, ui
  */
 static inline uint16_t mavlink_msg_arc_motor_status_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_arc_motor_status_t* arc_motor_status)
 {
-    return mavlink_msg_arc_motor_status_pack_chan(system_id, component_id, chan, msg, arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault);
+    return mavlink_msg_arc_motor_status_pack_chan(system_id, component_id, chan, msg, arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault, arc_motor_status->state);
 }
 
 /**
@@ -297,7 +309,7 @@ static inline uint16_t mavlink_msg_arc_motor_status_encode_chan(uint8_t system_i
  */
 static inline uint16_t mavlink_msg_arc_motor_status_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_arc_motor_status_t* arc_motor_status)
 {
-    return mavlink_msg_arc_motor_status_pack_status(system_id, component_id, _status, msg,  arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault);
+    return mavlink_msg_arc_motor_status_pack_status(system_id, component_id, _status, msg,  arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault, arc_motor_status->state);
 }
 
 /**
@@ -316,10 +328,11 @@ static inline uint16_t mavlink_msg_arc_motor_status_encode_status(uint8_t system
  * @param temp_motor [degC] Motor temperature.
  * @param corner  Which corner.
  * @param fault  VESC fault code; 0 is none.
+ * @param state  Why the controller is braking on its own; 0 is neither.
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
-static inline void mavlink_msg_arc_motor_status_send(mavlink_channel_t chan, uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault)
+static inline void mavlink_msg_arc_motor_status_send(mavlink_channel_t chan, uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault, uint8_t state)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN];
@@ -335,6 +348,7 @@ static inline void mavlink_msg_arc_motor_status_send(mavlink_channel_t chan, uin
     _mav_put_float(buf, 40, temp_motor);
     _mav_put_uint8_t(buf, 44, corner);
     _mav_put_uint8_t(buf, 45, fault);
+    _mav_put_uint8_t(buf, 46, state);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_MOTOR_STATUS, buf, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC);
 #else
@@ -351,6 +365,7 @@ static inline void mavlink_msg_arc_motor_status_send(mavlink_channel_t chan, uin
     packet.temp_motor = temp_motor;
     packet.corner = corner;
     packet.fault = fault;
+    packet.state = state;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_MOTOR_STATUS, (const char *)&packet, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC);
 #endif
@@ -364,7 +379,7 @@ static inline void mavlink_msg_arc_motor_status_send(mavlink_channel_t chan, uin
 static inline void mavlink_msg_arc_motor_status_send_struct(mavlink_channel_t chan, const mavlink_arc_motor_status_t* arc_motor_status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
-    mavlink_msg_arc_motor_status_send(chan, arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault);
+    mavlink_msg_arc_motor_status_send(chan, arc_motor_status->time_ns, arc_motor_status->erpm, arc_motor_status->tachometer, arc_motor_status->current_q, arc_motor_status->current_d, arc_motor_status->current_in, arc_motor_status->duty, arc_motor_status->voltage_in, arc_motor_status->temp_fet, arc_motor_status->temp_motor, arc_motor_status->corner, arc_motor_status->fault, arc_motor_status->state);
 #else
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_MOTOR_STATUS, (const char *)arc_motor_status, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC);
 #endif
@@ -378,7 +393,7 @@ static inline void mavlink_msg_arc_motor_status_send_struct(mavlink_channel_t ch
   is usually the receive buffer for the channel, and allows a reply to an
   incoming message with minimum stack space usage.
  */
-static inline void mavlink_msg_arc_motor_status_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault)
+static inline void mavlink_msg_arc_motor_status_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, int32_t erpm, int32_t tachometer, float current_q, float current_d, float current_in, float duty, float voltage_in, float temp_fet, float temp_motor, uint8_t corner, uint8_t fault, uint8_t state)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char *buf = (char *)msgbuf;
@@ -394,6 +409,7 @@ static inline void mavlink_msg_arc_motor_status_send_buf(mavlink_message_t *msgb
     _mav_put_float(buf, 40, temp_motor);
     _mav_put_uint8_t(buf, 44, corner);
     _mav_put_uint8_t(buf, 45, fault);
+    _mav_put_uint8_t(buf, 46, state);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_MOTOR_STATUS, buf, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC);
 #else
@@ -410,6 +426,7 @@ static inline void mavlink_msg_arc_motor_status_send_buf(mavlink_message_t *msgb
     packet->temp_motor = temp_motor;
     packet->corner = corner;
     packet->fault = fault;
+    packet->state = state;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_MOTOR_STATUS, (const char *)packet, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_CRC);
 #endif
@@ -542,6 +559,16 @@ static inline uint8_t mavlink_msg_arc_motor_status_get_fault(const mavlink_messa
 }
 
 /**
+ * @brief Get field state from arc_motor_status message
+ *
+ * @return  Why the controller is braking on its own; 0 is neither.
+ */
+static inline uint8_t mavlink_msg_arc_motor_status_get_state(const mavlink_message_t* msg)
+{
+    return _MAV_RETURN_uint8_t(msg,  46);
+}
+
+/**
  * @brief Decode a arc_motor_status message into a struct
  *
  * @param msg The message to decode
@@ -562,6 +589,7 @@ static inline void mavlink_msg_arc_motor_status_decode(const mavlink_message_t* 
     arc_motor_status->temp_motor = mavlink_msg_arc_motor_status_get_temp_motor(msg);
     arc_motor_status->corner = mavlink_msg_arc_motor_status_get_corner(msg);
     arc_motor_status->fault = mavlink_msg_arc_motor_status_get_fault(msg);
+    arc_motor_status->state = mavlink_msg_arc_motor_status_get_state(msg);
 #else
         uint8_t len = msg->len < MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN? msg->len : MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN;
         memset(arc_motor_status, 0, MAVLINK_MSG_ID_ARC_MOTOR_STATUS_LEN);
