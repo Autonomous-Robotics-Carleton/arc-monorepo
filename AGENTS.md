@@ -82,6 +82,7 @@ Gotchas:
 ## Git and PRs
 
 - Open work is in GitHub issues, indexed in #110 and labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`) plus `needs-decision` / `blocked`. No ground-station software exists yet (#71).
+- **Every new issue goes in #110.** A workflow (`.github/workflows/issue-index.yml`) adds it under "New, not sorted yet" with its labels. Whoever opened it then moves the line into its area section, with what it waits on (`- #123 (after #75)`), and adds the area label if it's missing.
 - Branch from `main`: `yourname/<type>/<issue>-<short-name>` (issue number optional).
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `systems-model`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `devcontainer`, `experiments`, `hardware`, `platform`, `ci`. One logical change per commit.
 - Rebase on `origin/main`; never merge `main` into a branch, and don't use GitHub's "Update branch" (it creates a merge commit).
