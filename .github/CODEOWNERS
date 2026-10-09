@@ -1,5 +1,22 @@
-# Code owners are asked to review every PR that touches their paths.
-# Add owners per area as people take them on, e.g. both sides of an ICD
-# (systems/icd/) or the safety code in firmware/.
+# Code owners review every PR that touches their paths, and main needs a
+# code owner's approval to merge. The last matching line wins; any one owner
+# on that line can approve.
 
-* @HalfPast9
+# Default, including systems/ (the source of truth), hardware/ and .github/
+*                                    @HalfPast9
+
+# Software: any member of the software team
+/ros/                                @Autonomous-Robotics-Carleton/software-team
+/firmware/                           @Autonomous-Robotics-Carleton/software-team
+/apps/                               @Autonomous-Robotics-Carleton/software-team
+/tools/                              @Autonomous-Robotics-Carleton/software-team
+/libs/                               @Autonomous-Robotics-Carleton/software-team
+/experiments/                        @Autonomous-Robotics-Carleton/software-team
+/platform/                           @Autonomous-Robotics-Carleton/software-team
+/.devcontainer/                      @Autonomous-Robotics-Carleton/software-team
+
+# Safety functions (e-stop, watchdog, safety envelope, the controllers' own
+# braking): the systems lead approves, so every change has a second reviewer
+/firmware/sync-mcu/app/src/safety.*  @HalfPast9
+/firmware/sync-mcu/tests/safety/     @HalfPast9
+/firmware/vesc/arc/                  @HalfPast9
