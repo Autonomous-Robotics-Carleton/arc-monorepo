@@ -4,6 +4,7 @@
 - **Date:** 2026-10-03
 - **Deciders:** TBD (recommended by Shrikar Vempati; for review by the electrical engineer and the team)
 - **Traces to:** SYS-07, SYS-24, SYS-29, ADR-0021, RSK-01, E-02, E-06, E-30
+- **Amends:** ADR-0021 (drops its optional i210/i226 network card), once accepted
 
 > [!IMPORTANT]
 > **This is a recommendation, not a decision.** It answers an open question left by ADR-0021 so the carrier and sync-board designs can proceed. Push back on anything here; it becomes `Accepted` only after review.

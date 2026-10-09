@@ -1,6 +1,6 @@
 # ADR-0003: A separate sensor MCU on each corner
 
-- **Status:** Superseded by ADR-0006
+- **Status:** Superseded by ADR-0006 (no corner sensor node in v1; the corner sensors wire to the sync board, ADR-0008)
 - **Date:** before 2026-09-23
 - **Deciders:** TBD
 - **Traces to:** SYS-06, SYS-07, SYS-10

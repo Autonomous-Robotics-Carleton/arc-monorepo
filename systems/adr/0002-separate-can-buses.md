@@ -1,6 +1,6 @@
 # ADR-0002: Separate classic CAN and CAN-FD buses
 
-- **Status:** Superseded by ADR-0009
+- **Status:** Superseded by ADR-0009 (no corner sensor nodes after ADR-0006, so one classic CAN bus to the motor controllers)
 - **Date:** before 2026-09-23
 - **Deciders:** TBD
 - **Traces to:** SYS-06, RSK-03
