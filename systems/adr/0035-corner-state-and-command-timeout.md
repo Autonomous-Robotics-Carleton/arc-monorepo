@@ -38,7 +38,8 @@ SYS-25's listed triggers can't separate one corner from another on the command b
 | --- | --- |
 | Command timeout | Our controller firmware brakes on the e-stop ramp (ADR-0012) when no command has arrived on the command bus for 150 ms (TBC, the same as SYS-04's watchdog). Replaces upstream's timeout behaviour |
 | Corner state | `ARC_MOTOR_STATUS` gains `state`, a bitmask sent in every frame: `ESTOP` (the e-stop input is active) and `COMMAND_TIMEOUT` (braking on command loss) |
-| SYS-25 triggers | The sync MCU stops all four corners when any one corner has sent no valid `ARC_MOTOR_STATUS` for 5 ms (TBC), reports `ESTOP` or `COMMAND_TIMEOUT`, or reports a non-zero fault code; and when the command bus itself fails (no acknowledgements, or bus-off) |
+| SYS-25 triggers | The sync MCU stops all four corners when any one corner has sent no valid `ARC_MOTOR_STATUS` for 5 ms (TBC), reports `ESTOP` or `COMMAND_TIMEOUT`, reports a non-zero fault code, or has sent no STATUS_1 on the command bus for ~60 ms (TBC: three frames at 50 Hz); and when the command bus itself fails (no acknowledgements, or bus-off) |
+| Why STATUS_1 too | A corner that still sends on the command bus almost certainly still receives. Watching it catches a corner that has lost the bus at ~60 ms, before that corner's own 150 ms timeout fires, so no corner brakes alone; and it doesn't depend on the UART. The frames are already sent, so it costs no bus load |
 | Broken ESTOP wire | Stops the car through SYS-25, as the 2026-10-07 trade-off assumed. That trade-off stands: no per-line wire detection, and the hardware cut comes only from the button or the e-stop circuit losing power |
 
 ## Consequences
@@ -50,5 +51,5 @@ SYS-25's listed triggers can't separate one corner from another on the command b
 - **The sync MCU must command continuously** while drive is enabled, zero included, so the timeout trips only on real loss.
 - **A hung controller still coasts** until the motor-bus cut (RSK-11); its telemetry stops, so SYS-25 brakes the other three.
 - **Safety functions:** the command-timeout routine and the SYS-25 triggers need their own tests and a second reviewer, like the e-stop routine.
-- **Not decided:** also watching each corner's STATUS_1 on the command bus (~60 ms, TBC) as an earlier, independent check that it still receives commands. How a run resumes after a SYS-25 stop is TBD (sync MCU).
+- **Not decided:** how a run resumes after a SYS-25 stop (sync MCU).
 - **Reopen if:** rig R2 or the track shows false command timeouts at 150 ms.
