@@ -9,7 +9,7 @@ How the team designs the car in Fusion 360, how that work reaches this repo, and
 
 | What | Where | Notes |
 | --- | --- | --- |
-| Live CAD | Fusion 360 team hub, project **ARC Car v1** | Fusion keeps the version history. Everyone works here |
+| Live CAD | Fusion 360 team hub *Autonomous Robotics Carleton*, project **ARC Car** | Fusion keeps the version history. Everyone works here |
 | Released geometry | `hardware/mechanical/<release>/` | STEP of the full assembly and of each part we make; committed at a release tag (git LFS) |
 | Drawings for machined parts | `hardware/mechanical/<release>/drawings/` | PDF with dimensions, tolerances, material and finish: what the CNC service quotes from |
 | Decisions, envelopes, open questions | [`layout-brief.md`](layout-brief.md) | Decisions with real trade-offs become ADRs |
@@ -22,7 +22,7 @@ How the team designs the car in Fusion 360, how that work reaches this repo, and
 One top-level assembly, with each subsystem as its own design inserted by reference, so people can work in parallel without locking each other out:
 
 ```
-ARC Car v1 (project)
+ARC Car (project)
 ├── 00 Car                 top-level assembly: references only, no geometry
 ├── 01 Parameters          the shared dimensions below, as user parameters
 ├── 10 Corner FL / FR / RL / RR   motor, gearbox, CVD, encoders (FL/FR also steering)
