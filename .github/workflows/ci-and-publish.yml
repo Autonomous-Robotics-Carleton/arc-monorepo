@@ -50,16 +50,34 @@ jobs:
         # firmware and ROS need the dev container's toolchains: the dev-container job below
         run: npx nx affected -t lint test check build --exclude='tag:env:dev-container'
 
+      # The two checkers from anishathalye/proof-html, run on the runner. As a
+      # Docker action, its image was pulled from Docker Hub at the start of every
+      # run, and failed when the runners hit the anonymous pull rate limit.
+      - name: Set up Ruby
+        if: contains(steps.affected.outputs.projects, ' systems ')
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+
       - name: Check HTML in systems/
         if: contains(steps.affected.outputs.projects, ' systems ')
-        uses: anishathalye/proof-html@v2
-        with:
-          directory: ./systems
-          check_favicon: false # standalone pages, not a site
-          # rel="preconnect" hints: the bare origins return 404 by design
-          ignore_url: |
-            https://fonts.googleapis.com
-            https://fonts.gstatic.com
+        run: |
+          failed=0
+          # HTML and CSS validation, on the runner's Java
+          npx --yes vnu-jar@26.9.16 --errors-only --skip-non-html --also-check-css systems || failed=1
+          # Links, images, scripts and Open Graph tags; three tries, as external links can be flaky
+          gem install --no-document html-proofer -v 5.2.1
+          for try in 1 2 3; do
+            # rel="preconnect" hints: the bare font origins return 404 by design
+            htmlproofer systems \
+              --checks Links,Images,Scripts,OpenGraph \
+              --no-ignore-empty-alt \
+              --ignore-urls https://fonts.googleapis.com,https://fonts.gstatic.com \
+              --typhoeus '{"followlocation":true,"connecttimeout":30,"timeout":120,"headers":{"User-Agent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.0.0 Safari/537.36"}}' \
+              && break
+            if [ "$try" = 3 ]; then failed=1; else sleep 5; fi
+          done
+          exit $failed
 
       # Publish the docs image only on pushes to main that change the docs
       - name: Log in to GHCR
