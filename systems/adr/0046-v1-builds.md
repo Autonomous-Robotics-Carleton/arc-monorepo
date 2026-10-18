@@ -4,7 +4,8 @@
 - **Date:** 2026-10-16
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-08, SYS-09, SYS-10, SYS-17, SYS-22, SYS-24, SYS-33, E-01, E-02, E-03, E-04, E-10, E-12, E-13, E-25, E-29, LIM-09, LIM-10, LIM-11, RSK-01, RSK-23
-- **Related:** ADR-0001, ADR-0010, ADR-0014, ADR-0025, ADR-0028, ADR-0043
+- **Amends:** ADR-0001, ADR-0010, ADR-0014 and ADR-0025, for v1.0 only (borrowed LiDAR and compute, a frame camera for ground speed, the developer kit carrier)
+- **Related:** ADR-0028, ADR-0043
 
 ## Context
 

@@ -1,6 +1,6 @@
 # ADR-0014: Ground-speed sensor is a downward event camera with three lighting modes
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0046 (v1.0 measures ground speed with an Arducam B0223 frame camera and the two LED modes; the GenX320 and the Class 1 module come in v1.1, LIM-11)
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-07, SYS-10, SYS-24, ADR-0007, RSK-01, RSK-07
