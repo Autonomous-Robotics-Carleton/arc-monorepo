@@ -43,7 +43,7 @@ flowchart TB
     POWER -.->|Placement and interfaces TBD| CLAMP["Autonomous bus clamp / external dump load"]
 ```
 
-This is a functional connection map, not a connector pinout or a released e-stop circuit. Four camera CSI interfaces belong to the carrier; their FFCs do not enter the motherboard sensor banks.
+This is a functional connection map, not a connector pinout or a released e-stop circuit. It shows v1.1; on v1.0 the carrier is the Orin Nano developer kit's, with two CSI connectors, and the camera triggers run from the motherboard straight to the cameras (ADR-0046, ICD-carrier-sync). Camera CSI interfaces belong to the carrier; their FFCs do not enter the motherboard sensor banks.
 
 ## What the wire counts mean
 

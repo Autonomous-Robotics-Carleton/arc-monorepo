@@ -7,7 +7,7 @@
 - **Traces to:** SYS-05, SYS-07, SYS-08, SYS-19, SYS-24, SYS-29, SYS-30, ADR-0021, ADR-0022, ADR-0023, ADR-0025, ADR-0031, ADR-0039, RSK-01
 - **Related work:** [#102](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/102); physical release depends on #98 / #101
 
-The carrier is the Antmicro fork under ADR-0025. Freeze its revision before assigning module / connector contacts. This interface controls timing, Ethernet and the proposed shutdown handshake; CSI camera data, motor commands and the power-board stack have separate interfaces. This document does not choose camera modules or approve a device tree.
+The carrier is the Antmicro fork under ADR-0025 (v1.1; v1.0 is below). Freeze its revision before assigning module / connector contacts. This interface controls timing, Ethernet and the proposed shutdown handshake; CSI camera data, motor commands and the power-board stack have separate interfaces. This document does not choose camera modules or approve a device tree.
 
 ## Signal and transport inventory
 
@@ -33,7 +33,8 @@ v1.0 uses the Orin Nano developer kit's own carrier (P3768) instead of E-02 (ADR
 - **Ethernet:** the dev kit's GbE port to the switch (E-06).
 - **PPS_SYNC, ORIN_SHUTDOWN_REQ and the hotspot button and LED:** 40-pin header GPIOs (3.3 V, TBC from NVIDIA's carrier specification); pins and device tree TBD.
 - **Camera triggers:** from the motherboard straight to the stereo kit's and the B0223's trigger inputs, not through the carrier.
-- **Power:** the motherboard's compute rail into the dev kit's barrel jack (input range TBC).
+- **ORIN_HALTED / POWER_REMOVE_OK:** which dev kit signal carries it is TBD (40-pin header or the J14 button header).
+- **Power:** the motherboard's compute rail into the dev kit's barrel jack, 9–20 V (NVIDIA SP-11324-001 v1.3). By default the kit powers on when the rail comes up; a J14 jumper changes that (TBC whether v1.0 wants it).
 
 ## Timing and platform contract
 

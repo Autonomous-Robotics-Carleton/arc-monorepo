@@ -9,7 +9,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
 - Nothing is fabbed until it passes `reviews/fab-gate.md`.
 - **Funding comes in orders, one per build (v1.0, then v1.1; ADR-0046)**, so there's no early hardware testing. Design in rework-only fallbacks (unpopulated footprints, jumpers, harness options), and order extra bare PCBs of every custom board.
 
-**Builds (ADR-0046, [builds](../builds.md)):** v1.0 runs on the Orin Nano developer kit (its own carrier and module) with a UST-20LX, the stereo pair and a downward B0223; v1.1 adds the NX on the Antmicro carrier and the remaining cameras. **The motherboard you design is the v1.1 board**: all four camera trigger groups plus the spare, every sensor connector, and a compute rail sized for the NX whose voltage also suits the dev kit's barrel input (range TBC from NVIDIA SP-11324-001). On v1.0, PPS, the hotspot button and LED and the shutdown request use the dev kit's 40-pin header, and the camera triggers go straight to the cameras.
+**Builds (ADR-0046, [builds](../builds.md)):** v1.0 runs on the Orin Nano developer kit (its own carrier and module) with a UST-20LX, the stereo pair and a downward B0223; v1.1 adds the NX on the Antmicro carrier and the remaining cameras. **The motherboard you design is the v1.1 board**: all four camera trigger groups plus the spare, every sensor connector, and a compute rail sized for the NX whose voltage also suits the dev kit's 9–20 V barrel input (NVIDIA SP-11324-001 v1.3). On v1.0, PPS, the hotspot button and LED and the shutdown request use the dev kit's 40-pin header, and the camera triggers go straight to the cameras. Still open for v1.0: which dev kit signal confirms the Orin has halted, and whether it powers on by itself when the rail comes up ([builds](../builds.md)).
 
 ## Read first
 
@@ -117,7 +117,10 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Motor temperature: Castle doesn't document a thermistor on the 1010's sensor cable, so E-28 is bought as a fallback; meter the sensor port when the motors arrive
   - No datasheet exists: ratings come from Triforce's product page, the electrical design from the upstream hardware config (`hwconf/teamtriforceuk/a50s_v23c/`)
 
-### 4. Orin carrier (fork of Antmicro's baseboard)
+### 4. Orin carrier (fork of Antmicro's baseboard; v1.1)
+
+v1.0 uses the developer kit's own carrier instead (ADR-0046); its interfaces are in [builds](../builds.md) and ICD-carrier-sync.
+
 
 - **Decided** (ADR-0010, -0014, -0015, -0016):
   - Orin NX 16GB.
