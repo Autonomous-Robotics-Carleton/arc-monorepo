@@ -1,20 +1,23 @@
-item,bom_id,qty,mass_each_g,mass_total_g,x_mm,y_mm,z_mm,source,owner
-4S LiPo hardcase (~5000 mAh),E-40,1,495-589,495-589,TBD,TBD,TBD,"two makers' 5000 mAh packs (layout-brief.md)",mech
-Castle 1010-4400kV motor,E-51,4,146.5,586,TBD,TBD,TBD,datasheet (architecture.md),mech
-Gearbox + CVD per corner,,4,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-A50S V2.3c motor controller with heatsink,E-50,4,30,120,TBD,TBD,TBD,"Triforce product page: ~30 g with heatsink, 11 g bare (ADR-0034)",EE
-Steering actuator (motor + belt + moteus-c1),E-31,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-Orin NX + carrier + heatsink/fan,E-01/E-02/E-03,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
-Sync board + power board (stacked),E-30/E-41,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
-Bus clamp board + resistor,E-43,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE
-Ethernet switch,E-06,1,TBD,TBD,TBD,TBD,TBD,datasheet,EE
-Hokuyo UST-10LX,E-10,1,130,130,TBD,TBD,TBD,"datasheet: 130 g, 50 x 50 x 70 mm",mech
-Cameras (stereo + quad + 2 event) and mounts,E-11/E-12/E-13/E-25,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech
-IMUs + encoders + ToF + magnets,E-20/E-21/E-22/E-23/E-24/E-26,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech
-Corner parts we design: knuckles + uprights + arms + mounts (ADR-0040),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-Bought corner parts: shocks + CVDs + wheels + tires (ADR-0040),,1 set,TBD,TBD,TBD,TBD,TBD,vendor,mech
-Lower tub (printed PAHT-CF),,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-Upper deck + sensor mounts + crash guard (printed),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-Aluminium plates (gearbox + motor mounts + splices),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech
-Harness + connectors,,1,TBD,TBD,TBD,TBD,TBD,estimate,EE
-Fasteners + inserts,,1,TBD,TBD,TBD,TBD,TBD,estimate,mech
+item,bom_id,qty,mass_each_g,mass_total_g,x_mm,y_mm,z_mm,source,owner,build
+4S LiPo hardcase (~5000 mAh),E-40,1,495-589,495-589,TBD,TBD,TBD,two makers' 5000 mAh packs (layout-brief.md),mech,both
+Castle 1010-4400kV motor,E-51,4,146.5,586,TBD,TBD,TBD,datasheet (architecture.md),mech,both
+Gearbox + CVD per corner,,4,TBD,TBD,TBD,TBD,TBD,from CAD,mech,both
+A50S V2.3c motor controller with heatsink,E-50,4,30,120,TBD,TBD,TBD,"Triforce product page: ~30 g with heatsink, 11 g bare (ADR-0034)",EE,both
+Steering actuator (motor + belt + moteus-c1),E-31,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech,both
+Orin NX + carrier + heatsink/fan,E-01/E-02/E-03,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE,v1.1
+Orin Nano Super developer kit with its cooler,E-01/E-02/E-03,1,TBD,TBD,TBD,TBD,TBD,measure the kit we have,EE,v1.0
+Motherboard: power + sync (ADR-0042),E-30/E-41,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE,both
+Bus clamp board + resistor,E-43,1,TBD,TBD,TBD,TBD,TBD,from the EE,EE,both
+Ethernet switch,E-06,1,TBD,TBD,TBD,TBD,TBD,datasheet,EE,both
+Hokuyo UST-10LX,E-10,1,130,130,TBD,TBD,TBD,"datasheet: 130 g, 50 x 50 x 70 mm",mech,v1.1
+Hokuyo UST-20LX,E-10,1,130 (TBC),130 (TBC),TBD,TBD,TBD,same body as the UST-10LX (ADR-0046); confirm on the datasheet,mech,v1.0
+Cameras (stereo + B0223) and mounts,E-11/E-25,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech,v1.0
+Cameras (stereo + quad + 2 event) and mounts,E-11/E-12/E-13/E-25,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech,v1.1
+IMUs + encoders + ToF + magnets,E-20/E-21/E-22/E-23/E-24/E-26,1 set,TBD,TBD,TBD,TBD,TBD,datasheets,mech,both
+Corner parts we design: knuckles + uprights + arms + mounts (ADR-0040),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech,both
+Bought corner parts: shocks + CVDs + wheels + tires (ADR-0040),,1 set,TBD,TBD,TBD,TBD,TBD,vendor,mech,both
+Lower tub (printed PAHT-CF),,1,TBD,TBD,TBD,TBD,TBD,from CAD,mech,both
+Upper deck + sensor mounts + crash guard (printed),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech,both
+Aluminium plates (gearbox + motor mounts + splices),,1 set,TBD,TBD,TBD,TBD,TBD,from CAD,mech,both
+Harness + connectors,,1,TBD,TBD,TBD,TBD,TBD,estimate,EE,both
+Fasteners + inserts,,1,TBD,TBD,TBD,TBD,TBD,estimate,mech,both

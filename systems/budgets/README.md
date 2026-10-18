@@ -3,6 +3,8 @@
 One CSV per budget. Each row has: item, value, unit, margin/contingency, source (datasheet link, measured, or estimate), owner.
 A budget "closes" when the total plus contingency is within its `SYS` limit.
 
+`cost.csv`, `power.csv` and `mass.csv` have a `build` column: `both`, `v1.0` or `v1.1` (ADR-0046, [builds](../builds.md)). Total a build from its own rows plus `both`.
+
 | File | Limit from | Status |
 | --- | --- | --- |
 | [`mass.csv`](mass.csv) (mass and CG position) | SYS-16 | Draft: item list seeded; masses and positions come from the block layout |
