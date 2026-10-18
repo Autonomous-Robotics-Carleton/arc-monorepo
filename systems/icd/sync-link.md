@@ -58,3 +58,4 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. Command rate and the safety-state rate.
 5. Owners on both sides.
+6. Who the sync MCU accepts messages from. The link shares the car's switch (E-06) with the service port (E-09), so a laptop plugged in there can send to UDP 52000: drive commands, envelope settings and operator heartbeats, which would keep the watchdog (SYS-04) fed while the laptop is the one commanding. Nothing here restricts the sender yet. Options include accepting only the Orin's address, MAVLink 2 message signing, or a network the service port can't reach; none is chosen. Whatever is chosen guards SYS-04 and SYS-22, so it is a safety function: its own tests and a second reviewer.
