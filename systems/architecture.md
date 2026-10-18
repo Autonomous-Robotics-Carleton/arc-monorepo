@@ -13,7 +13,7 @@ v1 is tightly integrated; modular hardware is a v2 goal. The car runs on an indo
 | Drive | 4× Castle 1010-4400kV, one per wheel, two-stage gearbox, CVDs | ADR-0026 |
 | Motor control | 4× A50S V2.3c (off the shelf, VESC firmware) on the lower deck | ADR-0034 |
 | Steering | Gimbal brushless motor + belt, driven by a moteus-c1 | ADR-0019 |
-| Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard; JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016, ADR-0025 |
+| Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard (v1.0: Orin Nano Super developer kit); JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016, ADR-0025, ADR-0046 |
 | Sync and sensor hub | STM32H723 on Zephyr: owns the time base, safety envelope and watchdog | ADR-0011, ADR-0017, ADR-0021, ADR-0034 |
 | Power | 4S LiPo; power board with LV rails, monitoring and e-stop circuit; bus clamp | ADR-0012, `budgets/power-scenarios.md` |
 | Ground link | Team router (GL.iNet Flint 3, 6 GHz), laptop gateway, button hotspot, service port | ADR-0015 |
@@ -88,10 +88,10 @@ The [updated EE sizing review](adr/0044-ee-sizing-after-custom-corners.md) uses 
 
 ## Compute and software
 
-- **Orin NX 16GB** on a fork of Antmicro's open baseboard: four 22-pin CSI ports, a trigger connector to the sync board, a fixed compute-rail input, M.2 key M (swappable 4 TB NVMe) and key E (MT7922 Wi-Fi), GbE, and expansion GPIO for the hotspot button. Optional Intel i210/i226 NIC if a PCIe lane is free (ADR-0021).
+- **v1.1: Orin NX 16GB** on a fork of Antmicro's open baseboard: four 22-pin CSI ports, a trigger connector to the sync board, a fixed compute-rail input, M.2 key M (swappable 4 TB NVMe) and key E (MT7922 Wi-Fi), GbE, and expansion GPIO for the hotspot button. Optional Intel i210/i226 NIC if a PCIe lane is free (ADR-0021).
 - **JetPack 7.2.1** (Ubuntu 24.04, kernel 6.8), **ROS 2 Jazzy**, **PREEMPT_RT**. Platform software runs on reserved cores; experiments run in containers with resource limits (ADR-0016, SYS-21).
 - **Layered control:** learned policies send targets to the classical controller. The safety envelope is enforced on the sync MCU (SYS-22).
-- **Bench reference:** the Traxxas car's Orin Nano dev kit takes the NX module, so cameras and software come up there first.
+- **v1.0:** the Orin Nano Super developer kit from the Traxxas car, on its own carrier: two CSI connectors (stereo and the downward B0223), a 9–20 V barrel input, the 40-pin header for PPS and the buttons ([builds](builds.md)). It takes the NX module too, so the NX can come up on it before the carrier is built.
 
 ## Sync and sensing
 
@@ -99,11 +99,11 @@ The sync MCU (STM32H723, Zephyr) owns the car's time base. It timestamps sensors
 
 | Sensor | Part | Rate | Connects to |
 | --- | --- | --- | --- |
-| 2D LiDAR | Hokuyo UST-10LX (10 m, 0.25°) | 40 Hz | Ethernet switch |
-| Forward stereo | Arducam AR0234 (global shutter) | Native | CSI 1, triggered |
-| Side/rear cameras | Arducam quad OV9281 | Native | CSI 2, triggered |
-| Forward event camera | Prophesee GenX320 | Continuous | CSI 3, Trigger In |
-| Ground-speed camera | Second GenX320, pointing down, three lighting modes (cross-polarized LED, grazing LED, Class 1 laser speckle) | Continuous | CSI 4, Trigger In (ADR-0014) |
+| 2D LiDAR | Hokuyo UST-10LX (10 m, 0.25°); v1.0: UST-20LX on loan | 40 Hz | Ethernet switch |
+| Forward stereo | Arducam AR0234 (global shutter) | Native | CSI 1, triggered (v1.0: dev kit CAM1) |
+| Side/rear cameras | Arducam quad OV9281 (v1.1) | Native | CSI 2, triggered |
+| Forward event camera | Prophesee GenX320 (v1.1) | Continuous | CSI 3, Trigger In |
+| Ground-speed camera | Second GenX320, pointing down, three lighting modes (cross-polarized LED, grazing LED, Class 1 laser speckle). v1.0: Arducam B0223 OV9281 frame camera and the two LED modes (ADR-0046) | Continuous (v1.0: up to 240 fps) | CSI 4, Trigger In (ADR-0014); v1.0: dev kit CAM0, frame trigger |
 | IMU at CG | ST ISM330DHCXTR (industrial grade) on our IMU board (ADR-0045) | ≥ 4 kHz | Sync SPI + DRDY |
 | IMU, front axle | ST ISM330DHCXTR, same board design (ADR-0045) | ≥ 4 kHz | Sync SPI + DRDY |
 | Wheel encoders ×4 | AS5047 on the wheel output shaft | 2 kHz | Sync SPI |
