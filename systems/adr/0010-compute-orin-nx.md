@@ -1,6 +1,6 @@
 # ADR-0010: Jetson Orin NX 16GB is the v1 compute; all inference runs onboard
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0046 (the NX is v1.1's compute; v1.0 runs on the Orin Nano 8 GB developer kit on loan from the existing car, LIM-09)
 - **Date:** 2026-10-02
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-08, SYS-03, SYS-16, SYS-17, RSK-01, RSK-08
