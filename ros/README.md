@@ -1,6 +1,6 @@
 # ros
 
-The ROS 2 workspace for the car's Jetson Orin NX: the platform software (drivers, time sync, logging, state estimation, low-level control, teleop). The same workspace runs on a laptop or in CI against a simulator or a log replay (ADR-0028).
+The ROS 2 workspace for the car's Jetson Orin (the Orin Nano Super developer kit on v1.0, the Orin NX on v1.1; ADR-0046): the platform software (drivers, time sync, logging, state estimation, low-level control, teleop). The same workspace runs on a laptop or in CI against a simulator or a log replay (ADR-0028).
 
 Platform: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT (ADR-0016). Experiments run in containers with resource limits and must never stop the platform from driving, logging or stopping (SYS-21).
 
