@@ -1,0 +1,11 @@
+# Altium recovery files, importer logs and reproducible verification exports stay local.
+altium/**/*.LOG
+altium/**/History/
+altium/**/__Previews/
+altium/**/Project Outputs for */
+altium/**/*.PrjPCBStructure
+altium/**/*.PrjPcbStructure
+altium/**/*.PrjPCBVariants
+altium/**/*.PrjPcbVariants
+altium/**/*.SchDocPreview
+altium/**/*.PcbDocPreview

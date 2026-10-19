@@ -15,6 +15,7 @@ This folder is the source of truth for the car's requirements, interfaces, decis
 | `mechanical/` | Mechanical layout brief, envelopes, early mechanical decisions | Markdown (+ STEP exports per release) |
 | `software/` | Software architecture (components, layers, targets) and the repo setup plan | Markdown |
 | `handoff/` | Per-discipline handoff: what's decided, where it lives, what's open | Markdown |
+| `builds.md` | What each build of the car (v1.0, v1.1) contains and where its order stands (ADR-0046) | Markdown |
 | `risks.md` | Ranked risks, each paired with a spike test | Markdown table |
 | `reviews/` | Gate checklists and review records | Markdown |
 | `architecture.md` | Narrative overview of the whole car | Markdown |

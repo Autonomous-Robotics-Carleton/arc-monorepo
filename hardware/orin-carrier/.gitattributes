@@ -1,0 +1,7 @@
+# The imported Altium CAD and its schematic images and templates go through Git LFS,
+# like the repo's other CAD binaries (see the root .gitattributes).
+altium/**/*.PcbDoc filter=lfs diff=lfs merge=lfs -text
+altium/**/*.SchDoc filter=lfs diff=lfs merge=lfs -text
+altium/**/*.SchLib filter=lfs diff=lfs merge=lfs -text
+altium/**/*.SCHDOT filter=lfs diff=lfs merge=lfs -text
+altium/**/*.png filter=lfs diff=lfs merge=lfs -text

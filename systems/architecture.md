@@ -4,7 +4,7 @@ Rewritten 2026-10-03 from the original interface spec (Sep 23, 2026, @shrikar ve
 
 ## What the car is
 
-A 1/10-scale 4WD autonomy research platform: a sandbox where the team's engineers try ideas in software without building hardware first. Classical pipelines come first (state estimation, localization, planning, MPC), then learned and embodied-AI policies (VLAs). Hardware should never be the reason an experiment fails, and should never limit what software can try. Every sensor runs at its full useful rate, timestamped and logged (SYS-24). The places where v1 hardware deliberately limits software are listed as accepted limits LIM-01 to LIM-08 in `requirements/system.md`.
+A 1/10-scale 4WD autonomy research platform: a sandbox where the team's engineers try ideas in software without building hardware first. Classical pipelines come first (state estimation, localization, planning, MPC), then learned and embodied-AI policies (VLAs). Hardware should never be the reason an experiment fails, and should never limit what software can try. Every sensor runs at its full useful rate, timestamped and logged (SYS-24). The accepted limits on v1 hardware are listed in `requirements/system.md`.
 
 v1 is tightly integrated; modular hardware is a v2 goal. The car runs on an indoor school floor and is sized to the F1TENTH/Roboracer box (width 238–341 mm, length 454–654 mm), without following their single-motor, power-equivalence or head-to-head rules.
 
@@ -13,14 +13,18 @@ v1 is tightly integrated; modular hardware is a v2 goal. The car runs on an indo
 | Drive | 4× Castle 1010-4400kV, one per wheel, two-stage gearbox, CVDs | ADR-0026 |
 | Motor control | 4× A50S V2.3c (off the shelf, VESC firmware) on the lower deck | ADR-0034 |
 | Steering | Gimbal brushless motor + belt, driven by a moteus-c1 | ADR-0019 |
-| Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard; JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016, ADR-0025 |
+| Compute | Jetson Orin NX 16GB on a fork of Antmicro's baseboard (v1.0: Orin Nano Super developer kit); JetPack 7.2.1, ROS 2 Jazzy | ADR-0010, ADR-0016, ADR-0025, ADR-0046 |
 | Sync and sensor hub | STM32H723 on Zephyr: owns the time base, safety envelope and watchdog | ADR-0011, ADR-0017, ADR-0021, ADR-0034 |
 | Power | 4S LiPo; power board with LV rails, monitoring and e-stop circuit; bus clamp | ADR-0012, `budgets/power-scenarios.md` |
 | Ground link | Team router (GL.iNet Flint 3, 6 GHz), laptop gateway, button hotspot, service port | ADR-0015 |
 
+**Builds (ADR-0046):** this overview describes the full design, v1.1. v1.0 is built first on the Orin Nano developer kit and a UST-20LX, with the stereo pair and a downward frame camera; see [builds](builds.md) for every difference.
+
+**PCB packaging (ADR-0042):** the power and sync functions below share one [motherboard PCB](../hardware/motherboard/README.md); the Jetson carrier remains separate. References to power/sync boards describe those functional sections. The power-sync contract now covers internal PCB signals, with a future two-board split subject to review.
+
 ## Drive
 
-**Corners.** Each corner is a motor and gearbox; we design its knuckle or upright, arms and mounts, and buy the shocks, CVDs and wheels (ADR-0040). Its motor controller sits on the lower deck (ADR-0034), and there's no corner module or corner sensor board (ADR-0006). Wheel encoders and suspension sensors wire directly to the sync board (ADR-0008).
+**Corners.** Each corner is a motor and gearbox; we design its knuckle or upright, arms and mounts, and buy the shocks, CVDs and wheels (ADR-0040). Its motor controller sits on the lower deck (ADR-0034), and there's no corner module or corner sensor MCU (ADR-0006). The vehicle-state sensors sit on our own small boards with no MCU, assembled in house: ten AS5047P angle boards (four wheel, four suspension, two front knuckle), two ISM330DHCXTR IMU boards and five ToF boards (ADR-0045). They wire directly to the sync board (ADR-0008).
 
 **Motor:** [Castle 1010-4400kV](https://www.powerhobby.com/products/castle-creations-060-0098-00-4-pole-sensored-brushless-motor-1010-4400kv), sensored, 2S–4S.
 
@@ -54,9 +58,9 @@ Assumes 4S, about 50,000 rpm loaded and a 100 mm tyre (ADR-0040); a worn tyre is
 **Motor control:** four off-the-shelf A50S V2.3c controllers (35.5 × 21 × 13.8 mm, VESC firmware) on the lower deck, running our build of the vendored VESC firmware (ADR-0033, ADR-0034).
 
 - Commands arrive over one classic CAN bus (1 Mbit/s, ADR-0009) using the stock VESC path.
-- Full telemetry at 1 kHz goes to the sync MCU over one UART per controller, stamped at sampling.
+- Full timestamped telemetry at ≥1 kHz uses four independent **2 Mbit/s 8N1 UARTs** from the A50S controllers to the H723 (ADR-0034). Firmware endpoints, clock alignment and loaded harness margins remain unqualified; see the [UART ICD](icd/controller-telemetry.md) and [readiness review](reviews/a50s-uart-readiness.md).
 - A maximum-eRPM limit in each controller keeps the motors in the range where its control loop is stable.
-- Each corner sends its motor phases and Hall sensor cable to the deck (ICD-corner-connector rev E).
+- Each corner sends its motor phases and Hall sensor cable to the deck (ICD-corner-connector rev F).
 
 ## Steering
 
@@ -68,6 +72,8 @@ A gimbal-style brushless motor drives the steering through a ~4–6:1 belt (zero
 
 ## Power
 
+The [updated EE sizing review](adr/0044-ee-sizing-after-custom-corners.md) uses the current main scenario and reopens dump-resistor sizing. Motor thermal and runtime qualification remain pending.
+
 4S LiPo hardcase, charged off the car at the team's charging station (a separate system; the pack is the interface, ICD-battery-pack).
 
 - **Motor path:** battery → loop key / anti-spark → the power board's switched motor bus (cut by the e-stop) → bus bar or heavy wire (E-45) → an XT30 at each motor controller on the deck, plus the switched steering output. The bus clamp board burns off regen spikes above full-pack voltage.
@@ -77,36 +83,39 @@ A gimbal-style brushless motor drives the steering through a ~4–6:1 belt (zero
   - regulators rated ≥ 30 V with TVS
   - the e-stop circuit
 - **Low battery:** the lowest cell triggers a warning, then a clean Orin shutdown before cutoff (SYS-30). Voltage sag at peak current must never reset anything (SYS-31).
+- **Interfaces / returns:** [power-rails](icd/power-rails.md), [power-sync-stack](icd/power-sync-stack.md) and [carrier-sync](icd/carrier-sync.md) are draft logical contracts. Proposed ADR-0041 records the grounding / isolation review; physical assignments and approvals are pending.
 - **Sizing inputs:** `budgets/power.csv` and `budgets/power-scenarios.md`. The tires limit useful peak current (`budgets/power-scenarios.md`), not the old 120 A figure. Rail sizing is the EE's.
 
 ## Compute and software
 
-- **Orin NX 16GB** on a fork of Antmicro's open baseboard: four 22-pin CSI ports, a trigger connector to the sync board, a fixed compute-rail input, M.2 key M (swappable 4 TB NVMe) and key E (MT7922 Wi-Fi), GbE, and expansion GPIO for the hotspot button. Optional Intel i210/i226 NIC if a PCIe lane is free (ADR-0021).
+- **v1.1: Orin NX 16GB** on a fork of Antmicro's open baseboard: four 22-pin CSI ports, a trigger connector to the sync board, a fixed compute-rail input, M.2 key M (swappable 4 TB NVMe) and key E (MT7922 Wi-Fi), GbE, and expansion GPIO for the hotspot button. Optional Intel i210/i226 NIC if a PCIe lane is free (ADR-0021).
 - **JetPack 7.2.1** (Ubuntu 24.04, kernel 6.8), **ROS 2 Jazzy**, **PREEMPT_RT**. Platform software runs on reserved cores; experiments run in containers with resource limits (ADR-0016, SYS-21).
 - **Layered control:** learned policies send targets to the classical controller. The safety envelope is enforced on the sync MCU (SYS-22).
-- **Bench reference:** the Traxxas car's Orin Nano dev kit takes the NX module, so cameras and software come up there first.
+- **v1.0:** the Orin Nano Super developer kit from the Traxxas car, on its own carrier: two CSI connectors (stereo and the downward B0223), a 9–20 V barrel input, the 40-pin header for PPS and the buttons ([builds](builds.md)). It takes the NX module too, so the NX can come up on it before the carrier is built.
 
 ## Sync and sensing
 
-The sync MCU (STM32H723, Zephyr) owns the car's time base. It timestamps sensors at the pin, triggers the cameras, runs the heartbeat watchdog and safety envelope, and drives two CAN buses (command and steering) and one telemetry UART per motor controller (ADR-0034). µs-critical sensors are timestamped in its clock; the Orin follows in software to ≤ 1 ms (ADR-0021, SYS-07 ≤ 10 µs).
+The sync MCU (STM32H723, Zephyr) owns the car's time base. It timestamps sensors at the pin, triggers the cameras, runs the heartbeat watchdog and safety envelope, and uses classic command CAN, four A50S telemetry UARTs and the separate moteus steering FD link (ADR-0034). µs-critical sensors are timestamped in its clock; the Orin follows in software to ≤ 1 ms (ADR-0021, SYS-07 ≤ 10 µs).
 
 | Sensor | Part | Rate | Connects to |
 | --- | --- | --- | --- |
-| 2D LiDAR | Hokuyo UST-10LX (10 m, 0.25°) | 40 Hz | Ethernet switch |
-| Forward stereo | Arducam AR0234 (global shutter) | Native | CSI 1, triggered |
-| Side/rear cameras | Arducam quad OV9281 | Native | CSI 2, triggered |
-| Forward event camera | Prophesee GenX320 | Continuous | CSI 3, Trigger In |
-| Ground-speed camera | Second GenX320, pointing down, three lighting modes (cross-polarized LED, grazing LED, Class 1 laser speckle) | Continuous | CSI 4, Trigger In (ADR-0014) |
-| IMU at CG | Navigation-grade MEMS (ADIS1650x / SCHA63T class) | ≥ 4 kHz | Sync SPI |
-| IMU, front axle | Consumer grade | ≥ 4 kHz | Sync SPI |
+| 2D LiDAR | Hokuyo UST-10LX (10 m, 0.25°); v1.0: UST-20LX on loan | 40 Hz | Ethernet switch |
+| Forward stereo | Arducam AR0234 (global shutter) | Native | CSI 1, triggered (v1.0: dev kit CAM1) |
+| Side/rear cameras | Arducam quad OV9281 (v1.1) | Native | CSI 2, triggered |
+| Forward event camera | Prophesee GenX320 (v1.1) | Continuous | CSI 3, Trigger In |
+| Ground-speed camera | Second GenX320, pointing down, three lighting modes (cross-polarized LED, grazing LED, Class 1 laser speckle). v1.0: Arducam B0223 OV9281 frame camera and the two LED modes (ADR-0046) | Continuous (v1.0: up to 240 fps) | CSI 4, Trigger In (ADR-0014); v1.0: dev kit CAM0, frame trigger |
+| IMU at CG | ST ISM330DHCXTR (industrial grade) on our IMU board (ADR-0045) | ≥ 4 kHz | Sync SPI + DRDY |
+| IMU, front axle | ST ISM330DHCXTR, same board design (ADR-0045) | ≥ 4 kHz | Sync SPI + DRDY |
 | Wheel encoders ×4 | AS5047 on the wheel output shaft | 2 kHz | Sync SPI |
 | Suspension angle ×4 | AS5047-family, contactless | 2 kHz | Sync SPI |
 | Steering knuckle ×2 | AS5047 | 2 kHz | Sync SPI |
-| Ride height ×5 | ToF (4 corners + 1 for ground-speed scale) | Native | Sync I2C + mux |
-| Cell voltages ×4 | Power-board cell monitor | ≥ 100 Hz | Stacking header |
-| Motor/FET temperature, currents | Controller telemetry | ≥ 1 kHz | UART per controller |
+| Ride height ×5 | ToF on our own boards (4 corners + 1 for ground-speed scale; ADR-0045) | Native | Sync I2C + mux |
+| Cell voltages ×4 | Motherboard cell monitor | ≥ 100 Hz | Internal power/sync signals (ADR-0042) |
+| Motor/FET temperature, currents | Controller telemetry | ≥ 1 kHz | Four 2 Mbit/s UARTs (ADR-0034) |
 
 Latency from sample to the Orin is ≤ 2 ms for sync-board sensors and VESC telemetry (SYS-29, `budgets/latency.csv`).
+
+[Sensor qualification](bom/sensor-candidate-review.md) still needs installed timing, calibration, vibration and slip-estimation evidence. ELPM remains an unselected suspension alternative. [PCB estimate](bom/jlc-pcba-cost-estimate.md) retains the 30% allowance. The [total electrical estimate](bom/total-electrical-cost.md) adds bought hardware and estimated HST.
 
 ## Communication
 
@@ -117,7 +126,7 @@ Wi-Fi is the only wireless link (ADR-0005). The car joins the team's Flint 3 rou
 | Layer | Trigger | Runs on | Behaviour |
 | --- | --- | --- | --- |
 | Heartbeat watchdog | Laptop heartbeat lost (~150 ms); the Orin forwards it, so a hung Orin trips it too | Sync MCU | Rolls ≤ 2 m, then the same brake ramp (SYS-04) |
-| Any-corner stop | One corner silent for 5 ms on its UART or ~60 ms on the command bus (TBC), braking on its own (e-stop or command timeout) or faulted; or the command bus failing | Sync MCU | All four corners brake within 20 ms (SYS-25, ADR-0035) |
+| Any-corner stop | One corner silent for 5 ms on its telemetry link or ~60 ms on the command bus (TBC), braking on its own (e-stop or command timeout) or faulted; or the command bus failing | Sync MCU | All four corners brake within 20 ms (SYS-25, ADR-0035) |
 | Sync MCU silent | No command for 150 ms (TBC) | Each motor controller | Brakes on the e-stop ramp (ADR-0035) |
 | Steering lost | No steering reply for 5 ms (TBC), a steering fault, steering-bus bus-off, or an untrusted steering angle | Sync MCU | All four corners brake within 20 ms (SYS-25, ADR-0038); no drive until steering is healthy |
 | Fault-stop reset | After any SYS-25 stop: the e-stop button on the car pressed past T and released, the power-on checks pass, and the operator re-arms from the laptop | Sync MCU | Drive allowed again, from zero commands, with the envelope back at 3 m/s; some faults need a full restart and an inspection (ADR-0039) |
@@ -126,7 +135,9 @@ Wi-Fi is the only wireless link (ADR-0005). The car joins the team's Flint 3 rou
 
 ## Harness
 
-Every connection locks; every run carries a spare conductor; every wire is labelled with its schematic net name; strain relief at every board entry. JST-GH for signal; the controllers' own connectors (XT30, MR30, Pico-Clasp) on the deck. Twisted pairs for every bus and UART link, routed away from motor phase leads; Hall cables too. Command-bus terminators sit at the sync board and the far end of the trunk.
+The [proposed wiring diagram and cable budget](bom/motherboard-wiring.md) separates remote sensor looms, power, bought A50S controllers and the Jetson carrier. The angle, IMU and ToF boards total seventeen sensor runs / 111 minimum conductors, including seventeen spare conductors (TBC wiring proposal, ADR-0045). All seventeen boards are assembled in house; their 2-layer implementations, connector contacts and the complete motherboard wire total remain TBC/TBD.
+
+Every connection locks; every run carries a spare conductor; every wire is labelled with its schematic net name; strain relief at every board entry. JST-GH for signal; the controllers' own connectors (XT30, MR30, Pico-Clasp) on the deck. Twisted pairs for CAN buses; four A50S UART signal/reference cable runs, routed away from motor phase leads (ADR-0034); Hall cables too. Command-bus terminators sit at the sync board and the far end of the trunk.
 
 ## Mechanical
 

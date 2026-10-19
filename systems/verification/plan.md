@@ -3,7 +3,8 @@
 - **Status:** Draft
 - **Rule:** every system requirement maps to at least one verification activity with a pass criterion. A requirement is "met" only when its activity has passed and the result is recorded (link the log, data or report in the Status column).
 - **Methods:** **A** analysis · **I** inspection · **D** demonstration · **T** test
-- **Funding constraint:** hardware arrives in one order, so everything that can be verified by analysis or simulation (stage S0) is done **before** the order. Bench and vehicle stages follow delivery.
+- **Funding constraint:** hardware arrives with each funded order (v1.0, then v1.1; ADR-0046), so everything that can be verified by analysis or simulation (stage S0) is done **before** each order. Bench and vehicle stages follow delivery.
+- **Builds:** v1.0 verifies every requirement except SYS-08's learned-policy part (LIM-09) and SYS-10 at full speed (LIM-11), which are verified on v1.1.
 
 ## Stages
 
@@ -20,9 +21,9 @@
 
 | Rig | Contents | Used for |
 | --- | --- | --- |
-| **R1 Sync-board HIL** | Sync board + power board on the stacking header; real sensors where cheap (IMUs, AS5047s on hand-turned shafts, ToF over a moving target); a second MCU acting as fake CAN nodes and controller UART links; signal generator; scope; fault injection (pull connectors, short a bus, drop the Ethernet link) | SYS-04, -07, -19, -22, -24, -25, -29, -31, -32 |
+| **R1 Sync-board HIL** | Combined power/sync motherboard (ADR-0042); real sensors where cheap (IMUs, AS5047s on hand-turned shafts, ToF over a moving target); a second MCU acting as fake CAN nodes and four controller UART links; signal generator; scope; fault injection (pull connectors, short a bus, drop the Ethernet link) | SYS-04, -07, -19, -22, -24, -25, -29, -31, -32 |
 | **R2 Motor bench** | One corner (A50S + 1010 + gearbox, ADR-0034) driving a flywheel or brake load; second corner for bus tests; a moteus-c1 on the steering bus (RSK-03); current probe; e-stop button; power board's motor-bus cut; bus clamp | SYS-05, -25, RSK-03, RSK-11, RSK-12, RSK-18 |
-| **R3 CAN-FD harness** | Retired with the drive CAN-FD buses (ADR-0034); `tests/rsk-03-canfd-bench.md` is kept for the record | — |
+| **R3 CAN-FD harness** | Original standalone rig retired by ADR-0034. Steering checks remain on R2; drive UART qualification follows ADR-0034 and `tests/a50s-arrival.md`; see `tests/rsk-03-canfd-bench.md` | SYS-24, RSK-03 |
 | **R4 Power** | Electronic load, bench supply standing in for the pack, 19 V brick, scope with current probe | SYS-14, -30, -31, power scenarios |
 | **R5 Timing and latency** | Scope; LED + photodiode in front of each camera; GPIO toggles timestamped by both the sync MCU and the Orin | SYS-06, -07, -29 |
 | **R6 Network** | Flint 3 router, laptops on Linux/macOS, traffic generator for bulk transfers, packet capture | SYS-11, -26, -27, -28 |
@@ -55,8 +56,8 @@
 | SYS-21 Platform isolation | T | S3 | R8: run the broken experiment container (crash, hang, CPU/GPU/memory/disk hogs) while driving on the stand | Platform keeps driving, logging and can stop | Not started |
 | SYS-22 Safety envelope | T | S2, S3 | R1: send commands beyond each limit, including from a "malicious" experiment | Nothing beyond the limits reaches the actuators; default 3 m/s; limits raisable to the physical maximum | Not started |
 | SYS-23 Command logging | D | S3 | Check logs for operator commands and policy outputs on the sensor time base | Present, same time base | Not started |
-| SYS-24 Full-rate data | A, T | S0, S2 | Bus-load and storage budgets; R1/R2 measured bus load and dropped-sample counts at full rate | Every sensor at native rate; links ≤ 50%, CAN ≤ 70% | Not started |
-| SYS-25 Any-corner stop | T | S2, S3 | R1/R2: unplug one controller's command bus, telemetry link, ESTOP wire, or power mid-run; inject a controller fault; unplug the steering bus, fault the moteus-c1, disconnect a knuckle encoder; try to drive with the steering down | All four corners begin a controlled stop ≤ 20 ms after detection (5 ms of UART silence or ~60 ms without CAN status, TBC; or a corner reporting e-stop, command timeout or a fault; or the steering lost); a single dropped frame never triggers; no drive while the steering is down; the stop stays latched until the e-stop cycle, the checks and a re-arm (ADR-0039) | Not started |
+| SYS-24 Full-rate data | A, T | S0, S2 | Bus / storage budgets, R1/R2 final interfaces at full rate; analyzer / scope / sequence logs | Four independent 2 Mbit/s 8N1 drive UARTs with full ≥1 kHz status each, measured UART/data paths ≤50%; CAN ≤70%; separate steering baseline 1 / 5 Mbit/s BRS (ADR-0034). Correct sample-time alignment and completeness | Not started |
+| SYS-25 Any-corner stop | T | S2, S3 | R1/R2: unplug one controller's command bus, telemetry link, ESTOP wire, or power mid-run; inject a controller fault; unplug the steering bus, fault the moteus-c1, disconnect a knuckle encoder; try to drive with the steering down | All four corners begin a controlled stop ≤ 20 ms after detection (5 ms of telemetry silence or ~60 ms without CAN status, TBC; or a corner reporting e-stop, command timeout or a fault; or the steering lost); a single dropped frame never triggers; no drive while the steering is down; the stop stays latched until the e-stop cycle, the checks and a re-arm (ADR-0039) | Not started |
 | SYS-26 Laptop internet | D | S1 | R6: laptop wired to the router keeps internet; other devices get no gateway | Pass on Linux and macOS | Not started |
 | SYS-27 Reachability | D | S3 | R6: reach the car via router, button hotspot, and service port, each with no outside network | All three paths work | Not started |
 | SYS-28 Car internet | T | S3 | R6: bulk download during teleop; check control-traffic priority and the parked-only rule | No teleop degradation; bulk only while parked | Not started |

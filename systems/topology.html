@@ -99,13 +99,18 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 .c-data { fill: var(--data); } .c-sensor { fill: var(--sensor); } .c-open { fill: var(--open); } .c-ink { fill: var(--ink); } .c-muted { fill: var(--muted); }
 .band { fill: var(--tint); }
 .grid-l { stroke: var(--rule); stroke-width: 1; }
+/* Builds (ADR-0046): v1.1-only parts are faded; v1.0's substitutes are in italics */
+.v11 { opacity: .45; }
+.t10 { fill: var(--muted); font-family: var(--body); font-size: 11.5px; font-style: italic; }
+.legend .v11 { opacity: 1; color: var(--muted); }
+.legend em { font-style: italic; }
 </style>
 
 <div class="wrap">
   <header class="title">
-    <div class="eyebrow">ARC 4WD car · v1 · systems/ · 2026-10-08</div>
+    <div class="eyebrow">ARC 4WD car · builds v1.0 and v1.1 · systems/ · 2026-10-18</div>
     <h1>ARC Car Interface Topology</h1>
-    <p class="lede">Every electrical interface on the v1 car as currently decided (through ADR-0034), centred on the sync MCU board. Dashed items are still open.</p>
+    <p class="lede">Every electrical interface on the v1 car as currently decided (through ADR-0046), centred on the sync MCU. The drawing is v1.1, the full design. v1.0 is built first on the Orin Nano Super developer kit: parts it doesn't fit are faded, and its substitutes are in italics. Dashed items are still open.</p>
   </header>
 
   <section>
@@ -120,10 +125,12 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
         <span><i style="border-color:var(--data)"></i>High-speed data (Ethernet, Wi-Fi, CSI, PCIe)</span>
         <span><i style="border-color:var(--sensor)"></i>Sensor I/O and timing</span>
         <span><i class="dash" style="border-color:var(--open)"></i>Open decision</span>
+        <span style="opacity:.45">▭ Faded: v1.1 only</span>
+        <span><em>v1.0: …</em> v1.0's substitute</span>
       </div>
       <figure>
         <div class="scroll">
-<svg class="wide" viewBox="0 0 1200 830" role="img" aria-label="System topology: the Orin NX handles cameras, Wi-Fi, storage and Ethernet; the sync MCU board reads every vehicle-state sensor, triggers cameras, and commands four A50S motor controllers on the deck over one classic CAN bus and receives their telemetry over one UART each; the power board feeds every controller the ESTOP line and switches their motor bus.">
+<svg class="wide" viewBox="0 0 1200 830" role="img" aria-label="System topology: the Orin (v1.1: Orin NX on the Antmicro-fork carrier; v1.0: the Orin Nano Super developer kit) handles cameras, Wi-Fi, storage and Ethernet; the sync MCU section of the motherboard reads every vehicle-state sensor, triggers cameras, and commands four A50S motor controllers on the deck over one classic CAN bus and receives their telemetry over one UART each; the motherboard's power section feeds every controller the ESTOP line and switches their motor bus.">
   <defs>
     <marker id="ar-data" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-data" d="M0,0 L10,5 L0,10 z"/></marker>
     <marker id="ar-sensor" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="c-sensor" d="M0,0 L10,5 L0,10 z"/></marker>
@@ -136,23 +143,29 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 
   <!-- Camera trigger bus -->
   <polyline class="w w-sensor" points="790,180 790,22 240,22 240,38" marker-end="url(#ar-sensor)"/>
+  <g class="v11">
   <line class="w w-sensor" x1="350" y1="22" x2="350" y2="38" marker-end="url(#ar-sensor)"/>
   <line class="w w-sensor" x1="460" y1="22" x2="460" y2="38" marker-end="url(#ar-sensor)"/>
+  </g>
   <circle class="c-sensor" cx="350" cy="22" r="3"/><circle class="c-sensor" cx="460" cy="22" r="3"/>
   <text class="tn c-sensor" x="560" y="16">HW camera trigger ×4 (+1 spare)</text>
 
   <!-- Cameras -->
   <rect class="bx" x="190" y="40" width="100" height="48" rx="3"/>
   <text class="t" x="240" y="60" text-anchor="middle">Stereo</text><text class="tm" x="240" y="77" text-anchor="middle">AR0234 ×2</text>
+  <g class="v11">
   <rect class="bx" x="300" y="40" width="100" height="48" rx="3"/>
-  <text class="t" x="350" y="60" text-anchor="middle">Quad</text><text class="tm" x="350" y="77" text-anchor="middle">OV9281 ×4</text>
+  <text class="t" x="350" y="60" text-anchor="middle">Quad</text><text class="tm" x="350" y="77" text-anchor="middle">OV9281 ×4 · v1.1</text>
   <rect class="bx" x="410" y="40" width="100" height="48" rx="3"/>
-  <text class="t" x="460" y="60" text-anchor="middle">Event</text><text class="tm" x="460" y="77" text-anchor="middle">GenX320</text>
+  <text class="t" x="460" y="60" text-anchor="middle">Event</text><text class="tm" x="460" y="77" text-anchor="middle">GenX320 · v1.1</text>
+  </g>
 
   <!-- CSI -->
   <line class="w w-data" x1="240" y1="88" x2="240" y2="198" marker-end="url(#ar-data)"/>
+  <g class="v11">
   <line class="w w-data" x1="350" y1="88" x2="350" y2="198" marker-end="url(#ar-data)"/>
   <line class="w w-data" x1="460" y1="88" x2="460" y2="198" marker-end="url(#ar-data)"/>
+  </g>
   <text class="tn c-data" x="295" y="148" text-anchor="middle">CSI-2</text>
 
   <!-- Operator -->
@@ -173,20 +186,24 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 
   <!-- Compute -->
   <rect class="bx-key" x="180" y="200" width="290" height="180" rx="4"/>
-  <text class="tb" x="325" y="248" text-anchor="middle">Jetson Orin NX 16GB</text>
-  <text class="t" x="325" y="266" text-anchor="middle">on Antmicro-fork carrier</text>
-  <text class="tn c-muted" x="325" y="292" text-anchor="middle">CSI 1–3 cameras · CSI 4 ground-speed cam</text>
-  <text class="tn c-muted" x="325" y="308" text-anchor="middle">M.2 E Wi-Fi · M.2 M NVMe · GbE</text>
-  <text class="tn c-muted" x="325" y="324" text-anchor="middle">platform + experiment software</text>
+  <text class="tb" x="325" y="232" text-anchor="middle">Jetson Orin NX 16GB</text>
+  <text class="t" x="325" y="250" text-anchor="middle">on Antmicro-fork carrier</text>
+  <text class="t10" x="325" y="272" text-anchor="middle">v1.0: Orin Nano Super developer kit,</text>
+  <text class="t10" x="325" y="288" text-anchor="middle">8 GB, on its own carrier (P3768)</text>
+  <text class="tn c-muted" x="325" y="312" text-anchor="middle">CSI 1–3 cameras · CSI 4 ground-speed cam</text>
+  <text class="t10" x="325" y="328" text-anchor="middle">v1.0: CAM1 stereo · CAM0 ground speed</text>
+  <text class="tn c-muted" x="325" y="348" text-anchor="middle">M.2 E Wi-Fi · M.2 M NVMe · GbE</text>
+  <text class="tn c-muted" x="325" y="364" text-anchor="middle">platform + experiment software</text>
   <line class="w w-data" x1="270" y1="380" x2="270" y2="408" marker-end="url(#ar-data)"/>
   <text class="tn c-data" x="278" y="398">PCIe</text>
   <rect class="bx" x="195" y="410" width="150" height="40" rx="3"/>
-  <text class="t" x="270" y="427" text-anchor="middle">NVMe SSD</text><text class="tm" x="270" y="442" text-anchor="middle">swappable, 4 TB (TBC)</text>
+  <text class="t" x="270" y="427" text-anchor="middle">NVMe SSD, swappable</text><text class="tm" x="270" y="442" text-anchor="middle">4 TB (TBC) · <tspan class="t10">v1.0: 1 TB</tspan></text>
 
   <!-- LiDAR + switch -->
-  <rect class="bx" x="520" y="190" width="110" height="44" rx="3"/>
-  <text class="t" x="575" y="208" text-anchor="middle">Hokuyo LiDAR</text><text class="tm" x="575" y="224" text-anchor="middle">UST-10LX, 40 Hz</text>
-  <line class="w w-data" x1="575" y1="234" x2="575" y2="282"/>
+  <rect class="bx" x="520" y="186" width="110" height="56" rx="3"/>
+  <text class="t" x="575" y="203" text-anchor="middle">Hokuyo LiDAR</text><text class="tm" x="575" y="218" text-anchor="middle">UST-10LX, 40 Hz</text>
+  <text class="t10" x="575" y="234" text-anchor="middle">v1.0: UST-20LX</text>
+  <line class="w w-data" x1="575" y1="242" x2="575" y2="282"/>
   <text class="tn c-data" x="583" y="262">Eth</text>
   <rect class="bx" x="520" y="282" width="110" height="44" rx="3"/>
   <text class="t" x="575" y="300" text-anchor="middle">Ethernet switch</text><text class="tm" x="575" y="316" text-anchor="middle">+ service port</text>
@@ -199,8 +216,8 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
 
   <!-- Sync MCU board -->
   <rect class="bx-key" x="680" y="180" width="220" height="340" rx="4"/>
-  <text class="tb" x="790" y="206" text-anchor="middle">Sync MCU board</text>
-  <text class="tn c-muted" x="790" y="224" text-anchor="middle">STM32H723 · Zephyr</text>
+  <text class="tb" x="790" y="206" text-anchor="middle">Sync MCU section</text>
+  <text class="tn c-muted" x="790" y="224" text-anchor="middle">motherboard · STM32H723 · Zephyr</text>
   <text class="t" x="696" y="256">Owns the car's time base</text>
   <text class="t" x="696" y="276">Timestamps every input at the pin</text>
   <text class="t" x="696" y="296">Enforces the safety envelope</text>
@@ -238,7 +255,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
     <text class="tn c-sensor" x="930" y="386" text-anchor="middle">I2C+mux</text>
 
     <rect class="bx" x="960" y="420" width="220" height="36" rx="3"/>
-    <text class="t" x="972" y="435">Ground-speed event cam</text><text class="tm" x="972" y="450">data on CSI 4 · 3 light modes</text>
+    <text class="t" x="972" y="435">Ground-speed event cam</text><text class="tm" x="972" y="450">3 light modes · <tspan class="t10">v1.0: B0223, LEDs</tspan></text>
     <line class="w w-sensor" x1="902" y1="438" x2="958" y2="438" marker-end="url(#ar-sensor)"/>
     <text class="tn c-sensor" x="930" y="432" text-anchor="middle">trig·light</text>
 
@@ -268,14 +285,15 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <text class="tn c-uart" x="530" y="562">one link per controller</text>
   <text class="tn c-uart" x="530" y="576">full status at 1 kHz</text>
 
-  <!-- Stacking header -->
+  <!-- One motherboard PCB (ADR-0042): internal nets between the sections -->
   <line class="w-ink" x1="760" y1="520" x2="760" y2="565"/>
   <line class="w-ink" x1="820" y1="520" x2="820" y2="565"/>
-  <text class="tn c-muted" x="790" y="546" text-anchor="middle">header</text>
+  <text class="tn c-muted" x="790" y="540" text-anchor="middle">one PCB</text>
+  <text class="tn c-muted" x="790" y="554" text-anchor="middle">internal</text>
 
-  <!-- Power board -->
+  <!-- Power section -->
   <rect class="bx-key" x="680" y="565" width="240" height="58" rx="4"/>
-  <text class="tb" x="800" y="583" text-anchor="middle">Power board</text>
+  <text class="tb" x="800" y="583" text-anchor="middle">Power section</text>
   <text class="tm" x="800" y="599" text-anchor="middle">rails · fuses · current sense</text>
   <text class="tm" x="800" y="614" text-anchor="middle">wall/battery OR-ing · e-stop circuit</text>
   <line class="w w-power" x1="650" y1="598" x2="678" y2="598" marker-end="url(#ar-power)"/>
@@ -292,17 +310,17 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <rect class="bx" x="20" y="575" width="110" height="46" rx="3"/>
   <text class="t" x="75" y="594" text-anchor="middle">4S LiPo</text><text class="tm" x="75" y="610" text-anchor="middle">peak ~30–35 A</text>
   <line class="w w-power" x1="130" y1="598" x2="160" y2="598" marker-end="url(#ar-power)"/>
-  <text class="tn c-power" x="166" y="602">to power board</text>
+  <text class="tn c-power" x="166" y="602">to power section</text>
   <line class="w w-power" x1="75" y1="621" x2="75" y2="650"/>
   <rect class="bx" x="20" y="650" width="110" height="40" rx="3"/>
   <text class="t" x="75" y="674" text-anchor="middle">Loop key</text>
   <polyline class="w-bus" points="75,690 75,800 1080,800"/>
-  <text class="tn c-power" x="492" y="820">Motor bus 12–16.8 V · switched on the power board, cut at T · XT30 at each controller</text>
+  <text class="tn c-power" x="492" y="820">Motor bus 12–16.8 V · switched on the power section, cut at T · XT30 at each controller</text>
   <rect class="bx" x="220" y="730" width="120" height="40" rx="3"/>
   <text class="t" x="280" y="747" text-anchor="middle">Bus clamp</text><text class="tm" x="280" y="762" text-anchor="middle">dumps regen spikes</text>
   <line class="w w-power" x1="280" y1="770" x2="280" y2="800"/><circle class="c-power" cx="280" cy="800" r="3.5"/>
   <rect class="bx" x="360" y="784" width="120" height="32" rx="3"/>
-  <text class="t" x="420" y="799" text-anchor="middle">Motor-bus switch</text><text class="tm" x="420" y="812" text-anchor="middle">power board</text>
+  <text class="t" x="420" y="799" text-anchor="middle">Motor-bus switch</text><text class="tm" x="420" y="812" text-anchor="middle">power section</text>
 
   <!-- Motor controllers, on the deck (ADR-0034) -->
   <g>
@@ -330,7 +348,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <text class="tn c-safety" x="1060" y="772">ESTOP</text>
 </svg>
         </div>
-        <figcaption>The Orin handles cameras, Wi-Fi, storage and the Ethernet side. The sync board reads every vehicle-state sensor directly, triggers the cameras and sends time sync to the Orin. The four A50S motor controllers sit on the deck (ADR-0034). They get motor power from the power board's switched motor bus, commands from one classic CAN trunk (terminated at the sync board and the far end), and ESTOP from the power board on each one's Servo/PPM pin; each sends its telemetry to the sync board over its own UART. The e-stop first brakes in the controllers' firmware, then the power board opens the motor-bus switch at T. Lines that cross without a dot aren't connected.</figcaption>
+        <figcaption>The Orin handles cameras, Wi-Fi, storage and the Ethernet side. On v1.0 it's the Orin Nano Super developer kit: the stereo pair and a downward B0223 frame camera on its two CSI connectors, PPS and the buttons on its 40-pin header, power through its barrel jack (<code>builds.md</code>). The sync MCU and the power circuits are two sections of one motherboard (ADR-0042). The sync section reads every vehicle-state sensor directly, triggers the cameras and sends time sync to the Orin. The four A50S motor controllers sit on the deck (ADR-0034). They get motor power from the power section's switched motor bus, commands from one classic CAN trunk (terminated at the sync board and the far end), and ESTOP from the power section on each one's Servo/PPM pin; each sends its telemetry to the sync board over its own UART. The e-stop first brakes in the controllers' firmware, then the power section opens the motor-bus switch at T. Lines that cross without a dot aren't connected.</figcaption>
       </figure>
     </div>
   </section>
@@ -338,7 +356,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <section>
     <h2>Sync board I/O</h2>
     <div class="sheet">
-      <p>What the STM32H723 drives, from the BOM tally. Checked against the STM32H723ZG pin-mux on 2026-10-07: it fits, with 37 pins to spare (<code>handoff/electrical.md</code> §2).</p>
+      <p>What the STM32H723 drives, from the BOM tally. The board is the v1.1 board in both builds; v1.0 leaves the quad and forward-event groups unconnected. Checked against the STM32H723ZG pin-mux on 2026-10-07: it fits, with 37 pins to spare (<code>handoff/electrical.md</code> §2).</p>
       <div class="scroll">
       <table>
         <thead><tr><th>Interface</th><th>Users</th><th>Count</th></tr></thead>
@@ -346,10 +364,10 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
           <tr><td>SPI devices</td><td>2 IMUs, 4 wheel encoders, 4 suspension angle sensors, 2 knuckle encoders</td><td class="num">12</td></tr>
           <tr><td>CAN</td><td>Command bus (classic, 4 motor controllers); steering (CAN-FD, on the MCP2518FD or a freed internal FDCAN: the EE's call)</td><td class="num">2</td></tr>
           <tr><td>I2C</td><td>5 ride-height ToF via mux</td><td class="num">1 bus</td></tr>
-          <tr><td>Trigger outputs</td><td>Stereo, quad, forward event (Trigger In), downward event (Trigger In)</td><td class="num">4 + spare</td></tr>
+          <tr><td>Trigger outputs</td><td>Stereo, quad, forward event (Trigger In), downward event (Trigger In); v1.0: stereo and the B0223</td><td class="num">4 + spare</td></tr>
           <tr><td>GPIO</td><td>E-stop status, status LEDs, 3 ground-speed lighting modes</td><td class="num">≥ 5</td></tr>
-          <tr><td>Stacking header</td><td>Power board: battery V/I, rail currents, cell voltages. Open: one I2C bus recommended, analog battery V/I as the fallback (ADR-0022, Proposed)</td><td class="num">1</td></tr>
-          <tr><td>Ethernet</td><td>To the Orin via the switch; PPS line to an Orin GPIO</td><td class="num">1</td></tr>
+          <tr><td>Power section (internal nets, ADR-0042)</td><td>Battery V/I, rail currents, cell voltages. Open: one I2C bus recommended, analog battery V/I as the fallback (ADR-0022, Proposed)</td><td class="num">1</td></tr>
+          <tr><td>Ethernet</td><td>To the Orin via the switch; PPS line to an Orin GPIO (v1.0: the dev kit's 40-pin header)</td><td class="num">1</td></tr>
           <tr><td>UART</td><td>Debug console; telemetry from each motor controller</td><td class="num">5</td></tr>
         </tbody>
       </table>
@@ -362,7 +380,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
     <div class="sheet">
       <figure>
         <div class="scroll">
-<svg class="wide" viewBox="0 0 980 230" role="img" aria-label="Stop timelines at 9 metres per second: the e-stop begins its brake ramp immediately and stops in about 1.9 seconds, then the power board cuts the motor bus at the delay T, 2.4 seconds (to be confirmed); a heartbeat loss rolls at most 150 milliseconds, about 1.4 metres, before the same brake ramp starts.">
+<svg class="wide" viewBox="0 0 980 230" role="img" aria-label="Stop timelines at 9 metres per second: the e-stop begins its brake ramp immediately and stops in about 1.9 seconds, then the power section cuts the motor bus at the delay T, 2.4 seconds (to be confirmed); a heartbeat loss rolls at most 150 milliseconds, about 1.4 metres, before the same brake ramp starts.">
   <!-- axis: x = 180 + t*300 -->
   <line class="grid-l" x1="180" y1="40" x2="180" y2="196"/>
   <line class="grid-l" x1="330.0" y1="40" x2="330.0" y2="196"/>
@@ -387,7 +405,7 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
   <line class="w w-safety" x1="742.5" y1="56" x2="742.5" y2="104"/>
   <text class="tn c-safety" x="749.5" y="60">stopped ≈ 1.9 s</text>
   <line class="w w-open" x1="900.0" y1="68" x2="900.0" y2="110"/>
-  <text class="tn c-power" x="906.0" y="122" text-anchor="end">power board cuts the motor bus at T (2.4 s, TBC)</text>
+  <text class="tn c-power" x="906.0" y="122" text-anchor="end">power section cuts the motor bus at T (2.4 s, TBC)</text>
 
   <!-- Lane 2: heartbeat -->
   <text class="tb" x="16" y="160">Heartbeat lost</text>
@@ -414,7 +432,8 @@ code, .mono { font-family: var(--mono); font-size: 13px; }
         <li><strong>T</strong>, the motor-bus cut delay (TBC), and the brake values, on the R2 motor bench (ADR-0012).</li>
         <li><strong>Steering bus</strong>: the MCP2518FD or a freed internal FDCAN (the EE's call, ADR-0034).</li>
         <li><strong>Motor controllers on the deck</strong>: placement and airflow wait on the CAD model.</li>
-        <li><strong>GenX320 modules</strong>: Jetson CSI fit, a JetPack 7.2 driver, Trigger In broken out (RSK-01).</li>
+        <li><strong>GenX320 modules</strong> (v1.1): Jetson CSI fit, a JetPack 7.2 driver, Trigger In broken out (RSK-01).</li>
+        <li><strong>v1.0 developer kit</strong>: the signal that confirms the Orin has halted, whether it powers on with the compute rail, and access to swap its SSD (<code>builds.md</code>).</li>
         <li><strong>Optional i210/i226 NIC</strong> on the carrier: recommended not fitted (ADR-0023, Proposed).</li>
         <li><strong>Floor check</strong> (optional): phone test of the school floor for the ground-speed camera.</li>
       </ul>

@@ -1,37 +1,47 @@
-group,item,qty,low_usd,high_usd,source,notes
-compute,Jetson Orin NX 16GB module,1,950,1100,"NVIDIA 1KU list $899 (Jul 2026); single units cost more",ADR-0010
-compute,Carrier board (Antmicro fork) fab + assembly + parts,1 build (several boards),500,1200,estimate,high-speed CSI layout; small-batch assembly
-compute,NVMe SSD 4 TB swappable,1,250,450,estimate,
-compute,Wi-Fi card MT7922 + antennas,1,25,50,estimate,ADR-0015
-compute,Cooling (heatsink + fan),1,30,60,estimate,
-compute,Ethernet switch (>= 5 ports; unmanaged),1,40,150,estimate,ADR-0021
-perception,Arducam AR0234 stereo kit,1,260,260,"Arducam list $259.99",
-perception,Arducam quad OV9281 kit,1,300,450,estimate,
-perception,Prophesee GenX320 (forward + ground speed),2,600,800,"OpenMV module $300-400 each; Jetson-ready version needs a quote",ADR-0014
-perception,Hokuyo UST-10LX 2D LiDAR,1,1600,2200,estimate,largest single item; sourcing is RSK-10
-perception,Ground-speed lighting (LED rings + Class 1 VCSEL module + polarizers + lens),1,50,100,estimate,ADR-0014
-state,IMUs (consumer grade),2,20,40,estimate,baseline
-state,AS5047 encoders + magnets + breakouts (4 wheel + 2 steering knuckles),6,120,180,estimate,
-state,Suspension potentiometers,4,40,80,estimate,baseline
-state,Ride-height ToF sensors,5,50,125,estimate,baseline
-drive,Castle 1010-4400kV sensored motors,4,400,520,estimate,
-drive,A50S V2.3c motor controllers with heatsinks (4 corners + 2 spares),6,810,1000,estimate,"£70 each + £30 heatsink (Triforce product page, 2026-10-07); ~1.35 USD/GBP TBC; plus UK shipping and import duty (ADR-0034)"
-drive,Gearboxes (steel gears) + bearings + CVDs,4 corners,400,700,estimate,
-steering,moteus-c1 controller,1,69,69,"mjbots list $69",ADR-0019
-steering,Steering actuator mechanics (gimbal motor + belt + pulleys + mount),1,80,200,estimate,ADR-0019
-power,Central power board,1 build,200,500,estimate,
-sync,Sync MCU board (STM32H723 + PHY + transceivers),1 build,200,500,estimate,
-power,Bus clamp board,1,50,100,estimate,
-power,4S LiPo hardcase packs,3-4,250,450,estimate,charging station is a separate system
-power,"Harness (JST-GH, XT30, MR30 and Pico-Clasp connectors, wire, crimp tools)",1,150,350,estimate,
-power,E-stop button + loop key + misc,1,50,100,estimate,
-chassis,Machined aluminium parts (decks + mounts + bearing plates),1,300,1000,estimate,CNC service
-chassis,Carbon fibre plates,1,150,400,estimate,
-chassis,Printed parts (CF nylon etc.),1,100,300,estimate,
-chassis,Suspension + steering parts + wheels/tyres (off-the-shelf 1/10),1,200,500,estimate,
-chassis,Fasteners + hardware,1,50,100,estimate,
-ground,Team router GL.iNet Flint 3 + cables,1,240,260,"GL.iNet list $209.99",ADR-0015
-ground,NUCLEO-H723ZG sync MCU development boards (G-04),2,60,70,"Future Electronics $30.45 each (2026-10-08); stock varies",SQ-5
-ground,3.3 V CAN transceiver breakouts + 120 ohm terminators (G-05),2,5,15,estimate,SQ-5
-state,Navigation-grade CG IMU (ADIS1650x / Murata SCHA63T class) - delta over consumer,1,100,600,estimate,decided 2026-10-03
-state,Magnetic suspension angle sensors instead of pots - delta,4,0,100,estimate,decided 2026-10-03
+group,item,qty,low_usd,high_usd,source,notes,build
+compute,Jetson Orin NX 16GB module,1,1199.99,1199.99,Waveshare SKU 24056 (2026-10-13); NVIDIA 1KU list $899,E-01; ADR-0010,v1.1
+compute,Orin Nano 8 GB developer kit (module + carrier + cooler),1,0,0,On loan from the team's existing car,E-01 / E-02 / E-03 in v1.0; ADR-0046,v1.0
+compute,Carrier board (Antmicro fork) fab + assembly + parts,1 installed; 2 JLC assembled; 5 bare,447.65,617.65,jlc-pcba-cost.csv (2026-10-12),E-02; ADR-0025; before 30%; excludes the NX and cooling,v1.1
+compute,NX cooler (heatsink + fan),1,24.9,24.9,Seeed SKU 100021109,E-03,v1.1
+compute,NVMe SSD 4 TB swappable,1,250,450,estimate,E-04,v1.1
+compute,"NVMe SSD 1 TB swappable (DRAM, good sustained writes)",1,105.11,175.18,"estimate, CAD 150-250",E-04 in v1.0; ADR-0046,v1.0
+compute,Wi-Fi card MT7922 (RZ616) + antennas,1,30.13,30.13,Framework Canada CAD $24 + $19 (2026-10-13),E-05; ADR-0015,both
+compute,Ethernet switch (>= 5 ports; unmanaged),1,16.11,16.11,"TP-Link TL-SG105, Canada Computers CAD $22.99",E-06; ADR-0021,both
+perception,Arducam AR0234 stereo kit,1,259.99,259.99,Arducam list $259.99,E-11,both
+perception,Arducam quad OV9281 kit,1,244.99,244.99,Arducam B0267 list $244.99,E-12,v1.1
+perception,Prophesee GenX320 (forward + ground speed),2,600,800,OpenMV module $300-400 each; Jetson-ready version needs a quote,E-13 / E-25; ADR-0014,v1.1
+perception,Arducam B0223 OV9281 MIPI (downward ground speed),1,51.99,51.99,Arducam list $51.99,E-25 in v1.0; ADR-0046,v1.0
+perception,Hokuyo UST-10LX 2D LiDAR,1,1200,1200,Acroname new unit (2026-10-13),E-10; RSK-10,v1.1
+perception,Hokuyo UST-20LX 2D LiDAR,1,0,0,On loan from the team's existing car,E-10 in v1.0; ADR-0046,v1.0
+perception,Ground-speed LEDs + polarizer film + lens/driver,1,57.85,87.85,Adafruit 754 $6.95; Edmund 86-178 2 x $17.95; optics/driver allowance $15-45,E-29,both
+perception,Class 1 VCSEL speckle module,1,TBD,TBD,Quote needed (Brightlaser VM-0850F candidate),E-29,v1.1
+state,IMUs (ISM330DHCXTR on our boards),2,0,0,Included in the sensor PCB batch row,E-20 / E-21; ADR-0045,both
+state,AS5047P angle boards (4 wheel + 4 suspension + 2 knuckle),10,0,0,Included in the sensor PCB batch row,E-22 / E-23 / E-24; ADR-0045,both
+state,Ride-height ToF boards (4 corners + 1 at the ground-speed camera),5,0,0,Included in the sensor PCB batch row,E-26; ADR-0007; ADR-0045,both
+state,"Sensor PCB batch: 10 angle + 2 IMU + 5 ToF, all in house",17 populated; 20 bare,122.58,176.18,jlc-pcba-cost.csv (2026-10-12),"ADR-0045; loose chips and support parts, bare PCBs and shared consumables; before 30%; magnets excluded",both
+state,Encoder magnets (K&J D42DIA),10,4.6,4.6,K&J Magnetics $0.46 each,E-22 / E-23 / E-24,both
+state,Loose sensor component shipping,1,20,40,Planning allowance (2026-10-12),Before 30%,both
+drive,Castle 1010-4400kV sensored motors,4,399.8,399.8,GalliMods $99.95 each (2026-10-13; one in stock),E-51; confirm stock for four,both
+drive,Motor temperature NTC fallback,4,5,10,allowance,E-28,both
+drive,A50S V2.3c motor controllers with heatsinks (4 corners + 2 spares),6,793.74,793.74,Triforce £100 each incl. heatsink (2026-10-13); plus UK shipping and import duty,E-50; ADR-0034,both
+drive,Gearboxes (steel gears) + bearings + CVDs,4 corners,400,700,estimate,,both
+steering,moteus-c1 controller,1,69,69,mjbots list $69,E-31; ADR-0019,both
+steering,Steering motor mj5208 + belt + pulleys + mount,1,104,164,mjbots mj5208 $74; belt/pulleys/mount allowance $30-90,E-31; ADR-0019,both
+power,Combined power/sync motherboard fab + assembly + parts,1 installed; 2 JLC assembled; 5 bare,541.85,791.85,jlc-pcba-cost.csv (2026-10-12),E-30 / E-41 / E-46; ADR-0042; before 30%,both
+power,Optional separate bus-clamp PCB,1 optional; 2 JLC assembled; 5 bare,65,115,jlc-pcba-cost.csv (2026-10-12),E-43; omit if integrated; before 30%,both
+power,Dump resistors + heatsink,1,52.55,87.59,Ohmite HS100 CAD $22.98 each; allowance CAD 75-125,E-43,both
+power,4S LiPo hardcase packs (Gens ace 5300 mAh),3-4,287.97,383.96,Gens ace $95.99 each,E-40; charging station is a separate system,both
+power,"Harness (JST-GH, XT30, MR30 and Pico-Clasp connectors, wire, crimp tools)",1,145.05,345.05,allowance,E-45,both
+power,"E-stop button, loop key, hotspot button, status LEDs, panel cable",1,31.81,31.81,"RobotShop, Adrenaline Hobby, Adafruit listings (2026-10-13)",E-08 / E-09 / E-32 / E-33 / E-42,both
+power,JLC PCB/PCBA shipping (v1.0 order),1,80,150,Planning allowance (2026-10-12),Before 30%,v1.0
+power,JLC PCB/PCBA shipping (v1.1 order),1,80,150,Planning allowance,Before 30%,v1.1
+shipping,Bought-hardware shipping (v1.0 order),1,80,200,Planning allowance,Import duty and brokerage not included,v1.0
+shipping,Bought-hardware shipping (v1.1 order),1,80,200,Planning allowance,Import duty and brokerage not included,v1.1
+chassis,Machined aluminium parts (decks + mounts + bearing plates),1,300,1000,estimate,CNC service,both
+chassis,Carbon fibre plates,1,150,400,estimate,,both
+chassis,Printed parts (CF nylon etc.),1,100,300,estimate,,both
+chassis,Suspension + steering parts + wheels/tyres (off-the-shelf 1/10),1,200,500,estimate,,both
+chassis,Fasteners + hardware,1,50,100,estimate,,both
+ground,Team router GL.iNet Flint 3 + cables,1,240,260,GL.iNet list $209.99,ADR-0015,v1.0
+ground,NUCLEO-H723ZG sync MCU development boards (G-04),2,60,70,Future Electronics $30.45 each (2026-10-08); stock varies,SQ-5,v1.0
+ground,3.3 V CAN transceiver breakouts + 120 ohm terminators (G-05),2,5,15,estimate,SQ-5,v1.0

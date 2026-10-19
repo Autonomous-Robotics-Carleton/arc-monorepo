@@ -1,14 +1,15 @@
 # hardware
 
-Board designs and mechanical exports. One folder per board, added when its design starts; none has started yet, so `mechanical/` is the only folder so far.
+Board designs and mechanical exports. One folder per board, added when its design starts. [Motherboard](motherboard/README.md) contains the combined power/sync design plan; [Orin carrier](orin-carrier/README.md) contains the pinned Antmicro CAD sources and the Altium conversion status; `mechanical/` holds mechanical exports.
 
 | Board | Handoff section |
 | --- | --- |
-| Power board (+ e-stop circuit) and bus clamp board | `systems/handoff/electrical.md` §1 |
-| Sync MCU board | §2 |
+| [Motherboard](motherboard/README.md) — one PCB for power (+ e-stop) and sync MCU | `systems/handoff/electrical.md` §1–2; ADR-0042 |
+| Bus clamp assembly — PCB placement TBD | §1 |
 | Motor controllers | §3: off-the-shelf A50S, so no board here (ADR-0034) |
-| Orin carrier (fork of Antmicro's baseboard) | §4 |
-| Harness | §5 |
+| [Orin carrier](orin-carrier/README.md) (fork of Antmicro's baseboard) | §4 |
+| [Remote sensor PCBs](sensor-boards/README.md) — custom angle, IMU and height/scale designs; layers TBC | §2 / §5; ADR-0045; no corner MCU |
+| Harness | §5; [wiring/count schedule](../systems/bom/motherboard-wiring.md) |
 
 Mechanical CAD lives in Fusion. `mechanical/` here holds STEP and drawing exports, committed per release.
 

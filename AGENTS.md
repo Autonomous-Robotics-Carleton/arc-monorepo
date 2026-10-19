@@ -9,14 +9,14 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | Path | What | Format |
 | --- | --- | --- |
 | `systems/` | **Source of truth for the car**: requirements, decisions (ADRs), interfaces (ICDs), budgets, risks, BOM, verification. Read [`systems/README.md`](systems/README.md) first | Markdown + CSV |
-| `ros/` | ROS 2 Jazzy workspace for the Orin NX: the car interface, a backend per target (Gazebo, Webots, gym, replay, car) and `arc_bringup` (`target:=`, `sim:=`, `sensors:=`) | colcon |
+| `ros/` | ROS 2 Jazzy workspace for the car's Orin (Orin Nano dev kit on v1.0, Orin NX on v1.1): the car interface, a backend per target (Gazebo, Webots, gym, replay, car) and `arc_bringup` (`target:=`, `sim:=`, `sensors:=`) | colcon |
 | `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west, make, CMake |
 | `ground-station/` | The operator's app, run natively on a laptop: `server.py` and `helper.py` (Python) and a plain HTML/JS page. Contracts in `ground-station/protocol.md` | Python, HTML |
 | `simulator/` | Gazebo simulator in Docker, standing in for the car; `run.sh --bridge` serves the ground station | Docker, ROS 2 |
 | `experiments/` | Team experiments and their template (scaffold) | |
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
 | `hardware/` | Board designs and mechanical exports (no boards started yet) | |
-| `platform/` | Jetson image and services; `dev-kit/` has Orin Nano bench notes | |
+| `platform/` | Jetson image and services; `dev-kit/` has notes for the Orin Nano dev kit (v1.0's computer) | |
 | `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, the firmware-in-the-loop test | Node, Bash |
 | `libs/systems-model/` | Parser for `systems/`: IDs, definitions, references, ADRs, checks | TypeScript |
 | `apps/docs/` | Docs site (Fumadocs on Next.js), docs.arcarleton.ca | MDX |

@@ -34,7 +34,7 @@ const carSidebar: Record<string, { title: string; pages?: string[] }> = {
   car: {
     title: 'The car',
     pages: [
-      'index', 'topology', '...requirements', '...verification', 'adr', 'icd', 'budgets',
+      'index', 'builds', 'topology', '...requirements', '...verification', 'adr', 'icd', 'budgets',
       '...bom', 'risks', 'tests', '...mechanical', 'software', '...handoff', '...reviews', '...',
     ],
   },

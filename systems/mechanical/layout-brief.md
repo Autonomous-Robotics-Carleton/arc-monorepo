@@ -25,6 +25,8 @@
 
 Model every component as a box first. TBD: needs a datasheet or drawing. TBC: from a vendor listing, or standing in for a part not yet chosen; check it against the vendor's CAD. Sources are below the table.
 
+**Sensor boards (ADR-0045):** ten angle (four wheel, four suspension, two front knuckle), two IMU and five ToF boards, all our own and assembled in house. Their assembled outlines, connectors and mounts remain TBD.
+
 | Component | Qty | Envelope (mm) | Mass (g) | Placement constraint |
 | --- | --- | --- | --- | --- |
 | 4S LiPo hardcase (~5,000 mAh; E-40 not chosen) | 1 | 138 × 47 × 40–50 (TBC, two makers' packs) | 495–589 (TBC) | **Placed first:** low, central, quick swap; bay sized for the 50 mm pack |
@@ -32,18 +34,19 @@ Model every component as a box first. TBD: needs a datasheet or drawing. TBC: fr
 | Gearbox (2 stages) + CVD | 4 | TBD from the CAD. Fixed by the gears: stage-1 shafts 20 mm apart; stage-2 shafts 33 × module apart; largest gears Ø34 (66 T stage-1 spur) and Ø56 × module (54 T) | TBD | Stage 1 swappable (80 teeth total, mod 0.5); stage 2 ~12/54 steel, module TBD (sized for the output torque); a 12 T pinion needs profile shift to avoid undercut; precise bearing bores; the output takes Arrma's steel diff outdrive (AR310439, ADR-0040); wheel-encoder magnet pocket |
 | Motor controller, A50S V2.3c with heatsink (ADR-0034) | 4 | Board 35.5 × 21 × 13.8; heatsink case from Triforce's 3D models | 30 with the heatsink | On the lower deck, with airflow (sized once the deck is modelled); XT30, MR30, Pico-Clasp and micro-USB accessible |
 | Steering actuator (gimbal motor + belt + moteus-c1 38 × 38 × 9) | 1 | TBD | TBD | Front, near the steering linkage; fits beside the staggered front motors |
-| Orin NX + heatsink/fan (E-03) on the carrier | 1 | Carrier 120 × 60 × 36 with the module; the heatsink adds 17–30 (TBC, E-03 not chosen) | TBD | Real airflow path; NVMe reachable for swapping |
-| Sync board + power board (stacked) | 1 | TBD | TBD | Close to the motor controllers on the deck (CAN and UART runs) and the battery; e-stop and service connectors reachable |
+| Orin NX + heatsink/fan (E-03) on the carrier (v1.1) | 1 | Carrier 120 × 60 × 36 with the module; the heatsink adds 17–30 (TBC, E-03 not chosen) | TBD | Real airflow path; NVMe reachable for swapping |
+| Orin Nano Super developer kit with its cooler (v1.0, ADR-0046) | 1 | ~100 × 79 × 21 (TBC; measure our kit, ADR-0043) | TBD | Same bay as the v1.1 assembly; plug clearance on the port edge (barrel jack, USB-A, Ethernet) with strain relief (RSK-23); cable access to the 40-pin header and both CSI connectors; SSD on the underside reachable for swapping (TBC) |
+| Combined power/sync motherboard — one PCB (ADR-0042) | 1 | TBD | TBD | Close to the motor controllers on the deck (classic commands, four UART runs and separate steering FD; mapping TBC) and the battery; e-stop and service connectors reachable |
 | Bus clamp board + resistor | 1 | TBD | TBD | On the motor bus; resistor needs airflow or a heatsink |
 | Ethernet switch | 1 | TBD | TBD | Near the Orin and sync board |
-| Hokuyo UST-10LX | 1 | 50 × 50 × 70 | 130 without cable | High, clear 270°+ view, crash guard |
+| Hokuyo UST-10LX (v1.0: the UST-20LX, same body; ADR-0046) | 1 | 50 × 50 × 70 | 130 without cable | High, clear 270°+ view, crash guard |
 | Stereo AR0234 bar | 1 | Two 40 × 40 boards (TBC); bar length = baseline, TBD | TBD | Front, rigid, forward view |
 | Quad OV9281 cameras | 4 | 40 × 40 board each (TBC) | TBD | Sides and rear on the deck grid |
-| Arducam Camarray HAT (one per kit; the cameras need it) | 2 | 65 × 56 (TBC) | TBD | Near a carrier CSI port, within ribbon reach of its cameras |
+| Arducam Camarray HAT (one per kit; the cameras need it) | 2 (v1.0: 1, the stereo kit's) | 65 × 56 (TBC) | TBD | Near a carrier CSI port, within ribbon reach of its cameras |
 | Forward GenX320 | 1 | TBD: no Jetson module drawing found; ask Prophesee | TBD | Front, forward view |
-| Downward GenX320 + lighting + shroud + ToF | 1 | TBD | TBD | Under the chassis, floor window; outside the aero-sealed area or sealed itself |
-| IMU at CG (navigation grade) | 1 | TBD (part not chosen; an ADIS1650x is 15 × 15 × 6) | TBD | At the CG, vibration-isolated |
-| IMU front axle | 1 | small | — | Near the front axle, vibration-isolated |
+| Downward GenX320 + lighting + shroud + ToF (v1.0: Arducam B0223 OV9281 and the LEDs, no laser module; ADR-0046) | 1 | TBD | TBD | Under the chassis, floor window; outside the aero-sealed area or sealed itself; the mount takes both cameras |
+| IMU at CG (ISM330DHCXTR, ADR-0045) | 1 | IC: 2.5 × 3.0 × 0.83 typical; carrier/mount envelope TBD | TBD | At the CG, vibration-isolated |
+| IMU front axle (ISM330DHCXTR, ADR-0045) | 1 | Same IC/carrier design; carrier/mount envelope TBD | TBD | Near the front axle, vibration-isolated |
 | Ride-height ToF | 4 | small | — | Underside at each corner; minimum range ≤ distance to floor at full compression |
 | Suspension angle sensors (AS5047) | 4 | small | — | At each suspension pivot |
 | Knuckle encoders (AS5047) | 2 | small | — | On both front knuckles |
@@ -66,19 +69,20 @@ Sources for the envelopes (checked 2026-10-09):
 - **Battery examples:**
   - [Spektrum SPMX50004S100H5](https://store.hobbyetc.com/parts/view/128215)
   - [Gens Ace GEA50004S50D](https://horizonhobby.com/product/14.8v-5000mah-4s-50c-lipo-battery-deans/GEA50004S50D.html)
-- **ADIS1650x:** [ADI product page](https://analog.com/en/products/ADIS16505-1.html) (package), [ADIS16505 breakout](https://it.farnell.com/en-IT/analog-devices/adis16505-2-pcbz/breakout-board-mems-imu/dp/4030173)
+- **Both IMUs — ISM330DHCXTR:** [ST datasheet](https://www.st.com/resource/en/datasheet/ism330dhcx.pdf); bare IC dimensions are not the assembled carrier/mount envelope (ADR-0045).
 
 ## Layout order
 
 1. **Size box and wheels:** pick a wheelbase and track that give ≥ 454 mm overall length and fit the width box.
 2. **Battery bay:** low and central.
 3. **Corners:** staggered motors, gearboxes, CVDs, wheel encoders. Check the front at full steering lock and full bump with the steering actuator in place.
-4. **Lower deck:** the four motor controllers, power and sync stack, bus clamp.
+4. **Lower deck:** the four motor controllers, one combined power/sync motherboard, bus clamp.
 5. **Underfloor:** aero volume, ground-speed window and shroud, ToF sensors, the dead-wheel pod's reserved space.
-6. **Upper deck:** hole grid; compute bay with airflow; IMU at the CG.
-7. **Sensor mounts:** LiDAR height and crash guard, stereo bar, side/rear cameras, forward event camera, antennas.
-8. **Access:** battery swap, NVMe swap, corner swap, buttons and ports.
-9. **First CG and mass estimate.**
+6. **Upper deck:** hole grid; compute bay with airflow, sized for both the v1.0 developer kit and the v1.1 Antmicro assembly with the NX cooler (ADR-0043, ADR-0046); IMU at the CG.
+7. **v1.1 mounts kept in v1.0:** the quad side/rear cameras and the forward event camera aren't fitted in v1.0 (ADR-0046), but their mounts and sightlines are part of the first build.
+8. **Sensor mounts:** LiDAR height and crash guard, stereo bar, side/rear cameras, forward event camera, antennas.
+9. **Access:** battery swap, NVMe swap, corner swap, buttons and ports.
+10. **First CG and mass estimate.**
 
 ## First decisions
 

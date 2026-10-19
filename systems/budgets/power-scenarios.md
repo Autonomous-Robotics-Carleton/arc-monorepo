@@ -37,12 +37,14 @@
 - Per-rail fuse, switch and current sense; battery voltage and current monitoring; all logged (SYS-19).
 - Wall/battery ideal-diode OR-ing with no reboot on handover (SYS-14); wall feeds LV only.
 - Every regulator rated ≥ 30 V input, with TVS (RSK-06). Reverse-polarity protection.
-- E-stop circuit sources ESTOP to the four motor controllers (ADR-0012, ICD-corner-connector rev E), and after the delay T (TBC 2.4 s, after the ~1.9 s stop) switches off the motor bus to them (ADR-0034); the switched steering output goes off at T + ~1 s (ADR-0019).
+- E-stop circuit sources ESTOP to the four motor controllers (ADR-0012, ICD-corner-connector rev F), and after the delay T (TBC 2.4 s, after the ~1.9 s stop) switches off the motor bus to them (ADR-0034); the switched steering output goes off at T + ~1 s (ADR-0019).
 - Aero fan, when it exists, comes off the motor bus with its own controller and fuse (SYS-15).
+
+**EE reconciliation (ADR-0044):** these are scenario inputs, not released component ratings. Recheck the Castle 1010's kV, pole count, current/gearing and runtime against them. The inherited resistor pair is not qualified for the revised upper regen estimate.
 
 ## Still needed from others
 
 - Mass and CG (SYS-16) to replace the 4–5 kg guess.
 - Steering motor peak current (from the actuator design).
-- Datasheet currents for the Hokuyo, cameras and switch.
+- Actual camera/switch demand and selected supply rails; the Hokuyo current limits are now recorded in E-10. Recompute the LV load table after the carrier, UART interfaces and sensor supplies are selected.
 - Aero fan power (capstone).

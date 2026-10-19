@@ -12,7 +12,7 @@ The car is a 1/10-scale 4WD **autonomy research platform**: a sandbox where the 
 3. **Hardware is never the reason an experiment fails.** When something doesn't work, the cause must be the software under test. The hardware has to be reliable, and any fault it does have must be detected and logged so it can be ruled out.
 4. **Sensors are already there.** The car carries a broad sensor suite, so a new idea needs code, not a hardware build. The sandbox is the software. The hardware is tightly integrated and doesn't need to be easy to change; modular hardware is a v2 goal.
 
-Known first users (from `architecture.md`, TBC): MPC research, head-to-head racing against a Traxxas Slash 4x4, and the active-aero capstone.
+Known first users (from `architecture.md`, TBC): MPC research and head-to-head racing against a Traxxas Slash 4x4. An active-aero capstone is an idea, not started, for another car built from this design; SYS-15 keeps room for it.
 
 ### What this means for the architecture
 
@@ -46,7 +46,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-12 | LiDAR and cameras survive a frontal impact at `TBD` m/s with no damage | Testing will crash the car | T | Draft |
 | SYS-13 | Swapping one corner (motor, gearbox; the motor controller stays on the deck, ADR-0034) takes ≤ `TBD` min, with no code changes (config only: the controller loads that motor's saved configuration) | Modularity, serviceability | D | Draft |
 | SYS-14 | Low-voltage systems run from wall power or battery, switching over without reboot | Bench work without cycling LiPos | T | Draft |
-| SYS-15 | Reserve underfloor volume `TBD` and power `TBD` W for active aero | Active-aero capstone (known user) | I + A | Draft |
+| SYS-15 | Reserve underfloor volume `TBD` and power `TBD` W for active aero | A possible active-aero capstone on a car built from this design | I + A | Draft |
 | SYS-16 | Mass and CG are not limited; they are tracked (mass budget, CG estimate) for handling, power and braking estimates | Mass isn't a design driver for v1 | A then I | Draft |
 | SYS-17 | No fixed cost cap: funding is approved per request, so every purchase request is justified from `budgets/cost.csv` | How the team's funding works | A | Draft |
 | SYS-18 | Goal: zero hardware- or firmware-caused failures. Every such failure is logged, root-caused and fixed (FRACAS). Acceptance for v1: ≥ 10 h of test runs with zero hardware- or firmware-caused failures | Mission 3 | T | Draft |
@@ -64,7 +64,7 @@ Known first users (from `architecture.md`, TBC): MPC research, head-to-head raci
 | SYS-30 | On low battery, judged on the lowest cell (SYS-32), the car warns, then shuts the Orin down cleanly before the pack reaches its low-voltage cutoff; the NVMe never loses power mid-write | Protect logs and the filesystem (SYS-09) | T | Draft |
 | SYS-31 | Battery voltage sag at peak current never resets the Orin, the sync board or any sensor | A brownout must not look like a software failure (mission 3) | T | Draft |
 | SYS-32 | Every cell voltage in the pack is measured, timestamped and logged at ≥ 100 Hz (TBC) to ±10 mV, without draining the pack when the car is off | Catch a weak or sagging cell before it looks like a random brownout (mission 3) | T | Draft |
-| SYS-33 | Every software component (sync MCU firmware, VESC firmware, platform software) builds and runs from the same source on three kinds of target: simulation, off-the-shelf development hardware, and the car's own hardware. Target-specific code is limited to board configuration and drivers (ADR-0028) | Hardware arrives in one order, so software is written and tested before it exists; experiments move between simulation and the car without changes (mission 4) | D + T | Draft |
+| SYS-33 | Every software component (sync MCU firmware, VESC firmware, platform software) builds and runs from the same source on three kinds of target: simulation, off-the-shelf development hardware, and the car's own hardware. Target-specific code is limited to board configuration and drivers (ADR-0028) | Hardware arrives with each funded order (ADR-0046), so software is written and tested before it exists; experiments move between simulation and the car without changes (mission 4) | D + T | Draft |
 
 ## Accepted limits
 
@@ -80,6 +80,9 @@ Places where v1 hardware deliberately limits what software can do. Each was chos
 | LIM-06 | The sync MCU is a single point of failure: if it dies, data stops, steering holds, and the VESCs time out and brake | Fails safe; redundancy isn't worth the complexity in v1 | ADR-0017, ADR-0019 | If S5 shows sync-MCU failures |
 | LIM-07 | Wheel forces and tire temperature aren't measured directly (forces are estimated from suspension angle × spring rate and motor current; tire temperature dropped). The A50S's ±~165 A current full scale makes the motor-current signal coarse at the currents in `budgets/power-scenarios.md` (ADR-0034) | No requirement needed them in v1 | ADR-0006, ADR-0034 | If vehicle-dynamics research needs them |
 | LIM-08 | Raw data from a full run can't be streamed live over Wi-Fi; it comes off on the swappable NVMe | Wi-Fi bandwidth; everything is still logged onboard at full rate | ADR-0015 | — |
+| LIM-09 | v1.0 only: the Orin Nano 8 GB can't run a learned policy alongside the platform software, so SYS-08's policy part waits for v1.1 | Compute on loan keeps the first order small; classical autonomy comes first | ADR-0046 | v1.1 (Orin NX 16 GB) |
+| LIM-10 | v1.0 only: three cameras (stereo pair and downward); no side/rear views, no forward event camera, no spare CSI port | Cost; the dev kit carrier has two camera connectors | ADR-0046 | v1.1 |
+| LIM-11 | v1.0 only: ground speed from a frame camera at up to 240 fps with LED lighting, unproven above low speed | The GenX320 needs a quote; new experiments default to 3 m/s (SYS-22) | ADR-0046 | v1.1 (GenX320 and the Class 1 module) |
 
 ## Spec items with no parent yet
 

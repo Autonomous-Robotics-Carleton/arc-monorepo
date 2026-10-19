@@ -1,6 +1,6 @@
 # ADR-0001: Hokuyo UST-10LX over RPLidar A3
 
-- **Status:** Accepted (backfilled)
+- **Status:** Accepted (backfilled), amended by ADR-0046 (v1.0 runs on a UST-20LX on loan from the existing car; the UST-10LX is bought for v1.1)
 - **Date:** before 2026-09-23
 - **Deciders:** TBD
 - **Traces to:** SYS-08, SYS-07, RSK-10

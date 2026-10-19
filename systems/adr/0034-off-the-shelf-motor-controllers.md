@@ -1,11 +1,15 @@
 # ADR-0034: Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s
 
-- **Status:** Accepted, amended by ADR-0035 (the telemetry reports each controller's state; the controllers brake on command loss). Set on 2026-10-08: telemetry link rate 2 Mbit/s, not 3 Mbit/s (ICD-controller-telemetry); T 2.4 s (TBC), since the ~1.8 s below is the stop time without the ramp and T must come after the stop (ICD-corner-connector)
+- **Status:** Accepted, amended by ADR-0035 (the telemetry reports each controller's state; the controllers brake on command loss). Set on 2026-10-08: telemetry link rate 2 Mbit/s, not 3 Mbit/s (ICD-controller-telemetry); T 2.4 s (TBC), since the ~1.8 s below is the stop time without the ramp and T must come after the stop (ICD-corner-connector).
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-01, SYS-04, SYS-05, SYS-06, SYS-07, SYS-13, SYS-19, SYS-24, SYS-25, SYS-29, RSK-02, RSK-03, RSK-11, RSK-12, RSK-18, RSK-19, RSK-20
+- **Sizing review:** ADR-0044 records the revised 100 mm wheel / 18:1 / TBC 4–5 kg scenario from current main. Small-wheel current/gearing figures in the preserved body are historical; the bought A50S choice stands.
 - **Supersedes:** ADR-0011 (drive telemetry on two CAN-FD buses, and the FD hardware added to the VESC fork; its choice of the STM32H723 for the sync MCU stands), ADR-0004 (the corner's power and signal connectors)
 - **Amends:** ADR-0006 (the controller leaves the corner), ADR-0009 (the command bus now runs on the deck), ADR-0012 (the hardware torque cut moves to the power board), ADR-0013 (now applies to the steering bus only), ADR-0024 (VESC telemetry path), ADR-0028 (VESC firmware targets), ADR-0019 (steering bus placement), ADR-0033 (our firmware changes)
+
+> [!NOTE]
+> The 3 Mbit/s and small-wheel sizing text below is historical: the link runs at 2 Mbit/s (ICD-controller-telemetry), and ADR-0044 reviews sizing for the custom corners.
 
 ## Context
 

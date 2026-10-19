@@ -1,6 +1,6 @@
 # ADR-0025: The Orin carrier is a fork of Antmicro's open Jetson baseboard
 
-- **Status:** Accepted (backfilled)
+- **Status:** Accepted (backfilled), amended by ADR-0046 (the fork is v1.1's carrier; v1.0 runs on the developer kit's own carrier, P3768)
 - **Date:** before 2026-09-23 (original spec); recorded 2026-10-03
 - **Deciders:** Shrikar Vempati (original spec)
 - **Traces to:** SYS-07, SYS-08, SYS-14, SYS-24, ADR-0010, ADR-0016, ADR-0021, ADR-0023, RSK-01, E-02

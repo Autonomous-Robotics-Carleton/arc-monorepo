@@ -12,9 +12,9 @@ The car's software, where each part lives in this repo, and how each part runs o
 | --- | --- | --- | --- |
 | Sync MCU firmware | STM32H723, Zephyr | The car's time base; samples and timestamps the vehicle-state sensors; camera triggers and PPS (ADR-0021); drives the command and steering CAN buses and reads each motor controller's telemetry UART (ADR-0034); heartbeat watchdog, safety envelope and the any-corner stop (SYS-04, SYS-22, SYS-25); streams everything to the Orin | `firmware/sync-mcu/` |
 | VESC firmware | STM32F4 on each A50S motor controller (on the deck, ADR-0034), VESC firmware | Motor control (upstream); our e-stop brake routine, UART telemetry and speed limit | `firmware/vesc/` |
-| Platform software | Orin NX, ROS 2 Jazzy, PREEMPT_RT | Sync MCU bridge (`arc_backend_car`), camera and LiDAR drivers, logging, state estimation, classical control, teleop: maintained by the team and always up (SYS-21) | `ros/` |
-| Platform image | Orin NX | JetPack, kernel, containers and services, pinned (ADR-0016) | `platform/` |
-| Experiments | Orin NX, containers with resource limits | Whatever an engineer is trying; commands the classical control layer, never the motors (SYS-21, SYS-22) | `experiments/` (scaffold) |
+| Platform software | Orin (v1.0: Orin Nano Super developer kit; v1.1: Orin NX), ROS 2 Jazzy, PREEMPT_RT | Sync MCU bridge (`arc_backend_car`), camera and LiDAR drivers, logging, state estimation, classical control, teleop: maintained by the team and always up (SYS-21) | `ros/` |
+| Platform image | Orin, both builds (ADR-0046) | JetPack, kernel, containers and services, pinned (ADR-0016); on v1.0, the dev kit flashed with its Super configuration | `platform/` |
+| Experiments | Orin, containers with resource limits; no learned policy beside the platform on v1.0's 8 GB (LIM-09) | Whatever an engineer is trying; commands the classical control layer, never the motors (SYS-21, SYS-22) | `experiments/` (scaffold) |
 
 ## Layers
 

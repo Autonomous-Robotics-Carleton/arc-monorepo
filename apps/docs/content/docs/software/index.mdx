@@ -13,8 +13,8 @@ Every component builds, starts and runs in CI, and the sync MCU firmware and the
 
 | Computer | Software | Page |
 | --- | --- | --- |
-| Operator's laptop | Ground station: teleop, the operator heartbeat, and a page showing the car (or the simulator) and its data. Works against the simulator; the car side doesn't exist yet ([#71](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/71)) | [Ground station](../../../../../ground-station/README.md), [Simulator](../../../../../simulator/README.md) |
-| Orin NX | ROS 2 Jazzy platform software, with one backend per target; experiments in containers | [ROS workspace](../../../../../ros/README.md), [Experiments](../../../../../experiments/README.md), [Platform](../../../../../platform/README.md) |
+| Operator's laptop | Ground station: teleop and the operator heartbeat. Nothing exists yet ([#71](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/71)) | — |
+| Jetson Orin (the Orin Nano Super dev kit on v1.0, the Orin NX on v1.1) | ROS 2 Jazzy platform software, with one backend per target; experiments in containers | [ROS workspace](../../../../../ros/README.md), [Experiments](../../../../../experiments/README.md), [Platform](../../../../../platform/README.md) |
 | Sync MCU (STM32H723) | Zephyr firmware: the time base, sensor sampling, the safety functions, both CAN buses, the links to the Orin and the motor controllers | [Sync MCU firmware](../../../../../firmware/sync-mcu/README.md) |
 | 4 × A50S motor controllers | Upstream VESC firmware plus our e-stop routine, command timeout, UART telemetry and speed limit | [Motor controller firmware](../../../../../firmware/vesc/README.md) |
 | moteus-c1 steering controller | mjbots' firmware; only its configuration is ours (ADR-0019) | [Firmware](../../../../../firmware/README.md) |
