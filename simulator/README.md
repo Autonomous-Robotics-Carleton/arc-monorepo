@@ -10,9 +10,9 @@ ROS 2 Jazzy + Gazebo Harmonic, headless by default, software rendering (Mesa llv
 ./run.sh            # headless
 ./run.sh --bridge   # for the ground station: bridge on :8765, car_link on :9870/udp
 ./run.sh --gui3d    # Gazebo's 3D GUI in your browser (noVNC); CPU-heavy
-./run.sh --bridge --track oval              # on a bundled track
-./run.sh --bridge --track ~/maps/levine.yaml # on your own map
 ```
+
+The sim starts with no track. You pick one in the ground station, which loads it into the running sim through the bridge (see Tracks).
 
 `run.sh` builds the image (cached after the first time) and runs the container in the foreground. Ctrl+C (or a TERM signal) stops it. Docker Desktop must be running. Published ports listen on this machine only and have no password.
 
@@ -35,15 +35,15 @@ free_thresh: 0.196
 start: [0.0, -3.5, 0.0]   # optional, ours: car spawn pose (x, y, yaw); default 0, 0, 0
 ```
 
-At launch, occupied pixels become static 0.3 m walls (`wall_height:=` changes it), merged into as few boxes as possible, and added to `worlds/empty.sdf`; free and unknown pixels stay open floor, so a map must enclose its track with occupied pixels. Walls have low friction (0.1): at the default, the tyres climb a wall and flip the car. The bridge serves the same map to the ground station, which draws it under the car, walls solid and unknown space faint.
+Occupied pixels become static 0.3 m walls (`wall_height:=` changes it), merged into as few boxes as possible; free and unknown pixels stay open floor, so a map must enclose its track with occupied pixels. Walls have low friction (0.1): at the default, the tyres climb a wall and flip the car. The bridge serves the same map to the ground station, which draws it under the car, walls solid and unknown space faint.
 
-`--track <name>` loads `src/arc_sim/tracks/<name>.yaml`; `--track <path>` mounts that yaml's directory into the container read-only. Bundled:
+Tracks are loaded while the sim runs, not at launch. The ground station sends the bridge `load_track` with a bundled track's name (`src/arc_sim/tracks/<name>.yaml`); the bridge removes the old walls, spawns the new ones and moves the car to the track's `start` through Gazebo's UserCommands services (`/world/empty/remove`, `create`, `set_pose`), which takes about a second, and reports `track_status` (`loading`, `ready`, `failed`) for the ground station's status panel. Gazebo and car_link keep running, so the heartbeat chain is never interrupted. Only bundled tracks can be loaded: to use your own map, add it to `src/arc_sim/tracks/` (the image is rebuilt on the next `run.sh`). Bundled:
 
 | Name | What |
 | --- | --- |
 | `oval` | Synthetic stadium oval: 2 m lane, 10 m straights, 0.15 m walls. Spawns on the bottom straight, facing counter-clockwise |
 
-To see the world a map produces: `docker exec arc-sim /entrypoint.sh python3 -m arc_sim.track <map.yaml>`.
+To see the walls a map produces: `docker exec arc-sim /entrypoint.sh python3 -m arc_sim.track <map.yaml>`.
 
 ## Drive
 
@@ -73,20 +73,20 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 
 `run.sh` starts everything on your machine; `start-sim.sh` is the container's main process (`BRIDGE=1` adds the bridge, `GUI=3d` the noVNC stack); `entrypoint.sh` sources ROS for every command, including `docker exec`.
 
-`src/arc_sim/` is one ROS 2 package (`run.sh --track` sets `TRACK` for `start-sim.sh`):
+`src/arc_sim/` is one ROS 2 package:
 
 | Path | What |
 | --- | --- |
 | `urdf/racecar.urdf.xacro` | Car model: joints, inertia, collision, Ackermann plugin, ground-truth publisher. Swap it to swap the car |
 | `meshes/chassis.stl` | Visual only. OpenRC F1 body, reduced to 20k triangles, metres, nose on +x |
-| `worlds/empty.sdf` | Blank plane with a sun (the light is only used by the 3D viewer); a track's walls are added to it |
+| `worlds/empty.sdf` | Blank plane with a sun (the light is only used by the 3D viewer); the bridge spawns a track's walls into it |
 | `tracks/` | Bundled tracks: map yaml + image |
-| `arc_sim/track.py` | Map yaml + image → occupied pixels → merged wall boxes → world SDF. Used by the launch file and the bridge |
+| `arc_sim/track.py` | Map yaml + image → occupied pixels → merged wall boxes → walls model SDF. Used by the bridge |
 | `config/bridge.yaml` | Gazebo ↔ ROS 2 topics. Add one entry per new topic |
 | `config/gui.config` | Gazebo 3D GUI layout for `--gui3d`: window size, starting camera |
-| `launch/sim.launch.py` | Server, spawn, topic bridge, car_link. `track:=<yaml>` builds the world from a map; `bridge:=true` adds the ground-station bridge; `gui:=true` the 3D GUI (needs a display) |
+| `launch/sim.launch.py` | Server, spawn, topic bridge, car_link. `bridge:=true` adds the ground-station bridge; `gui:=true` the 3D GUI (needs a display) |
 | `scripts/car_link.py` | The car's receiving end: UDP heartbeat + teleop on port 9870 and `/sim/auto/cmd_vel` in, heartbeat gate and speed ramp, `/sim/cmd_vel` and `/sim/link/status` out |
-| `scripts/bridge.py` | Serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), for the ground station |
+| `scripts/bridge.py` | Loads tracks into the running sim on request, serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), for the ground station |
 
 ## Topics
 

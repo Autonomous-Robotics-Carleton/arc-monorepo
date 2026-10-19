@@ -3,31 +3,16 @@
 #   ./run.sh           headless
 #   ./run.sh --bridge  for the ground station: bridge on 127.0.0.1:8765, car_link on 127.0.0.1:9870/udp
 #   ./run.sh --gui3d   Gazebo 3D GUI in your browser via noVNC (http://localhost:6080); CPU-heavy
-# Add --track <name> for a bundled track (src/arc_sim/tracks/<name>.yaml) or
-# --track <path/to/map.yaml> for your own; its image must sit in the same directory.
+# There is no track option: the ground station picks the track and loads it through the bridge.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-usage="usage: $0 [--bridge | --gui3d] [--track <name | map.yaml>]"
+usage="usage: $0 [--bridge | --gui3d]"
 mode=""
-track_args=()
 while [ $# -gt 0 ]; do
   case "$1" in
     --bridge) mode=bridge ;;
     --gui3d) mode=3d ;;
-    --track)
-      [ $# -ge 2 ] || { echo "$usage" >&2; exit 2; }
-      if [ -f "$2" ]; then
-        # Mount the map's directory read-only; the yaml names its image relative to itself.
-        dir="$(cd "$(dirname "$2")" && pwd)"
-        track_args=(-v "$dir:/tracks:ro" -e TRACK="/tracks/$(basename "$2")")
-      elif [ -f "src/arc_sim/tracks/$2.yaml" ]; then
-        track_args=(-e TRACK="$2")
-      else
-        echo "No track '$2': not a file, and not one of: $(cd src/arc_sim/tracks && ls *.yaml | sed 's/\.yaml$//' | tr '\n' ' ')" >&2
-        exit 2
-      fi
-      shift ;;
     *) echo "$usage" >&2; exit 2 ;;
   esac
   shift
@@ -47,16 +32,16 @@ echo "Building arc-sim (cached after the first time)..."
 docker build -q -t arc-sim . >/dev/null
 
 if [ -z "$mode" ]; then
-  exec docker run --rm --name arc-sim ${track_args[@]+"${track_args[@]}"} arc-sim
+  exec docker run --rm --name arc-sim arc-sim
 fi
 
 # Ports are bound to this machine only; nothing on them has a password.
 if [ "$mode" = bridge ]; then
-  docker run --rm --name arc-sim ${track_args[@]+"${track_args[@]}"} -e BRIDGE=1 \
+  docker run --rm --name arc-sim -e BRIDGE=1 \
     -p 127.0.0.1:8765:8765 -p 127.0.0.1:9870:9870/udp arc-sim &
   probe="http://localhost:8765/track.json"
 else
-  docker run --rm --name arc-sim ${track_args[@]+"${track_args[@]}"} -e GUI=3d -p 127.0.0.1:6080:6080 arc-sim &
+  docker run --rm --name arc-sim -e GUI=3d -p 127.0.0.1:6080:6080 arc-sim &
   probe="http://localhost:6080/vnc.html"
 fi
 sim=$!

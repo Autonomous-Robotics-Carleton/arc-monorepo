@@ -14,7 +14,9 @@ Occupied pixels become walls; free and unknown pixels stay open floor. Neighbour
 occupied pixels are merged into as few boxes as possible, so a wall is a handful of
 boxes rather than one per pixel.
 
-    python3 -m arc_sim.track map.yaml > world.sdf    # inspect the generated world
+The bridge spawns the walls into the running sim when the ground station picks a track.
+
+    python3 -m arc_sim.track map.yaml > walls.sdf    # inspect the generated walls model
 """
 
 import os
@@ -29,6 +31,7 @@ from PIL import Image
 @dataclass
 class Track:
     name: str
+    yaml_path: str
     image_path: str
     resolution: float
     origin: tuple  # x, y, yaw
@@ -54,6 +57,7 @@ def load(yaml_path):
     start = [float(v) for v in meta.get('start', [0, 0, 0])] + [0.0] * 3
     return Track(
         name=os.path.splitext(os.path.basename(yaml_path))[0],
+        yaml_path=yaml_path,
         image_path=image_path,
         resolution=float(meta['resolution']),
         origin=tuple(origin[:3]),
@@ -87,7 +91,7 @@ def rectangles(mask):
 SURFACE = '<surface><friction><ode><mu>0.1</mu><mu2>0.1</mu2></ode></friction></surface>'
 
 
-def walls_model(track, height):
+def walls_model(track, height, name='track_walls'):
     """SDF <model> of static boxes, one per merged rectangle of occupied pixels."""
     res = track.resolution
     rows = track.occupied.shape[0]
@@ -106,28 +110,15 @@ def walls_model(track, height):
             '<ambient>0.15 0.15 0.17 1</ambient><diffuse>0.15 0.15 0.17 1</diffuse>'
             '</material></visual>\n' % (i, pose, geometry, SURFACE, i, pose, geometry))
     return (
-        '    <model name="track_walls">\n'
+        '    <model name="%s">\n'
         '      <static>true</static>\n'
         '      <pose>%.4f %.4f 0 0 0 %.6f</pose>\n'
         '      <link name="link">\n%s'
         '      </link>\n'
-        '    </model>\n' % (ox, oy, oyaw, ''.join(parts)))
-
-
-def world_sdf(track, base_world, height):
-    """The base world with the track's walls added and its ground plane grown to fit."""
-    with open(base_world) as f:
-        sdf = f.read()
-    rows, cols = track.occupied.shape
-    extent = np.hypot(*track.origin[:2]) + np.hypot(rows, cols) * track.resolution
-    size = 2 * max(50.0, np.ceil(extent))
-    sdf = sdf.replace('<size>100 100</size>', '<size>%d %d</size>' % (size, size))
-    return sdf.replace('  </world>', walls_model(track, height) + '  </world>')
+        '    </model>\n' % (name, ox, oy, oyaw, ''.join(parts)))
 
 
 if __name__ == '__main__':
-    from ament_index_python.packages import get_package_share_directory
     if len(sys.argv) != 2:
         sys.exit('usage: python3 -m arc_sim.track <map.yaml>')
-    base = os.path.join(get_package_share_directory('arc_sim'), 'worlds', 'empty.sdf')
-    sys.stdout.write(world_sdf(load(sys.argv[1]), base, 0.3))
+    sys.stdout.write(walls_model(load(sys.argv[1]), 0.3))

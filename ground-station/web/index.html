@@ -250,6 +250,7 @@ const store = {
 let scale = 120; // px per metre
 let state = null; // latest bridge `state` message
 let link = null;  // latest server `link` message
+let trackStatus = null; // latest bridge `track_status` relayed by the server: {name, status, error}
 let trail = [];
 let trailKey = null; // which pose the trail follows; reset when it changes so we don't draw a jump
 let track = null; // {resolution, origin: [x, y, yaw], width, height, name, img}
@@ -545,7 +546,13 @@ function chainTiles() {
   tiles.push({ k: 'server', v: serverUp ? 'live' : 'down', d: serverUp ? `ws :${location.port || 80}` : 'reconnecting', st: serverUp ? 'ok' : 'bad' });
   tiles.push({ k: 'helper', v: helperUp ? 'live' : 'down', d: helperUp ? 'ws :8081' : 'reconnecting', st: helperUp ? 'ok' : 'bad' });
   tiles.push({ k: 'link', v: l && l.connected ? 'connected' : 'not connected', d: l && l.udp ? `udp :${l.udp.port}` : '', st: l && l.connected ? 'ok' : 'bad' });
-  if (sim) tiles.push({ k: 'sim', v: l.sim, d: trackNote, st: l.sim === 'running' ? 'ok' : l.sim === 'starting' ? 'warn' : 'bad' });
+  if (sim) {
+    // While the sim runs, a track load in progress or failed is what the operator needs to see.
+    const ts = l.sim === 'running' ? trackStatus : null;
+    if (ts && ts.status === 'loading') tiles.push({ k: 'sim', v: 'loading track', d: ts.name || 'none', st: 'warn' });
+    else if (ts && ts.status === 'failed') tiles.push({ k: 'sim', v: 'track failed', d: `${ts.name}: ${ts.error || 'unknown error'}`, st: 'bad' });
+    else tiles.push({ k: 'sim', v: l.sim, d: trackNote, st: l.sim === 'running' ? 'ok' : l.sim === 'starting' ? 'warn' : 'bad' });
+  }
   // The first failure is broken; everything after it is unknown, so it is shown greyed, not as live.
   let broken = false;
   for (const t of tiles) {
@@ -778,7 +785,7 @@ function refreshSettings() {
 // ---------- Sim settings ----------
 function buildSim(b) {
   b.innerHTML = `<div><dl class="kv"><dt>track</dt><dd><select class="select" id="trackIn"></select></dd></dl>
-    <div class="sub" style="margin:var(--space-2) 0 0">used the next time the sim starts</div></div>`;
+    <div class="sub" style="margin:var(--space-2) 0 0">loads into the running sim; the car moves to its start</div></div>`;
   fillTrackSelect($('trackIn'));
   $('trackIn').onchange = () => { tracks.selected = $('trackIn').value; $('trackIn2').value = tracks.selected; sendServer({ type: 'sim', track: tracks.selected }); };
 }
@@ -800,7 +807,7 @@ function connectServer() {
   ws.onclose = () => {
     serverUp = false;
     // Without the server we know nothing about the car: drop stale pose and stop the helper's UDP.
-    state = null; link = null; onLink();
+    state = null; link = null; trackStatus = null; onLink();
     setTimeout(connectServer, 1000);
   };
   ws.onmessage = (e) => {
@@ -809,7 +816,17 @@ function connectServer() {
     else if (msg.type === 'link') { link = msg; onLink(); }
     else if (msg.type === 'track') loadTrack(msg.meta, msg.png);
     else if (msg.type === 'tracks') setTracks(msg.names, msg.selected);
+    else if (msg.type === 'track_status') onTrackStatus(msg);
   };
+}
+
+function onTrackStatus(msg) {
+  const prev = trackStatus;
+  trackStatus = msg;
+  if (prev && prev.status === msg.status && prev.name === msg.name) return;
+  if (msg.status === 'loading') logLine(`sim: loading track ${msg.name || 'none'}`);
+  else if (msg.status === 'ready') logLine(`sim: track ${msg.name} loaded`);
+  else if (msg.status === 'failed') logLine(`sim: track ${msg.name} failed: ${msg.error || 'unknown error'}`);
 }
 
 function onState(msg) {
@@ -834,7 +851,7 @@ let lastUdpKey = undefined;
 let lastSimMode = null;
 function onLink() {
   const l = link;
-  if (l && !l.connected) state = null; // no bridge, so the last pose is stale
+  if (l && !l.connected) { state = null; trackStatus = null; } // no bridge, so the last pose is stale
   // Real mode with no car: say so prominently, but only the user switches back to sim.
   $('nocar').style.display = l && l.mode === 'real' && !l.connected ? 'flex' : 'none';
   // Toast only on the rising edge, and only while we're in sim (in real it's already in use).

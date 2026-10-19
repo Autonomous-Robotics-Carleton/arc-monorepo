@@ -2,16 +2,15 @@
 # Start the ground station: server.py (page + bridge relay, :8080) and helper.py (UDP to the car, :8081).
 #   ./run.sh                    real mode; the car's address comes from config.json (car.host)
 #   ./run.sh --car 192.168.1.50 override car.host
-#   ./run.sh --track oval       sim track used when you switch to the simulator
 # Ctrl+C stops both, and the simulator if the server started it.
 set -euo pipefail
 cd "$(dirname "$0")"
 
-usage="usage: $0 [--track <name | map.yaml>] [--car <host>]"
+usage="usage: $0 [--car <host>]"
 server_args=()
 while [ $# -gt 0 ]; do
   case "$1" in
-    --track|--car)
+    --car)
       [ $# -ge 2 ] || { echo "$usage" >&2; exit 2; }
       server_args+=("$1" "$2"); shift ;;
     *) echo "$usage" >&2; exit 2 ;;

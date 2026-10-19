@@ -4,16 +4,10 @@
 #   GUI=3d     Gazebo 3D GUI via noVNC on :6080:
 #              Gazebo GUI -> Xvfb (rendered by llvmpipe) -> x11vnc -> websockify/noVNC
 #   BRIDGE=1   also start the ground-station bridge on :8765 (car_link on :9870/udp always runs)
-#   TRACK      a bundled track's name (arc_sim/tracks/<name>.yaml) or a map yaml path
+# The world starts with no track; the ground station loads one through the bridge.
 set -e
 
 args=()
-if [ -n "${TRACK:-}" ]; then
-  case "$TRACK" in
-    */*) args=("track:=$TRACK") ;;
-    *) args=("track:=$(ros2 pkg prefix arc_sim)/share/arc_sim/tracks/$TRACK.yaml") ;;
-  esac
-fi
 [ "${BRIDGE:-}" = 1 ] && args+=("bridge:=true")
 
 case "${GUI:-}" in

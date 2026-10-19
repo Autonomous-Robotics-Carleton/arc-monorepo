@@ -6,9 +6,11 @@ http://127.0.0.1:8080/track.png  the connected bridge's /track.png, proxied
 ws://127.0.0.1:8080/ws           server <-> page messages, see protocol.md
 
 Modes: `real` (startup) connects to the car's bridge at config car.host, retrying every 2 s.
-`sim` starts ../simulator/run.sh --bridge --track <track> and connects to its bridge on
-127.0.0.1. While in sim mode the car is still probed so the page can show that one was found;
-the server never switches mode on its own.
+`sim` starts ../simulator/run.sh --bridge and connects to its bridge on 127.0.0.1. The sim
+starts with no track: the server asks the bridge to load the page's pick on every connect and
+whenever the page picks another, and relays the bridge's `track_status` (loading, ready,
+failed) to the page. While in sim mode the car is still probed so the page can show that one
+was found; the server never switches mode on its own.
 """
 
 import argparse
@@ -44,7 +46,7 @@ STOP_GRACE = 20.0  # s to wait for run.sh to stop the container before `docker s
 log = logging.getLogger('server')
 
 
-def load_config(path, track, car):
+def load_config(path, car):
     with open(path) as f:
         cfg = json.load(f)
     cfg.setdefault('car', {}).setdefault('host', None)
@@ -54,9 +56,7 @@ def load_config(path, track, car):
     sim.setdefault('host', '127.0.0.1')
     sim.setdefault('bridge_port', 8765)
     sim.setdefault('udp_port', 9870)
-    sim.setdefault('track', 'oval')
-    if track:
-        sim['track'] = track
+    sim.setdefault('track', 'oval')  # the page's initial pick
     if car:
         cfg['car']['host'] = car
     return cfg
@@ -71,15 +71,12 @@ def http_get(url, timeout=2.0):
         return None
 
 
-def track_names(default):
-    """Bundled sim tracks (simulator/src/arc_sim/tracks/*.yaml), plus the default if it's a custom map."""
+def track_names():
+    """Bundled sim tracks (simulator/src/arc_sim/tracks/*.yaml): the ones the bridge can load."""
     try:
-        names = sorted(f[:-5] for f in os.listdir(TRACKS) if f.endswith('.yaml'))
+        return sorted(f[:-5] for f in os.listdir(TRACKS) if f.endswith('.yaml'))
     except OSError:
-        names = []
-    if default and default not in names:
-        names.append(default)
-    return names
+        return []
 
 
 def container_running():
@@ -122,6 +119,8 @@ class Server:
         self.udp = None
         self.bridge_url = None  # http://host:port of the connected bridge
         self.track_msg = None  # last track message, for pages that connect later
+        self.track_status = None  # last bridge track_status message, likewise
+        self.bridge_ws = None
         self.track = cfg['sim']['track']
         self.proc = None  # run.sh we started
         self.reused = False  # an arc-sim container we found running and are using
@@ -166,10 +165,11 @@ class Server:
         self.pages.add(ws)
         try:
             await ws.send(json.dumps(self.link()))
-            await ws.send(json.dumps({'type': 'tracks', 'names': track_names(self.cfg['sim']['track']),
-                                      'selected': self.track}))
+            await ws.send(json.dumps({'type': 'tracks', 'names': track_names(), 'selected': self.track}))
             if self.connected and self.track_msg:
                 await ws.send(self.track_msg)
+            if self.connected and self.track_status:
+                await ws.send(self.track_status)
             async for raw in ws:
                 try:
                     msg = json.loads(raw)
@@ -183,9 +183,10 @@ class Server:
                     task.add_done_callback(self.tasks.discard)
                 elif msg.get('type') == 'sim':
                     track = msg.get('track')
-                    if track in track_names(self.cfg['sim']['track']):
+                    if track in track_names():
                         self.track = track
                         log.info('sim track: %s', self.track)
+                        await self.load_track()
                     else:
                         log.warning('unknown sim track %r; keeping %s', track, self.track)
         except ConnectionClosed:
@@ -233,7 +234,7 @@ class Server:
 
     def sim_command(self):
         run = os.environ.get('ARC_GS_SIM_RUN', SIM_RUN)  # test hook: a stand-in for run.sh
-        return [run, '--bridge', '--track', self.track]
+        return [run, '--bridge']
 
     async def start_sim(self):
         if self.proc and self.proc.returncode is None:
@@ -307,6 +308,8 @@ class Server:
         self.connected = False
         self.udp = None
         self.bridge_url = None
+        self.bridge_ws = None
+        self.track_status = None
         if self.mode == 'real':
             self.car_found = False
         if self.mode == 'sim' and self.sim == 'running':
@@ -326,17 +329,9 @@ class Server:
                                    max_size=2 ** 22) as ws:
                     base = 'http://%s:%d' % (host, port)
                     log.info('bridge connected: %s', base)
-                    raw = await asyncio.to_thread(http_get, base + '/track.json')
-                    try:
-                        meta = json.loads(raw) if raw is not None else None
-                    except ValueError:
-                        meta = None
-                    # The image rides in the message as base64: Firefox rejected it as a separate
-                    # HTTP request from this server, and this way it arrives with its metadata.
-                    png = await asyncio.to_thread(http_get, base + '/track.png') if meta else None
-                    self.track_msg = json.dumps({'type': 'track', 'meta': meta,
-                                                 'png': base64.b64encode(png).decode() if png else None})
+                    self.track_msg = await self.fetch_track(base)
                     self.bridge_url = base
+                    self.bridge_ws = ws
                     self.connected = True
                     self.udp = {'host': host, 'port': udp_port}
                     if self.mode == 'real':
@@ -345,6 +340,7 @@ class Server:
                         self.sim = 'running'
                     self.send_link()
                     broadcast(self.pages, self.track_msg)
+                    await self.load_track()
                     async for raw in ws:
                         if isinstance(raw, bytes):
                             continue
@@ -354,6 +350,8 @@ class Server:
                             continue
                         if kind == 'state':
                             broadcast(self.pages, raw)  # unchanged
+                        elif kind == 'track_status':
+                            await self.on_track_status(raw, base)
                 log.info('bridge closed')
             except asyncio.CancelledError:
                 raise
@@ -369,6 +367,44 @@ class Server:
                 self.sim = 'stopped'
                 self.send_link()
             await asyncio.sleep(RETRY if self.mode == 'real' else SIM_RETRY)
+
+    async def fetch_track(self, base):
+        """The bridge's track as a page `track` message."""
+        raw = await asyncio.to_thread(http_get, base + '/track.json')
+        try:
+            meta = json.loads(raw) if raw is not None else None
+        except ValueError:
+            meta = None
+        # The image rides in the message as base64: Firefox rejected it as a separate
+        # HTTP request from this server, and this way it arrives with its metadata.
+        png = await asyncio.to_thread(http_get, base + '/track.png') if meta else None
+        return json.dumps({'type': 'track', 'meta': meta,
+                           'png': base64.b64encode(png).decode() if png else None})
+
+    async def load_track(self):
+        """In sim mode, ask the connected bridge for the picked track. It ignores a repeat."""
+        if self.mode != 'sim' or self.bridge_ws is None:
+            return
+        try:
+            await self.bridge_ws.send(json.dumps({'type': 'load_track', 'name': self.track}))
+        except ConnectionClosed:
+            pass  # bridge_loop notices and reconnects, then asks again
+
+    async def on_track_status(self, raw, base):
+        """Relay the bridge's track_status; once a load finishes, send the page the new track."""
+        try:
+            status = json.loads(raw)
+        except ValueError:
+            return
+        self.track_status = raw
+        log.info('track %s: %s%s', status.get('name'), status.get('status'),
+                 ' (%s)' % status['error'] if status.get('error') else '')
+        broadcast(self.pages, raw)
+        if status.get('status') in ('ready', 'none'):
+            msg = await self.fetch_track(base)
+            if msg != self.track_msg:
+                self.track_msg = msg
+                broadcast(self.pages, msg)
 
     async def probe_car(self):
         """In sim mode: does the car's bridge answer? Drives the page's "live car found"."""
@@ -407,13 +443,12 @@ class Server:
 def main():
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument('--config', default=os.path.join(HERE, 'config.json'))
-    p.add_argument('--track', help='default sim track (name or map yaml)')
     p.add_argument('--car', help="car's address (overrides config car.host)")
     p.add_argument('--port', type=int, default=8080)
     args = p.parse_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s server: %(message)s', datefmt='%H:%M:%S')
     logging.getLogger('websockets').setLevel(logging.WARNING)
-    cfg = load_config(args.config, args.track, args.car)
+    cfg = load_config(args.config, args.car)
     asyncio.run(Server(cfg).run('127.0.0.1', args.port))
 
 

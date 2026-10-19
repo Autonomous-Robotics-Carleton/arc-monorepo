@@ -46,7 +46,7 @@ Little-endian, 25 bytes, Python `struct` format `<4sBIdff`:
 
 ## Bridge websocket (car or sim → server), port 8765
 
-`GET /track.json`, `GET /track.png`: same as the old `viewer_2d` (track placement, or `null`; alpha-mask PNG).
+`GET /track.json`, `GET /track.png`: same as the old `viewer_2d` (track placement, or `null`; alpha-mask PNG). The sim starts with no track (`null`); they change when a track is loaded.
 
 `ws://…:8765/ws` sends JSON at 30 Hz:
 
@@ -62,19 +62,32 @@ Little-endian, 25 bytes, Python `struct` format `<4sBIdff`:
 - `source`: `"sim"` or `"car"`.
 - `link`: the latest car_link status, or null.
 
+The sim's bridge also sends, once on connect and on every change:
+
+```json
+{"type": "track_status", "name": "oval", "status": "loading", "error": null}
+```
+
+- `status`: `"none"` (no track loaded), `"loading"`, `"ready"`, or `"failed"` (with `error`, a short reason). `name` is the track being loaded or loaded, or null.
+
+Server → bridge (sim only):
+
+- `{"type": "load_track", "name": "<name>"|null}`: load bundled track `<name>` (`simulator/src/arc_sim/tracks/<name>.yaml`) into the running sim, or clear it with null. The bridge replaces the walls and moves the car to the track's start pose; the car's `estimate` restarts there. A repeat of the loaded track is ignored. Requests arriving during a load wait for it, and only the newest is loaded. Load time is about 1 s (TBC).
+
 ## Server websocket (server → page), `ws://localhost:8080/ws`
 
 Server → page:
 
 - Every bridge `state` message, relayed unchanged.
 - `{"type": "link", "mode": "sim"|"real", "connected": bool, "car_found": bool, "sim": "stopped"|"starting"|"running", "udp": {"host": "127.0.0.1", "port": 9870}|null}`, sent on every change and once on connect. `udp` is where the helper should send, null when not connected.
-- `{"type": "tracks", "names": ["oval", ...], "selected": "oval"}`, once on connect: the sim tracks the page may pick, from `simulator/src/arc_sim/tracks/*.yaml` (plus the server's default if it is a custom map).
-- `{"type": "track", "meta": {...}|null, "png": "<base64>"|null}`: the bridge's `/track.json` and `/track.png` after each (re)connect, and to pages that connect later. The image is embedded so the page needs no separate request (Firefox failed to load it from `/track.png`). `/track.png` is still proxied for other tools.
+- `{"type": "tracks", "names": ["oval", ...], "selected": "oval"}`, once on connect: the sim tracks the page may pick, from `simulator/src/arc_sim/tracks/*.yaml`. `selected` starts as config `sim.track`.
+- The bridge's `track_status`, relayed unchanged, and to pages that connect later while connected.
+- `{"type": "track", "meta": {...}|null, "png": "<base64>"|null}`: the bridge's `/track.json` and `/track.png` after each (re)connect and after each finished track load, and to pages that connect later. The image is embedded so the page needs no separate request (Firefox failed to load it from `/track.png`). `/track.png` is still proxied for other tools.
 
 Page → server:
 
 - `{"type": "switch", "mode": "sim"|"real"}`. `sim` starts the simulator if it is not running; `real` stops it and tries the car.
-- `{"type": "sim", "track": "<name>"}` optional: track used when starting the sim (default: `oval`). Must be one of the `tracks` names; anything else is ignored.
+- `{"type": "sim", "track": "<name>"}`: the picked sim track. The server asks the bridge to load it now if connected to the sim, and on every later connect. Must be one of the `tracks` names; anything else is ignored.
 
 ## Helper websocket (page ↔ helper), `ws://localhost:8081`
 

@@ -7,7 +7,6 @@ The operator's app for driving the car, or the simulator standing in for it. It 
 ```bash
 ./run.sh                       # real mode: looks for the car at config.json car.host
 ./run.sh --car 192.168.1.50    # override car.host
-./run.sh --track oval          # sim track used when you switch to the simulator
 ```
 
 `run.sh` creates `.venv` and installs `requirements.txt` the first time (and again only when it changes), starts `server.py` and `helper.py`, and opens `http://localhost:8080/`. Ctrl+C stops both, and the simulator if the ground station started it. Both listen on this machine only and have no password.
@@ -26,12 +25,12 @@ page ──ws :8080──▶ server.py ──ws :8765──▶ bridge     state,
 - **`server.py`** (`:8080`) serves the page and relays the bridge's state to it, unchanged, along with which mode it's in and whether it's connected. It proxies the track image at `/track.png`.
 - **`helper.py`** (`:8081`) sends UDP to car_link: heartbeats, and the page's teleop. The page tells it where (the server's `udp` address). Packets are marked DSCP EF.
 
-`config.json` holds the car's address and the ports: `car.host` (the car's bridge and car_link), `sim.host` (the simulator, `127.0.0.1`), and `sim.track` (default track). `--car` and `--track` override them.
+`config.json` holds the car's address and the ports: `car.host` (the car's bridge and car_link), `sim.host` (the simulator, `127.0.0.1`), and `sim.track` (the track picked when the page opens). `--car` overrides `car.host`.
 
 ## Sim and real
 
 - **Real** (at startup): the server connects to the car's bridge at `car.host`, retrying every 2 s.
-- **Sim**: the page's switch makes the server start `../simulator/run.sh --bridge --track <track>`, wait until its bridge answers on `127.0.0.1:8765`, and connect. The first start builds the sim image, which takes a while. If an `arc-sim` container is already running, the server says so in its log and uses it. The page's track menu lists `simulator/src/arc_sim/tracks/*.yaml`; a custom map can only be the default, through `--track <path>`. Switching back to real stops the simulator (`docker stop arc-sim` if `run.sh` didn't).
+- **Sim**: the page's switch makes the server start `../simulator/run.sh --bridge`, wait until its bridge answers on `127.0.0.1:8765`, and connect. The first start builds the sim image, which takes a while. If an `arc-sim` container is already running, the server says so in its log and uses it (it must have been started with `--bridge`). The sim starts with no track: on every connect, and whenever you pick another in the track menu (`simulator/src/arc_sim/tracks/*.yaml`), the server asks the bridge to load it into the running sim. The status panel's sim tile shows `loading track` while the bridge rebuilds the walls and moves the car to the start, and `track failed` with the reason if it can't. Switching back to real stops the simulator (`docker stop arc-sim` if `run.sh` didn't).
 
 In sim mode the server keeps looking for the car in the background, so the page can say a live car was found. It never switches by itself.
 
@@ -78,7 +77,7 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 
 | Path | What |
 | --- | --- |
-| `run.sh` | Starts both processes; `--track`, `--car` |
+| `run.sh` | Starts both processes; `--car` |
 | `server.py` | Page, `/track.png` proxy, bridge relay, sim start/stop |
 | `helper.py` | Page heartbeat and teleop → UDP to car_link |
 | `config.json` | Car address (TBD), sim address, ports, default track |
