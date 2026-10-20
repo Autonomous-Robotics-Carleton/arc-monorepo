@@ -5,15 +5,16 @@ The contracts between the ground station, its helper, and the car (or the simula
 ```
 browser page ──ws localhost:8081──▶ helper.py ──UDP :9870──▶ car_link   (car, or sim)
 browser page ──ws localhost:8080/ws──▶ server.py ──ws :8765──▶ bridge  (car, or sim)
+browser page ──ws localhost:8080/scan─▶ server.py ──ws :8765/scan─▶ bridge   one socket per sensor, while shown
 ```
 
 ## Ports
 
 | Port | Owner | Transport | Bound to |
 | --- | --- | --- | --- |
-| 8080 | `ground-station/server.py` | HTTP (page) + websocket `/ws` | `127.0.0.1` |
+| 8080 | `ground-station/server.py` | HTTP (page) + websockets `/ws`, `/scan` | `127.0.0.1` |
 | 8081 | `ground-station/helper.py` | websocket | `127.0.0.1` |
-| 8765 | bridge (sim: `simulator/.../bridge.py`) | HTTP + websocket `/ws` | sim container, published on `127.0.0.1:8765` |
+| 8765 | bridge (sim: `simulator/.../bridge.py`) | HTTP + websockets `/ws`, `/scan` | sim container, published on `127.0.0.1:8765` |
 | 9870 | car_link (sim: `simulator/.../car_link.py`) | UDP | sim container, published on `127.0.0.1:9870/udp` |
 
 The sim is reached at `127.0.0.1`. The real car's address is a config value in the ground station, `TBD` until the car runs a bridge and car_link.
@@ -73,6 +74,33 @@ The sim's bridge also sends, once on connect and on every change:
 Server → bridge (sim only):
 
 - `{"type": "load_track", "name": "<name>"|null}`: load bundled track `<name>` (`simulator/src/arc_sim/tracks/<name>.yaml`) into the running sim, or clear it with null. The bridge replaces the walls and moves the car to the track's start pose; the car's `estimate` restarts there. A repeat of the loaded track is ignored. Requests arriving during a load wait for it, and only the newest is loaded. Load time is about 1 s (TBC).
+
+## Sensor websockets (bridge → server → page)
+
+Each sensor has its own websocket, separate from `/ws`, so a large frame never holds up `state`. Opening one is the subscription: the bridge subscribes to the sensor's topic while at least one of its sockets is open and unsubscribes when the last closes. In the sim that is passed down the chain (noise node, then `ros_gz_bridge`, both lazy), so Gazebo renders a sensor only while some page shows it. Sensors are off until the page opens their socket.
+
+- The server relays each page socket to its own bridge socket on the same path, one to one. With no bridge connected it closes the page socket at once; the page retries every 1 s while the sensor is switched on.
+- Frames are binary websocket messages. The bridge and the server keep only the newest frame per client: a slow client skips frames, it doesn't fall behind.
+- Nothing is sent toward the bridge on these sockets.
+
+`/scan`: the LiDAR's `/scan` (`sensor_msgs/LaserScan`), every scan, ranges unfiltered. Little-endian:
+
+| Offset | Type | Field |
+| --- | --- | --- |
+| 0 | float64 | stamp, s (the message's header stamp; sim time in the sim) |
+| 8 | float32 | angle_min, rad (0 = car's forward, counter-clockwise positive) |
+| 12 | float32 | angle_increment, rad |
+| 16 | float32 | range_min, m |
+| 20 | float32 | range_max, m |
+| 24 | uint32 | count |
+| 28 | float32 | mount x, m (LiDAR origin in `base_link`) |
+| 32 | float32 | mount y, m |
+| 36 | float32 | mount yaw, rad |
+| 40 | float32 × count | ranges, m; outside [range_min, range_max] (including `inf`) means no return |
+
+The mount is the fixed `base_link` → scan `frame_id` transform from `/tf_static` (published by `robot_state_publisher` from the URDF), reduced to the ground plane. The bridge sends no frames until that lookup succeeds. The page uses it to draw the scan on the main view: car pose, then mount, then each ray.
+
+At the sim's defaults (1081 rays, 40 Hz) that is about 4.4 kB per scan, 175 kB/s.
 
 ## Server websocket (server → page), `ws://localhost:8080/ws`
 

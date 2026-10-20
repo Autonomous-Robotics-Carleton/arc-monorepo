@@ -13,6 +13,7 @@
     --ok: #4cc764; --ok-bg: #12301b; --warn: #e3a53c; --warn-bg: #3a2a0c; --warn-fill: #e3a53c; --on-warn: #1a1305;
     --bad: #f0564a; --bad-bg: #3d1512;
     --series-1: #5aa9e6; --series-2: #e8975a; --series-3: #b48ae6; --series-4: #d9cf5a;
+    --overlay-1: #3cc6d6; --overlay-2: #d65ab4; --overlay-3: #9a7cf0; --overlay-4: #a8b43c;
     --shadow-panel: 0 4px 16px rgba(0,0,0,0.45);
     --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
     --space-1: 2px; --space-2: 4px; --space-3: 6px; --space-4: 8px; --space-5: 12px; --space-6: 16px;
@@ -24,6 +25,7 @@
       --ink: #18181a; --ink-muted: #5c5c62; --ink-faint: #8f8f95; --real-edge: #1a1a1a;
       --ok: #1d7a34; --ok-bg: #dcefe0; --warn: #8a5a00; --warn-bg: #f6e7c6; --bad: #b42318; --bad-bg: #f8dcd8;
       --series-1: #1f6fb8; --series-2: #a8520f; --series-3: #7a4fc0; --series-4: #7a6c00;
+      --overlay-1: #0e7c8a; --overlay-2: #a3307f; --overlay-3: #6347c4; --overlay-4: #66701a;
       --shadow-panel: 0 2px 10px rgba(0,0,0,0.12);
     }
   }
@@ -162,6 +164,7 @@
   .plot__topic { font-weight: 700; }
   .plot__meta { color: var(--ink-muted); font-size: 11px; margin-left: auto; font-variant-numeric: tabular-nums; }
   .plot canvas { display: block; width: 100%; height: 110px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .seg button .swatch { margin: 0; vertical-align: 0; }
   .legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: 11px; color: var(--ink-muted); }
   .legend i { display: inline-block; width: 10px; height: 2px; vertical-align: 3px; margin-right: 4px; }
   .legend i.dashed { background: none !important; border-top: 2px dashed; height: 0; }
@@ -376,7 +379,7 @@ const PANELS = {
   car:       { title: 'Car', group: 'status', w: 264, build: buildCar, update: updateCar },
   topics:    { title: 'Topics', group: 'sensors', w: 400, meta: () => `${streams.size} topics`, build: buildTopics, update: updateTopics },
   plots:     { title: 'Plots', group: 'sensors', w: 400, meta: () => `${opts.plotWindow} s`, build: buildPlots, update: updatePlots },
-  lidar:     { title: 'LiDAR', group: 'sensors', w: 264, available: () => false, note: 'no scan topic', build: () => {} },
+  lidar:     { title: 'LiDAR', group: 'sensors', w: 264, meta: lidarMeta, build: buildLidar, update: updateLidar },
   camera:    { title: 'Camera', group: 'sensors', w: 360, available: () => false, note: 'no image topic', build: () => {} },
   computer:  { title: 'Computer', group: 'machine', w: 448, available: () => false, note: 'needs server stats', build: () => {} },
   settings:  { title: 'Settings', group: 'settings', w: 264, build: buildSettings },
@@ -785,14 +788,119 @@ function refreshSettings() {
 // ---------- Sim settings ----------
 function buildSim(b) {
   b.innerHTML = `<div><dl class="kv"><dt>track</dt><dd><select class="select" id="trackIn"></select></dd></dl>
-    <div class="sub" style="margin:var(--space-2) 0 0">loads into the running sim; the car moves to its start</div></div>`;
+    <div class="sub" style="margin:var(--space-2) 0 0">loads into the running sim; the car moves to its start</div></div>
+    <div><label class="check"><input type="checkbox" id="trackShow"> show track</label>
+    <div class="sub" style="margin:var(--space-2) 0 0">this view only; the walls stay in the sim</div></div>`;
   fillTrackSelect($('trackIn'));
+  $('trackShow').checked = !layout.hideTrack;
+  $('trackShow').onchange = () => { layout.hideTrack = !$('trackShow').checked; saveLayout(); };
   $('trackIn').onchange = () => { tracks.selected = $('trackIn').value; $('trackIn2').value = tracks.selected; sendServer({ type: 'sim', track: tracks.selected }); };
 }
 function fillTrackSelect(sel) {
   if (!sel) return;
   sel.replaceChildren(...tracks.names.map((n) => new Option(n, n)));
   sel.value = tracks.names.includes(tracks.selected) ? tracks.selected : tracks.names[0];
+}
+
+// ---------- LiDAR ----------
+// Off by default. While the panel is open and switched on, the page holds a /scan socket; closing it
+// (switching off, closing the panel) is what lets the server, bridge and sim stop producing scans.
+// Scans are drawn on the main view (drawScan), in the overlay colour picked in the panel.
+const OVERLAYS = ['overlay-1', 'overlay-2', 'overlay-3', 'overlay-4'];
+const FOV_MODES = ['fill', 'outline', 'none']; // FOV fan out to range_max on the main view
+const fovMode = () => FOV_MODES.includes(layout.lidarFov) ? layout.lidarFov : FOV_MODES[0];
+const lidar = { on: false, ws: null, retryAt: 0, scan: null, arrivals: [] };
+function parseScan(buf) {
+  // protocol.md, "Sensor websockets": little-endian header, then `count` float32 ranges.
+  const v = new DataView(buf);
+  const count = v.getUint32(24, true);
+  return { stamp: v.getFloat64(0, true), angleMin: v.getFloat32(8, true), angleInc: v.getFloat32(12, true),
+    rangeMin: v.getFloat32(16, true), rangeMax: v.getFloat32(20, true),
+    mount: { x: v.getFloat32(28, true), y: v.getFloat32(32, true), yaw: v.getFloat32(36, true) },
+    ranges: new Float32Array(buf, 40, count) };
+}
+function syncLidar() {
+  if (!els.lidar) lidar.on = false; // closing the panel (or a layout reset) switches it off
+  const want = lidar.on && !!els.lidar && serverUp;
+  if (want && !lidar.ws && performance.now() >= lidar.retryAt) {
+    const ws = new WebSocket(`ws://${location.host}/scan`);
+    ws.binaryType = 'arraybuffer';
+    ws.onmessage = (e) => {
+      if (!(e.data instanceof ArrayBuffer)) return;
+      const s = lidar.scan = parseScan(e.data);
+      lidar.arrivals.push(nowS());
+      let nearest = Infinity;
+      for (const r of s.ranges) if (r >= s.rangeMin && r <= s.rangeMax && r < nearest) nearest = r;
+      ingest('/scan', 'LaserScan', { nearest: Number.isFinite(nearest) ? nearest : null, count: s.ranges.length });
+    };
+    ws.onclose = () => { if (lidar.ws === ws) { lidar.ws = null; lidar.scan = null; lidar.retryAt = performance.now() + 1000; } };
+    lidar.ws = ws;
+  } else if (!want && lidar.ws) {
+    const ws = lidar.ws; lidar.ws = null; lidar.scan = null; ws.close();
+  }
+}
+function lidarHz() {
+  const t = nowS();
+  while (lidar.arrivals.length && lidar.arrivals[0] < t - 1) lidar.arrivals.shift();
+  return lidar.arrivals.length;
+}
+const lidarColour = () => css(`--${OVERLAYS.includes(layout.lidarColour) ? layout.lidarColour : OVERLAYS[0]}`);
+function lidarMeta() { return lidar.on ? (lidar.scan ? `${lidarHz()} Hz` : 'waiting') : 'off'; }
+function buildLidar(b) {
+  b.innerHTML = `<dl class="kv">
+      <dt>scan</dt><dd><div class="seg"><button data-on="1">on</button><button data-on="0">off</button></div></dd>
+      <dt>fov</dt><dd><div class="seg">${FOV_MODES.map((m) => `<button data-fov="${m}">${m}</button>`).join('')}</div></dd>
+      <dt>colour</dt><dd><div class="seg">${OVERLAYS.map((o) =>
+        `<button data-colour="${o}" aria-label="${o}"><span class="swatch" style="background:var(--${o})"></span></button>`).join('')}</div></dd>
+    </dl>
+    <div class="sub" style="margin:0" data-f="note"></div>`;
+  b.addEventListener('click', (e) => {
+    const on = e.target.closest('button[data-on]');
+    if (on) { lidar.on = on.dataset.on === '1'; syncLidar(); }
+    const c = e.target.closest('button[data-colour]');
+    if (c) { layout.lidarColour = c.dataset.colour; saveLayout(); }
+    const f = e.target.closest('button[data-fov]');
+    if (f) { layout.lidarFov = f.dataset.fov; saveLayout(); }
+  });
+}
+function updateLidar(b) {
+  for (const t of b.querySelectorAll('button[data-on]')) t.setAttribute('aria-pressed', String((t.dataset.on === '1') === lidar.on));
+  const sel = OVERLAYS.includes(layout.lidarColour) ? layout.lidarColour : OVERLAYS[0];
+  for (const t of b.querySelectorAll('button[data-colour]')) t.setAttribute('aria-pressed', String(t.dataset.colour === sel));
+  for (const t of b.querySelectorAll('button[data-fov]')) t.setAttribute('aria-pressed', String(t.dataset.fov === fovMode()));
+  const s = lidar.scan;
+  setText(q(b, '[data-f=note]'), !lidar.on ? 'off: the sim renders nothing for it' : s
+    ? `/scan · ${s.ranges.length} points · ${s.rangeMax.toFixed(0)} m range` : serverUp ? 'waiting for /scan' : 'no server');
+}
+// In world coordinates, under the car: the FOV as a fan out to range_max (filled at 50 %, outlined, or
+// not drawn), then every return as a 2 px square.
+// Car pose is the newest drawn pose; the mount (base_link -> lidar) comes with each scan.
+function drawScan(car) {
+  const s = lidar.scan;
+  if (!s || !car) return;
+  const colour = lidarColour();
+  ctx.save();
+  ctx.translate(car.x, car.y); ctx.rotate(car.yaw);
+  ctx.translate(s.mount.x, s.mount.y); ctx.rotate(s.mount.yaw);
+  ctx.fillStyle = ctx.strokeStyle = colour;
+  const fov = fovMode();
+  if (fov !== 'none') {
+    ctx.beginPath(); ctx.moveTo(0, 0);
+    ctx.arc(0, 0, s.rangeMax, s.angleMin, s.angleMin + s.angleInc * (s.ranges.length - 1));
+    ctx.closePath();
+    if (fov === 'fill') { ctx.globalAlpha = 0.5; ctx.fill(); ctx.globalAlpha = 1; }
+    else { ctx.lineWidth = 1 / scale; ctx.setLineDash([]); ctx.stroke(); }
+  }
+  const d = 2 / scale;
+  ctx.beginPath();
+  for (let i = 0; i < s.ranges.length; i++) {
+    const r = s.ranges[i];
+    if (!(r >= s.rangeMin && r <= s.rangeMax)) continue; // inf / nan: no return
+    const a = s.angleMin + i * s.angleInc;
+    ctx.rect(r * Math.cos(a) - d / 2, r * Math.sin(a) - d / 2, d, d);
+  }
+  ctx.fill();
+  ctx.restore();
 }
 
 // ---------- server websocket ----------
@@ -1063,7 +1171,7 @@ function frame() {
   }
 
   // Track: the image's bottom-left corner sits at origin; pixel rows run top to bottom.
-  if (track) {
+  if (track && !layout.hideTrack) {
     const [ox, oy, oyaw] = track.origin, r = track.resolution;
     ctx.save();
     ctx.translate(ox, oy); ctx.rotate(oyaw);
@@ -1082,11 +1190,13 @@ function frame() {
     ctx.stroke(); ctx.globalAlpha = 1;
   }
 
+  drawScan(car);
   if (car) drawCar(car, fill, edge, false);
   if (ghost && opts.ghost) drawCar(ghost, null, css('--odom'), true);
   ctx.restore();
 
   updateTopbar();
+  syncLidar();
   for (const [id, el] of Object.entries(els)) {
     const def = PANELS[id];
     if (def.meta) setText(q(el, '.panel__meta'), def.meta());

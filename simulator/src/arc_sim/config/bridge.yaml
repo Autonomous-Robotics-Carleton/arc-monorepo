@@ -24,3 +24,12 @@
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
+
+# Lazy: subscribes to Gazebo only while something subscribes to /sim/scan, so Gazebo stops
+# rendering the LiDAR when nobody is watching. lidar_noise.py is that something, and is lazy too.
+- ros_topic_name: "/sim/scan"
+  gz_topic_name: "/model/racecar/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+  lazy: true

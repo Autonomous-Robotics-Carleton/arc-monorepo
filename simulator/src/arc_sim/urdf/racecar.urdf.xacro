@@ -27,6 +27,18 @@
   <!-- F1TENTH gym's max steering angle (rad). -->
   <xacro:property name="steering_limit" value="0.4189"/>
 
+  <!-- 2D LiDAR, E-10 (Hokuyo UST-10LX, ADR-0001). Settings come from simulator/.env through the
+       container's environment; the defaults here match E-10 for runs without it. -->
+  <xacro:property name="lidar_rate" value="$(optenv LIDAR_RATE 40)"/>
+  <xacro:property name="lidar_samples" value="$(optenv LIDAR_SAMPLES 1081)"/>
+  <xacro:property name="lidar_fov_deg" value="$(optenv LIDAR_FOV_DEG 270)"/>
+  <xacro:property name="lidar_range_min" value="$(optenv LIDAR_RANGE_MIN 0.06)"/>
+  <xacro:property name="lidar_range_max" value="$(optenv LIDAR_RANGE_MAX 10)"/>
+  <!-- Mount pose, base_link frame: front of the chassis, centred, above the body. TBC until the
+       ARC CAD places it (systems/mechanical, layout-brief M2). -->
+  <xacro:property name="lidar_x" value="0.265"/>
+  <xacro:property name="lidar_z" value="${ground_offset + height + 0.03}"/>
+
   <!-- base_link sits on the ground under the rear axle, as in racecar.xacro. -->
   <link name="base_link"/>
 
@@ -118,6 +130,45 @@
   <xacro:rear_wheel side="right" y="${-wheel_separation/2}"/>
   <xacro:front_wheel side="left" y="${wheel_separation/2}"/>
   <xacro:front_wheel side="right" y="${-wheel_separation/2}"/>
+
+  <!-- LiDAR: scans in the plane of its link, x forward, angles counter-clockwise from x. -->
+  <link name="lidar"/>
+  <joint name="base_to_lidar" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar"/>
+    <origin xyz="${lidar_x} 0 ${lidar_z}"/>
+  </joint>
+  <!-- Gazebo renders it only while something subscribes to its topic (the Sensors system skips
+       sensors without subscribers), so a lazy chain up to the ground station turns it off. -->
+  <gazebo reference="lidar">
+    <sensor name="lidar" type="gpu_lidar">
+      <topic>/model/racecar/scan</topic>
+      <gz_frame_id>lidar</gz_frame_id>
+      <update_rate>${lidar_rate}</update_rate>
+      <always_on>true</always_on>
+      <lidar>
+        <scan>
+          <horizontal>
+            <samples>${lidar_samples}</samples>
+            <resolution>1</resolution>
+            <min_angle>${-radians(lidar_fov_deg) / 2}</min_angle>
+            <max_angle>${radians(lidar_fov_deg) / 2}</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+        </scan>
+        <range>
+          <min>${lidar_range_min}</min>
+          <max>${lidar_range_max}</max>
+          <resolution>0.001</resolution>
+        </range>
+      </lidar>
+    </sensor>
+  </gazebo>
 
   <!--
     Gazebo's built-in Ackermann controller. Input is a Twist (speed + yaw rate), not

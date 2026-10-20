@@ -14,12 +14,32 @@ ROS 2 Jazzy + Gazebo Harmonic, headless by default, software rendering (Mesa llv
 
 The sim starts with no track. You pick one in the ground station, which loads it into the running sim through the bridge (see Tracks).
 
-`run.sh` builds the image (cached after the first time) and runs the container in the foreground. Ctrl+C (or a TERM signal) stops it. Docker Desktop must be running. Published ports listen on this machine only and have no password.
+`run.sh` builds the image (cached after the first time) and runs the container in the foreground. Ctrl+C (or a TERM signal) stops it. Published ports listen on this machine only and have no password.
+
+It reports each phase as it goes: which Docker context it's using, waiting for Docker (up to 60 s, so it can be started right after opening Docker Desktop), one line per build step (`--verbose` shows the full build output), the `.env` it loaded, and waiting for the bridge every 5 s. Before starting it checks the ports it publishes and names what holds one that is taken. The first build under a Docker setup takes several minutes; Docker Desktop and OrbStack keep separate images, so switching between them builds again.
 
 The 2D top-down view and the driving controls are the ground station's ([`../ground-station/`](../ground-station/)); it starts the sim with `run.sh --bridge` itself when you switch it to sim mode. The physics and sensors are 3D either way.
 
-- **`--bridge`**: publishes the bridge (`127.0.0.1:8765`: track files and a websocket streaming the car's estimate, Gazebo's true pose and car_link's status) and car_link (`127.0.0.1:9870/udp`: heartbeat and teleop). Both follow [`../ground-station/protocol.md`](../ground-station/protocol.md). Costs almost nothing: the sim stays at real time.
+- **`--bridge`**: publishes the bridge (`127.0.0.1:8765`: track files, a websocket streaming the car's estimate, Gazebo's true pose and car_link's status, and one websocket per sensor) and car_link (`127.0.0.1:9870/udp`: heartbeat and teleop). Both follow [`../ground-station/protocol.md`](../ground-station/protocol.md). Costs almost nothing: the sim stays at real time.
 - **`--gui3d`** (`http://localhost:6080`): Gazebo's own GUI on a virtual screen streamed through noVNC; the camera follows the car. It renders 3D on the CPU (llvmpipe), which slowed the blank-plane sim to about 37% of real time on an 8-core M-series Mac. Use it to inspect the model, not to drive.
+
+## Sensors
+
+Sensors are off until something subscribes to them, normally the ground station's sensor panels. Gazebo renders a sensor only while its topic has a subscriber, and every node between it and the ground station subscribes only while it has one too:
+
+```
+page panel on ─▶ bridge /scan socket ─▶ /scan ─▶ lidar_noise (lazy) ─▶ /sim/scan ─▶ ros_gz_bridge (lazy) ─▶ Gazebo renders
+```
+
+So a sensor nobody watches costs nothing, and `ros2 topic echo /scan` (or a bag) switches it on as well. Turning one on takes a moment while each link subscribes.
+
+Settings are in [`.env`](.env), passed to the container by `run.sh` and read by the car model (`$(optenv …)` in the xacro, which falls back to the same defaults). Edit it and rerun `./run.sh`; no image rebuild needed. The defaults follow `systems/bom/electrical.md`.
+
+| Sensor | `systems/` | Model | Topic | Settings |
+| --- | --- | --- | --- | --- |
+| 2D LiDAR | E-10, Hokuyo UST-10LX (ADR-0001) | `gpu_lidar` on link `lidar` | `/scan` (`/sim/scan` before noise) | `LIDAR_RATE`, `LIDAR_SAMPLES`, `LIDAR_FOV_DEG`, `LIDAR_RANGE_MIN`, `LIDAR_RANGE_MAX` |
+
+Sensors render on the CPU (Mesa llvmpipe through EGL, `--headless-rendering`), since Docker on macOS has no GPU. The LiDAR's mount pose (front of the chassis, above the body) is TBC until the ARC CAD places it. The bridge reads it from `/tf_static` (the URDF, through `robot_state_publisher`) and sends it with every scan, so the ground station follows the URDF. No noise is added yet: `lidar_noise.py` passes scans through unchanged.
 
 ## Tracks
 
@@ -73,7 +93,7 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 
 `run.sh` starts everything on your machine; `start-sim.sh` is the container's main process (`BRIDGE=1` adds the bridge, `GUI=3d` the noVNC stack); `entrypoint.sh` sources ROS for every command, including `docker exec`.
 
-`src/arc_sim/` is one ROS 2 package:
+`.env` holds the sensor settings. `src/arc_sim/` is one ROS 2 package:
 
 | Path | What |
 | --- | --- |
@@ -82,7 +102,8 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 | `worlds/empty.sdf` | Blank plane with a sun (the light is only used by the 3D viewer); the bridge spawns a track's walls into it |
 | `tracks/` | Bundled tracks: map yaml + image |
 | `arc_sim/track.py` | Map yaml + image → occupied pixels → merged wall boxes → walls model SDF. Used by the bridge |
-| `config/bridge.yaml` | Gazebo ↔ ROS 2 topics. Add one entry per new topic |
+| `config/bridge.yaml` | Gazebo ↔ ROS 2 topics. Add one entry per new topic; sensors are `lazy: true` |
+| `scripts/lidar_noise.py` | `/sim/scan` → `/scan`, subscribing upstream only while `/scan` has subscribers. Pass-through until noise is designed |
 | `config/gui.config` | Gazebo 3D GUI layout for `--gui3d`: window size, starting camera |
 | `launch/sim.launch.py` | Server, spawn, topic bridge, car_link. `bridge:=true` adds the ground-station bridge; `gui:=true` the 3D GUI (needs a display) |
 | `scripts/car_link.py` | The car's receiving end: UDP heartbeat + teleop on port 9870 and `/sim/auto/cmd_vel` in, heartbeat gate and speed ramp, `/sim/cmd_vel` and `/sim/link/status` out |
@@ -90,7 +111,7 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 
 ## Topics
 
-Internal names only. Noise nodes (outside the sim) own the public names such as `/drive` and `/odom`.
+Internal names, except `/scan`. Noise nodes own the public names such as `/drive` and `/odom`; the LiDAR's, `lidar_noise.py`, runs in the sim for now so the ground station can read `/scan` as an algorithm would.
 
 The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays separate from the car's (default domain 0) even if the container shares the host network. A node outside the container must set the same ID to see these topics.
 
@@ -101,6 +122,8 @@ The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays
 | `/sim/link/status` | out (car_link → bridge) | `std_msgs/String`, JSON: heartbeat and teleop ages, `stopping`, `reason` |
 | `/sim/odom` | out | `nav_msgs/Odometry`, the car's estimate from wheel motion |
 | `/sim/ground_truth` | out | `nav_msgs/Odometry`, Gazebo's actual pose. For viewers and scoring; algorithms must never use it |
+| `/sim/scan` | out (Gazebo → lidar_noise) | `sensor_msgs/LaserScan`, perfect ranges, frame `lidar`. Lazy |
+| `/scan` | out (lidar_noise) | `sensor_msgs/LaserScan`, what algorithms and the ground station read. Lazy |
 | `/clock` | out | sim time |
 
 ## Placeholders and assumptions

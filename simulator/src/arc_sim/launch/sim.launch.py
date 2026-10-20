@@ -32,9 +32,10 @@ def world_actions(context):
 
     return [
         # Headless server (-s) unless gui:=true. -r starts the simulation running.
+        # --headless-rendering: sensors render through EGL, with no display.
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(gz_launch),
-            launch_arguments={'gz_args': '-s -r ' + world}.items(),
+            launch_arguments={'gz_args': '-s -r --headless-rendering ' + world}.items(),
             condition=UnlessCondition(gui),
         ),
         IncludeLaunchDescription(
@@ -100,5 +101,12 @@ def generate_launch_description():
         Node(
             package='arc_sim',
             executable='car_link.py',
+        ),
+
+        # /sim/scan -> /scan, subscribing only while /scan has subscribers.
+        Node(
+            package='arc_sim',
+            executable='lidar_noise.py',
+            parameters=[{'use_sim_time': True}],
         ),
     ])

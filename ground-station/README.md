@@ -52,8 +52,9 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 
 - **Top bar:** the title `arc ground station` (always lowercase), three always-on pills (target, driving/idle, heartbeat), `Reset layout`, and `+ Add panel ▾`. Nothing else goes in the top bar.
 - **Panels** are free-floating, never docked: drag by the header, resize from the corner (both snap to 8 px), collapse `▾`/`▸`, close `✕`, and reopen from `+ Add panel`. Positions, sizes, which panels are open and the plotted topics are kept in `localStorage` (`arc-gs-layout-v1`); `Reset layout` restores the default (Status and Heartbeat on the left, Topics and Plots on the right).
-- **Panels today:** Status (the chain target → server → helper → link → sim: the first failure is red, every tile after it greyed), Heartbeat (what the helper sends, the heartbeat and teleop ages the car reports against the 150 ms timeout, the ARMED / STOPPING strip, Test cutoff, event log), Car (pose, odom, odom error), Topics, Plots, Settings, and Sim settings (shown only in sim mode).
-- **Not wired yet:** LiDAR, Camera and Computer (CPU, memory, GPU free) are in the menu but greyed out, because nothing sends their data.
+- **Panels today:** Status (the chain target → server → helper → link → sim: the first failure is red, every tile after it greyed), Heartbeat (what the helper sends, the heartbeat and teleop ages the car reports against the 150 ms timeout, the ARMED / STOPPING strip, Test cutoff, event log), Car (pose, odom, odom error), Topics, Plots, Settings, and Sim settings (shown only in sim mode; it picks the track and can hide the track from the view, which leaves the walls in the sim).
+- **LiDAR:** off by default. Its panel switches `/scan` on and off, picks the scan colour and the FOV drawing (fill, outline or none); the scan itself is drawn on the main view (see the viewport rule below). Closing the panel also switches it off.
+- **Not wired yet:** Camera and Computer (CPU, memory, GPU free) are in the menu but greyed out, because nothing sends their data.
 - **Adding a panel:** add an entry to `PANELS` in the script (`title`, `group`, `build(body)` once on open, optional `update(body)` every frame, optional `available()` for when it can be opened). The menu lists it automatically.
 - **Topics and Plots** show every numeric field the page receives, grouped by topic. Today that is only what the bridge's `state` message carries: in sim, `/sim/odom`, `/sim/ground_truth` and `/sim/link/status`. The page plots anything passed to `ingest(topic, type, object)`, so forwarding more topics needs only bridge and server changes plus one `ingest` call. How the bridge discovers and forwards topics, and how heavy ones (camera, scan) stay off the teleop path, is not decided yet.
 
@@ -61,14 +62,15 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 
 - Dark theme first; light through `prefers-color-scheme`. Every colour is a token defined for both themes.
 - One monospace face. Lowercase keys and values with no colons (`heartbeat age`); uppercase only for alarm states (`LOST`, `ARMED`, `STOPPING`). Join a state and its reason with a middle dot: `STOPPING · heartbeat timeout`.
-- Colour only for state: `ok`, `warn`, `bad`, always paired with a word. Red means the car is or will be stopping. `accent` is for interaction only (selected, focus), never a status.
+- Colour only for state (except sensor overlays, below): `ok`, `warn`, `bad`, always paired with a word. Red means the car is or will be stopping. `accent` is for interaction only (selected, focus), never a status.
 - Plain data is `ink`; units and sub-labels `ink-muted`. Tabular figures with fixed decimals, so numbers don't jitter.
 - No icons, only text glyphs (`▾ ▸ ✕ ✓ → + ·`). Status dots are 6 px squares. Nothing rounder than 4 px.
 - In the viewport, the sim car and its trail are `car` red, the odom ghost is a dashed `odom` blue outline, and the real car is white with a dark outline.
+- Sensor overlays in the viewport use their own colours, `overlay-1` to `overlay-4`, picked to stay clear of the state, car and odom colours. The operator picks one per sensor. The LiDAR draws its returns as 2 px squares and its FOV as a fan out to the scan's `range_max`, filled at 50 % opacity or outlined, both in that colour.
 
 ## Not built yet
 
-- Topic discovery, and the LiDAR, Camera and Computer panels (see [The page](#the-page)).
+- Topic discovery, and the Camera and Computer panels (see [The page](#the-page)).
 - Take control, a driver-lost broadcast, and ownership of the car between several ground stations.
 - The car side: the real car has no bridge or car_link yet, so real mode shows no car. `car.host` is TBD (`null`).
 - The UDP packet format and ports are provisional (TBC) until the car's teleop receiver is recorded in [`systems/`](../systems/README.md).

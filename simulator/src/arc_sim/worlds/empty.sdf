@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<!-- Blank plane for milestone 1: no track, no sensors. No Sensors system, so nothing renders. -->
+<!-- Blank plane: no track until the bridge loads one. The Sensors system renders the car's
+     sensors, on the CPU (llvmpipe), and only those something subscribes to. -->
 <sdf version="1.9">
   <world name="empty">
     <physics name="1ms" type="ignored">
@@ -10,10 +11,13 @@
     <plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
     <plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
     <plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
 
     <gravity>0 0 -9.81</gravity>
 
-    <!-- Only the GUI uses the light; the headless server renders nothing. -->
+    <!-- Lights the 3D GUI and cameras; a LiDAR doesn't need it. -->
     <light type="directional" name="sun">
       <cast_shadows>false</cast_shadows>
       <pose>0 0 10 0 0 0</pose>

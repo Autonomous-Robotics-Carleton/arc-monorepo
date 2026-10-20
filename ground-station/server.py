@@ -4,6 +4,7 @@
 http://127.0.0.1:8080/           web/index.html
 http://127.0.0.1:8080/track.png  the connected bridge's /track.png, proxied
 ws://127.0.0.1:8080/ws           server <-> page messages, see protocol.md
+ws://127.0.0.1:8080/scan         the connected bridge's /scan (binary LiDAR frames), relayed
 
 Modes: `real` (startup) connects to the car's bridge at config car.host, retrying every 2 s.
 `sim` starts ../simulator/run.sh --bridge and connects to its bridge on 127.0.0.1. The sim
@@ -11,6 +12,10 @@ starts with no track: the server asks the bridge to load the page's pick on ever
 whenever the page picks another, and relays the bridge's `track_status` (loading, ready,
 failed) to the page. While in sim mode the car is still probed so the page can show that one
 was found; the server never switches mode on its own.
+
+Sensor sockets (/scan) are relayed one to one: each page socket opens its own socket to the
+bridge and closes it when the page closes, so the bridge (and the sim behind it) only produce
+a sensor while some page is showing it.
 """
 
 import argparse
@@ -42,6 +47,7 @@ CONTAINER = 'arc-sim'
 RETRY = 2.0  # s between car connection attempts (and car probes in sim mode)
 SIM_RETRY = 0.5  # s between sim bridge attempts while it starts
 STOP_GRACE = 20.0  # s to wait for run.sh to stop the container before `docker stop`
+SENSORS = ('/scan',)  # bridge websocket paths the page may open
 
 log = logging.getLogger('server')
 
@@ -146,7 +152,7 @@ class Server:
 
     async def process_request(self, connection, request):
         path = request.path.split('?', 1)[0]
-        if path == '/ws':
+        if path == '/ws' or path in SENSORS:
             return None
         if path in ('/', '/index.html'):
             try:
@@ -162,6 +168,9 @@ class Server:
         return connection.respond(HTTPStatus.NOT_FOUND, 'not found\n')
 
     async def page(self, ws):
+        path = ws.request.path.split('?', 1)[0]
+        if path in SENSORS:
+            return await self.sensor_relay(ws, path)
         self.pages.add(ws)
         try:
             await ws.send(json.dumps(self.link()))
@@ -193,6 +202,48 @@ class Server:
             pass
         finally:
             self.pages.discard(ws)
+
+    async def sensor_relay(self, page, path):
+        """Relay one sensor socket from the bridge to one page socket, newest frame only.
+
+        With no bridge connected, the page socket is closed right away; the page retries.
+        """
+        if not self.connected:
+            await page.close(1013, 'no bridge')
+            return
+        host, port, _ = self.target()
+        try:
+            async with connect('ws://%s:%d%s' % (host, port, path), open_timeout=2,
+                               max_size=2 ** 22) as up:
+                latest = {'frame': None}
+                fresh = asyncio.Event()
+
+                async def pull():  # keeps only the newest frame, so a slow page skips frames
+                    async for frame in up:
+                        latest['frame'] = frame
+                        fresh.set()
+
+                async def push():
+                    while True:
+                        await fresh.wait()
+                        fresh.clear()
+                        await page.send(latest['frame'])
+
+                async def drain():  # notices the page closing
+                    async for _ in page:
+                        pass
+
+                tasks = [asyncio.create_task(f()) for f in (pull, push, drain)]
+                try:
+                    await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+                finally:
+                    for t in tasks:
+                        t.cancel()
+                    await asyncio.gather(*tasks, return_exceptions=True)
+        except (OSError, TimeoutError, ConnectionClosed) as e:
+            log.info('%s relay: %s', path, e)
+        finally:
+            await page.close()
 
     # ---- mode switching ----------------------------------------------------------
 
