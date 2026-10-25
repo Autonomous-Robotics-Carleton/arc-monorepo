@@ -5,6 +5,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { File, Files, Folder } from 'fumadocs-ui/components/files';
 import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Mermaid } from '@/components/Mermaid';
 
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
@@ -24,6 +25,8 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Folder,
     // Type table
     TypeTable,
+    // ```mermaid blocks (remarkMdxMermaid in source.config.ts)
+    Mermaid,
     ...components,
   };
 }

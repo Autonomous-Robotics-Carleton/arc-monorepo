@@ -5,6 +5,7 @@ import {
   frontmatterSchema,
   metaSchema,
 } from 'fumadocs-mdx/config';
+import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { resolve } from 'node:path';
 import { remarkSystemIds } from './lib/remark-system-ids';
 
@@ -132,6 +133,8 @@ export default defineConfig({
     remarkPlugins: [
       remarkLeadingH1,
       remarkGithubAlerts,
+      // ```mermaid blocks, drawn by components/Mermaid.tsx
+      remarkMdxMermaid,
       [remarkSystemIds, { systemsRoot: resolve('../../systems') }],
     ],
     valueToExport: ['headingTitle'],
