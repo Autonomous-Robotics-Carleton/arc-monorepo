@@ -1,0 +1,13 @@
+{
+  "name": "altium-sync",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "sync": {
+      "command": "node --experimental-strip-types tools/altium-sync/sync.mts",
+      "cache": false
+    },
+    "test": {
+      "command": "node --experimental-strip-types --test tools/altium-sync/sync.test.mts"
+    }
+  }
+}

@@ -18,6 +18,7 @@ node_modules
 .env*.local
 .vercel
 .claude
+.altium-sync/
 .github/agents/
 .github/prompts/
 .github/skills/
