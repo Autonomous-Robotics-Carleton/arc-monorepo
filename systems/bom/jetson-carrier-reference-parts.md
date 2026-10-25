@@ -1,7 +1,7 @@
 # Jetson carrier reference — complete component inventory
 
 - **Status:** Extracted Antmicro reference; final ARC population and prices TBD
-- **Source:** Antmicro board revision 1.3.4, commit `34f0e7f5fbca441191e20ed55d93cf8614e12bed`; [source lock](../../hardware/orin-carrier/upstream-lock.json), [source schematics](../../hardware/orin-carrier/upstream/jetson-orin-baseboard.kicad_sch)
+- **Source:** Antmicro board revision 1.3.4, commit `34f0e7f5fbca441191e20ed55d93cf8614e12bed`; [source lock](../../hardware/orin-carrier/upstream-lock.json), [source schematics](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/jetson-orin-baseboard.kicad_sch)
 - **Source licence:** Apache-2.0; [upstream licence](../../hardware/orin-carrier/upstream/LICENSE)
 - **Traces to:** E-02, ADR-0025, SYS-07, SYS-08, SYS-24, RSK-01
 
@@ -16,16 +16,16 @@ The source marks **544 references in its BOM**, **77 DNP** and **48 non-purchase
 
 | Source sheet | Unique references counted here |
 | --- | --- |
-| [csi.kicad_sch](../../hardware/orin-carrier/upstream/csi.kicad_sch) | 65 |
-| [ethernet.kicad_sch](../../hardware/orin-carrier/upstream/ethernet.kicad_sch) | 44 |
-| [hdmi.kicad_sch](../../hardware/orin-carrier/upstream/hdmi.kicad_sch) | 58 |
-| [jetson-orin-baseboard.kicad_sch](../../hardware/orin-carrier/upstream/jetson-orin-baseboard.kicad_sch) | 4 |
-| [m-2.kicad_sch](../../hardware/orin-carrier/upstream/m-2.kicad_sch) | 61 |
-| [peripherals.kicad_sch](../../hardware/orin-carrier/upstream/peripherals.kicad_sch) | 93 |
-| [som.kicad_sch](../../hardware/orin-carrier/upstream/som.kicad_sch) | 29 |
-| [supply.kicad_sch](../../hardware/orin-carrier/upstream/supply.kicad_sch) | 124 |
-| [usb.kicad_sch](../../hardware/orin-carrier/upstream/usb.kicad_sch) | 140 |
-| [usb3.kicad_sch](../../hardware/orin-carrier/upstream/usb3.kicad_sch) | 51 |
+| [csi.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/csi.kicad_sch) | 65 |
+| [ethernet.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/ethernet.kicad_sch) | 44 |
+| [hdmi.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/hdmi.kicad_sch) | 58 |
+| [jetson-orin-baseboard.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/jetson-orin-baseboard.kicad_sch) | 4 |
+| [m-2.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/m-2.kicad_sch) | 61 |
+| [peripherals.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/peripherals.kicad_sch) | 93 |
+| [som.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/som.kicad_sch) | 29 |
+| [supply.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/supply.kicad_sch) | 124 |
+| [usb.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/usb.kicad_sch) | 140 |
+| [usb3.kicad_sch](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/usb3.kicad_sch) | 51 |
 | **Total** | **669** |
 
 The count uses each multi-unit component's first source sheet for the sheet summary; all references are represented in the grouped inventory below. Existing names/MPNs come from the source, with surrounding whitespace removed for display. They are not substituted based on a similar JLC catalogue name.

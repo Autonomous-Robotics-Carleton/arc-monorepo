@@ -1,6 +1,6 @@
 # hardware
 
-Board designs and mechanical exports. One folder per board, added when its design starts. [Motherboard](motherboard/README.md) contains the combined power/sync design plan; [Orin carrier](orin-carrier/README.md) contains the pinned Antmicro CAD sources and the Altium conversion status; `mechanical/` holds mechanical exports.
+Board designs and mechanical exports. One folder per board, added when its design starts. [Motherboard](motherboard/README.md) contains the combined power/sync design plan; [Orin carrier](orin-carrier/README.md) preserves the deferred design's source provenance and historical conversion audit; its reference CAD was removed; `mechanical/` holds mechanical exports.
 
 | Board | Handoff section |
 | --- | --- |
@@ -12,6 +12,8 @@ Board designs and mechanical exports. One folder per board, added when its desig
 | Harness | §5; [wiring/count schedule](../systems/bom/motherboard-wiring.md) |
 
 Mechanical CAD lives in Fusion. `mechanical/` here holds STEP and drawing exports, committed per release.
+
+Use the [Altium source snapshot workflow](../tools/altium-sync/README.md) to import saved workspace source files into the four active board folders before a normal Git commit.
 
 ## Rules
 

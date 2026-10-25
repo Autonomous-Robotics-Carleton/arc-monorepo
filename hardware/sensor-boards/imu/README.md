@@ -2,6 +2,8 @@
 
 **Current build under ADR-0045:** design and assemble our own remote IMU PCB **in house**, separate from the motherboard. Both measurement sites use **ST ISM330DHCXTR**: one at the body/CG and one at the front axle. Reuse a common PCB design at the two locations; each populated board has its own cable, chip select and data-ready input. No schematic, layout or fabrication package is released.
 
+The [native Altium scaffold notes](altium/README.md) and [ARC-Sensor-IMU-ISM330DHCX project](altium/ARC-Sensor-IMU-ISM330DHCX.PrjPcb) provide a draft schematic with source/TBD notes and an empty PCB placeholder. Circuit capture and layout remain unfinished; template geometry and stackup are not released design choices.
+
 | Item | Current plan / status |
 | --- | --- |
 | Installed quantity | **2 boards per car**: body/CG and front axle; E-20 and E-21 |

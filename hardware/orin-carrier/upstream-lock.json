@@ -77,5 +77,5 @@
       "sha256": "8cf150282e02d2e7e390f3bc3d63166a9b5067190b8440165b42d61e04c6a058"
     }
   ],
-  "note": "Unmodified CAD source snapshot. Full clone retained locally at .nx/ee-carrier-upstream. CI and unrelated documentation assets excluded."
+  "note": "Historical SHA-256 inventory of the former unmodified CAD snapshot. Reference CAD, local image and Altium conversion removed on 2026-10-25; entries do not assert current file presence. Source can be recovered from this pinned commit or Git history. The retained upstream README photo link now points to the pinned remote source."
 }

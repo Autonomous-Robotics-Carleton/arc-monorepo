@@ -10,7 +10,7 @@
 
 The [wiring plan and diagram](../../systems/bom/motherboard-wiring.md) now budget **seventeen sensor runs / 111 minimum conductors TBC**: ten angle runs / 70 conductors, two IMU runs / 16 and five ToF runs / 25. A common PCB design is reused at different locations; it does not combine signals or remove dedicated chip selects. These boards add **no corner MCU or CAN node** (ADR-0006 / ADR-0008). Motor Hall and temperature go to each A50S.
 
-The dedicated [IMU](imu/README.md) and [corner-height](tof/README.md) folders are the workspaces for schematic capture and layout. Wheel, suspension and knuckle sensor sites remain selected.
+The angle, [IMU](imu/README.md) and [corner-height](tof/README.md) workspaces now contain native Altium organizational scaffolds: [angle notes](angle/altium/README.md) / [project](angle/altium/ARC-Sensor-Angle-AS5047P.PrjPcb), [IMU notes](imu/altium/README.md) / [project](imu/altium/ARC-Sensor-IMU-ISM330DHCX.PrjPcb), and [ToF notes](tof/altium/README.md) / [project](tof/altium/ARC-Sensor-ToF.PrjPcb). They provide draft source/TBD notes and empty PCB placeholders; circuit capture and layout remain unfinished. Wheel, suspension and knuckle sensor sites remain selected.
 
 ## AS5047P in-house purchase and assembly plan
 
