@@ -21,7 +21,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Superseded by 0036 |
 | [0014](0014-ground-speed-event-camera.md) | Ground speed: downward event camera with three lighting modes; dead-wheel pod as fallback | Accepted, amended by 0046 |
 | [0015](0015-ground-link.md) | Ground link: team router (Flint 3), laptop gateway, button hotspot, wired service port | Accepted |
-| [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted |
+| [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted, amended by 0048 |
 | [0017](0017-sync-mcu-rtos.md) | Sync MCU firmware on Zephyr | Accepted |
 | [0018](0018-steering-actuator.md) | Steering: VESC-driven brushless actuator, belt reduction, return-to-centre on e-stop | Superseded by 0019 |
 | [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted, amended by 0034 and 0038 |
@@ -33,13 +33,13 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0025](0025-orin-carrier-antmicro-fork.md) | Orin carrier is a fork of Antmicro's open Jetson baseboard | Accepted (backfilled), amended by 0046 |
 | [0026](0026-staggered-transverse-motors.md) | One motor per wheel; transverse, inboard, staggered fore and aft | Accepted (backfilled) |
 | [0027](0027-suspension-family.md) | Suspension, steering and wheel parts from a competition touring car (XRAY X4 family) | Superseded by 0040 (never accepted) |
-| [0028](0028-software-targets.md) | Every software component builds for simulation, development hardware and the car, from one source | Accepted, amended by 0034 |
+| [0028](0028-software-targets.md) | Every software component builds for simulation, development hardware and the car, from one source | Accepted, amended by 0034 and 0047 |
 | [0029](0029-dev-environment.md) | One dev container for every toolchain; boards flashed from the host | Accepted |
 | [0030](0030-vesc-firmware-in-repo.md) | VESC firmware fork in this repo as a git subtree of upstream (GPL-3.0 subdirectory) | Superseded by 0033 |
 | [0031](0031-sync-link-encoding.md) | Sync link encoded as MAVLink 2 with our own message set | Accepted |
-| [0032](0032-simulator.md) | Simulators as pluggable backends: Gazebo Harmonic, Webots, F1TENTH gym | Accepted |
+| [0032](0032-simulator.md) | Simulators as pluggable backends: Gazebo Harmonic, Webots, F1TENTH gym | Accepted, amended by 0047 |
 | [0033](0033-vesc-firmware-vendored.md) | VESC firmware vendored as an upstream snapshot, updated by script (GPL-3.0 subdirectory) | Accepted, amended by 0034 and 0037 |
-| [0034](0034-off-the-shelf-motor-controllers.md) | Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s | Accepted, amended by 0035; sizing review proposed in 0048 |
+| [0034](0034-off-the-shelf-motor-controllers.md) | Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s | Accepted, amended by 0035; sizing review proposed in 0044 |
 | [0035](0035-corner-state-and-command-timeout.md) | Each corner reports its state in its telemetry; the controllers brake on command loss | Accepted, amended by 0039 |
 | [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
 | [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
@@ -52,3 +52,6 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0044](0044-ee-sizing-after-custom-corners.md) | Align EE review with 100 mm wheels, 18:1 gearing and the revised current/regen estimates; resistor sizing reopened | Proposed (ratings and parts review pending) |
 | [0045](0045-vehicle-state-sensor-boards.md) | Vehicle-state sensors on our own small boards (AS5047P, ISM330DHCXTR, five ToF), assembled in house | Accepted |
 | [0046](0046-v1-builds.md) | The v1 car is built twice: v1.0 on borrowed compute and LiDAR with fewer cameras, then v1.1, the full design | Accepted |
+| [0047](0047-one-platform-targets-differ-at-devices.md) | One platform for every target: the same stack everywhere, and targets differ only at the devices (simulated, development or the car's) | Accepted, amended by 0049 |
+| [0048](0048-experiments-own-estimation-and-control.md) | Experiments own estimation and control, command speed and steering, and may run in real time | Accepted |
+| [0049](0049-twin-runs-in-lockstep.md) | The twin runs in lockstep: the simulator's clock drives the firmware, the device models and the platform | Accepted |

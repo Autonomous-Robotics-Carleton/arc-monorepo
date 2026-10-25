@@ -1,6 +1,6 @@
 # ADR-0032: Simulators are pluggable backends: Gazebo Harmonic, Webots and the F1TENTH gym
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0047 (simulator packages supply the world and the device models, not car-interface backends)
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-08, SYS-10, SYS-24, SYS-33, ADR-0014, ADR-0016, ADR-0026, ADR-0028, ADR-0029
