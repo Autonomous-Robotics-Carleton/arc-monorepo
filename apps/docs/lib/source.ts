@@ -21,28 +21,77 @@ const repoPages: Record<string, { path: string; title: string }> = {
 };
 const systemsReadme = { path: 'how-these-docs-work.md', title: 'How these docs work' };
 
-// systems/ mounts at car/. Folder READMEs become folder index pages, and the
-// architecture overview is the section's landing page.
-function carPath(path: string): string {
-  if (path === 'architecture.md') return 'car/index.md';
-  return `car/${path.replace(/(^|\/)README\.md$/, '$1index.md')}`;
+// systems/ mounts at car/, except the pages one discipline reads, which go to
+// that discipline's section (electrical/, mechanical/, software/). Folder
+// READMEs become folder index pages, and the architecture overview is the car
+// section's landing page. A page moved here needs a redirect in next.config.mjs.
+const systemsPages: Record<string, string> = {
+  'architecture.md': 'car/index.md',
+  'handoff/electrical.md': 'electrical/index.md',
+  'bom/electrical.md': 'electrical/bom.md',
+  'bom/motherboard-wiring.md': 'electrical/motherboard-wiring.md',
+  'bom/pcb-parts-selection.md': 'electrical/pcb-parts-selection.md',
+  'bom/pcb-component-breakdown.md': 'electrical/pcb-component-breakdown.md',
+  'bom/sensor-candidate-review.md': 'electrical/sensor-candidate-review.md',
+  'bom/jetson-carrier-reference-parts.md': 'electrical/jetson-carrier-parts.md',
+  'bom/total-electrical-cost.md': 'electrical/cost.md',
+  'bom/jlc-pcba-cost-estimate.md': 'electrical/pcb-funding-estimate.md',
+  'mechanical/layout-brief.md': 'mechanical/layout-brief.md',
+  'mechanical/cad-workflow.md': 'mechanical/cad-workflow.md',
+  'bom/mechanical.md': 'mechanical/bom.md',
+  'software/architecture.md': 'software/architecture.md',
+  'software/setup-plan.md': 'software/setup-plan.md',
+};
+
+function systemsPath(path: string): string {
+  return systemsPages[path] ?? `car/${path.replace(/(^|\/)README\.md$/, '$1index.md')}`;
 }
 
-// Sidebar for car/, kept here so systems/ holds no site config. Folders with
-// a single page are flattened ("...folder"); "..." picks up new files.
-const carSidebar: Record<string, { title: string; pages?: string[] }> = {
+// Sidebar titles for systems/ pages, by their path on the site. A page not
+// listed is titled by its own `# heading`.
+const systemsTitles: Record<string, string> = {
+  'car/index.md': 'Overview',
+  'car/requirements/system.md': 'System requirements',
+  'car/risks.md': 'Risk register',
+  'car/reviews/fab-gate.md': 'Fab gate checklist',
+  'electrical/index.md': 'Electrical handoff',
+  'electrical/bom.md': 'Electrical BOM',
+  'electrical/motherboard-wiring.md': 'Motherboard wiring',
+  'electrical/jetson-carrier-parts.md': 'Jetson carrier reference parts',
+  'electrical/pcb-funding-estimate.md': 'PCB funding estimate',
+  'electrical/cost.md': 'Electrical cost by build',
+  'electrical/sensor-candidate-review.md': 'Sensor candidate review',
+  'mechanical/bom.md': 'Mechanical BOM',
+  'mechanical/layout-brief.md': 'Layout brief',
+  'mechanical/cad-workflow.md': 'CAD workflow',
+  'software/architecture.md': 'Software architecture',
+  'software/setup-plan.md': 'Setup plan',
+};
+
+// Sidebars for the systems/ sections, kept here so systems/ holds no site
+// config. Folders with a single page are flattened ("...folder"); "..." picks
+// up new files. software/ has its own meta.json in content/docs/software/.
+const systemsSidebar: Record<string, { title: string; pages?: string[] }> = {
   car: {
     title: 'The car',
     pages: [
       'index', 'builds', 'topology', '...requirements', '...verification', 'adr', 'icd', 'budgets',
-      '...bom', 'risks', 'tests', '...mechanical', 'software', '...handoff', '...reviews', '...',
+      'risks', 'tests', 'reviews', '...',
     ],
   },
   'car/adr': { title: 'Decisions' },
   'car/icd': { title: 'Interfaces' },
   'car/budgets': { title: 'Budgets' },
   'car/tests': { title: 'Tests' },
-  'car/software': { title: 'Software design', pages: ['architecture', 'setup-plan'] },
+  'car/reviews': { title: 'Reviews' },
+  electrical: {
+    title: 'Electrical',
+    pages: [
+      'index', 'bom', 'motherboard-wiring', 'pcb-parts-selection', 'pcb-component-breakdown',
+      'sensor-candidate-review', 'jetson-carrier-parts', 'cost', 'pcb-funding-estimate', '...',
+    ],
+  },
+  mechanical: { title: 'Mechanical', pages: ['layout-brief', 'cad-workflow', 'bom', '...'] },
 };
 
 // Software READMEs (see source.config.ts) and their page under software/. Their
@@ -59,7 +108,7 @@ const softwareReadmes: [Parameters<typeof createMDXSource>[0], Record<string, [s
     },
   ],
   [experimentsDocs, { 'README.md': ['experiments', 'Experiments'] }],
-  [platformDocs, { 'README.md': ['platform', 'Platform'] }],
+  [platformDocs, { 'README.md': ['platform', 'Orin image'] }],
   [toolsDocs, { 'README.md': ['tools', 'Tools'] }],
   [libsDocs, { 'systems-model/README.md': ['systems-model', 'systems-model library'] }],
 ];
@@ -75,7 +124,7 @@ function softwareFiles(): VirtualFile[] {
   );
 }
 
-const carMeta: VirtualFile[] = Object.entries(carSidebar).map(([folder, data]) => ({
+const systemsMeta: VirtualFile[] = Object.entries(systemsSidebar).map(([folder, data]) => ({
   type: 'meta',
   path: `${folder}/meta.json`,
   data,
@@ -115,10 +164,11 @@ const files: VirtualFile[] = [
   ...mount('handbook/orin-dev-kit', devKitDocs.toFumadocsSource()),
   ...filesOf(createMDXSource(systemsDocs)).map((file) => {
     if (file.path === 'README.md') return setTitle({ ...file, path: systemsReadme.path }, systemsReadme.title);
-    const moved = { ...file, path: carPath(file.path) };
-    return file.path === 'architecture.md' ? setTitle(moved, 'Overview') : moved;
+    const moved = { ...file, path: systemsPath(file.path) };
+    const title = systemsTitles[moved.path];
+    return title ? setTitle(moved, title) : moved;
   }),
-  ...carMeta,
+  ...systemsMeta,
   ...softwareFiles(),
   ...filesOf(createMDXSource(repoDocs)).map((file) => {
     const page = repoPages[file.path];
