@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "project": "imu",
+  "source": "https://americas-carleton-university-autonomous-robotics-carle.365.altium.com/designs/2A72933B-BA15-4B7E-AB7B-3331F4D6727C#design",
+  "files": {
+    "ARC-Sensor-IMU-ISM330DHCX.PcbDoc": "34c694adc5cf93149516b1ec9c7fd3d8601395df5b0ee219d5e8df3b484f73f7",
+    "ARC-Sensor-IMU-ISM330DHCX.PrjPcb": "dee36cf4bf51d8201e2ec440967f9ed42f557364f9ad2a2ccab9546c160bbb0e",
+    "IMU-Sensor.SchDoc": "13fca4e80accf645f1342ae8be9143badd0b7b255abb73ba582c865499bb1d6e"
+  }
+}

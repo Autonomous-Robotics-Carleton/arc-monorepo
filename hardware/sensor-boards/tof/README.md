@@ -2,6 +2,8 @@
 
 **Current build under ADR-0045:** design and assemble our own remote ground-height sensor PCBs **in house**, separate from the motherboard. Use **five populated boards under E-26**: one at each corner and one beside the downward ground-speed camera for its scale (ADR-0007). A common PCB design is the current proposal; no schematic, layout or fabrication package is released.
 
+The [native Altium scaffold notes](altium/README.md) and [ARC-Sensor-ToF project](altium/ARC-Sensor-ToF.PrjPcb) provide a draft schematic with source/TBD notes and an empty PCB placeholder. Circuit capture and layout remain unfinished; template geometry and stackup are not released design choices.
+
 | Item | Current plan / status |
 | --- | --- |
 | Sensing IC | **VL53L4CDV0DH/1 remains the preferred candidate and costing baseline**. The custom-board decision does not newly select or qualify the final ToF part |

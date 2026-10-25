@@ -2,7 +2,7 @@
 
 **Current plan, 2026-10-09:** one PCB combines the power circuitry and sync MCU circuitry. The Jetson carrier remains a separate PCB in [orin-carrier](../orin-carrier/README.md). Owner: **Kunshpreet Baweja** (`kunshpreet`). ADR-0042 records this packaging direction; a later split into two PCBs remains possible after review.
 
-This folder is the working location for the combined motherboard design. Schematic capture and layout have not started here; the imported Antmicro Altium project remains the separate carrier reference.
+This folder is the working location for the combined motherboard design. The [native Altium scaffold](altium/README.md) and [ARC-Motherboard project](altium/ARC-Motherboard.PrjPcb) contain draft schematic sections and an empty PCB placeholder. Circuit capture and layout remain unfinished; the separate future carrier's [provenance and conversion audit](../orin-carrier/README.md) remain available after its deferred reference CAD was removed.
 
 | Motherboard section | Scope | Design inputs |
 | --- | --- | --- |
@@ -15,6 +15,6 @@ The four bought A50S controllers stay separate and send telemetry over four 2 Mb
 
 Grounding/isolation, power-stage parts and sizing remain **TBD for later review**. Combining the circuits does not remove noise, return-current, power-loss or independent-stop requirements. Board envelope, copper stack, connectors, pin map, layout and verification remain TBD. Refer to the [parts list](../../systems/bom/pcb-parts-selection.md) for candidates; the sync and power component sections belong to this same PCB and must not be counted as two boards.
 
-Native Altium files will live here once capture starts. Use Git LFS for large CAD binaries, preserve source attribution, and release fabrication outputs only after the [fab gate](../../systems/reviews/fab-gate.md).
+Native Altium files live in `altium/`; its README records the template provenance, validation and placeholder geometry/stackup. Use Git LFS for large CAD binaries, preserve source attribution, and release fabrication outputs only after the [fab gate](../../systems/reviews/fab-gate.md).
 
 The [proposed wiring diagram and conductor schedule](../../systems/bom/motherboard-wiring.md) organize connections for **ten angle, two IMU and five ToF boards**, all assembled in house under ADR-0045. All four wheel, four suspension and two front-knuckle angle locations remain selected. Our [custom remote sensor PCBs](../sensor-boards/README.md), including the [IMU](../sensor-boards/imu/README.md) and [corner-height](../sensor-boards/tof/README.md) designs, remain separate from the motherboard; their 2-layer layouts and connector details remain TBC. The **seventeen-run / 111-conductor sensor minimum TBC** excludes power, carrier and controller wiring. One motherboard is installed from v1.0 and one separate carrier from v1.1 (v1.0 uses the developer kit's carrier, ADR-0046), both assembled by JLC. The costing scenario shows two factory-populated boards per core design: one installed and one minimum-run surplus. Unused bare boards and core minimum-run surplus do not add a second installed sensor set.
