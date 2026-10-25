@@ -19,7 +19,7 @@ trap cleanup EXIT
 "$fw" -rt > "$logs/firmware.log" 2>&1 &
 pids+=($!)
 # setup.bash reads unset variables
-(set +u; source ros/install/setup.bash; exec ros2 run arc_backend_car backend) > "$logs/ros.log" 2>&1 &
+(set +u; source ros/install/setup.bash; exec ros2 run arc_backend_car backend --ros-args -p sync_mcu_address:=127.0.0.1) > "$logs/ros.log" 2>&1 &
 pids+=($!)
 
 for _ in $(seq 1 30); do

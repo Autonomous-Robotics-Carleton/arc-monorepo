@@ -68,4 +68,4 @@ npx nx test firmware-in-loop   # the native_sim sync MCU firmware and this car b
 source ros/install/setup.bash
 ```
 
-`arc_backend_car/include/arc_mavlink/` is generated from `systems/icd/sync-link.xml` (ADR-0031) by `tools/gen-interfaces.sh`: never edit it by hand. The car backend's parameters `sync_mcu_address` (default `127.0.0.1`, the `native_sim` firmware) and `port_rx`/`port_tx` (52001/52000, ICD-sync-link, TBC) aren't exposed through `platform.launch.py` yet, so `target:=car` only reaches a sync MCU on the same machine.
+`arc_backend_car/include/arc_mavlink/` is generated from `systems/icd/sync-link.xml` (ADR-0031) by `tools/gen-interfaces.sh`: never edit it by hand. The car backend's parameters `sync_mcu_address` (default `10.73.1.10`, the car's sync MCU), `port_rx`/`port_tx` (52001/52000) and `drive_command_rate_hz` (500, TBC) are the ICD-sync-link values. They aren't exposed through `platform.launch.py` yet, so to reach the `native_sim` firmware on the same machine run the node directly: `ros2 run arc_backend_car backend --ros-args -p sync_mcu_address:=127.0.0.1`.

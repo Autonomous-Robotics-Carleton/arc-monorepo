@@ -1,0 +1,4 @@
+{"events": [
+  {"t_ms": 200, "node": "orin", "action": "envelope", "max_speed": 3.0, "max_accel": 5.0, "max_steer": 0.4},
+  {"t_ms": 400, "node": "orin", "action": "command", "speed": 8.0, "accel": 50.0, "steer": 1.0}
+]}

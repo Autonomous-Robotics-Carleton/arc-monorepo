@@ -1,0 +1,4 @@
+{"events": [
+  {"t_ms": 500, "action": "speed", "mps": 3.0},
+  {"t_ms": 3000, "corner": "FL", "action": "silence", "duration_ms": 20}
+]}

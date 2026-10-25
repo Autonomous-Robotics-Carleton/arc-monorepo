@@ -27,10 +27,12 @@ public:
   CarBackend()
   : Node("car_backend")
   {
-    // UDP ports and the sync MCU's address: ICD-sync-link (TBC)
+    // UDP ports and the sync MCU's address: ICD-sync-link
     const int port_rx = declare_parameter("port_rx", 52001);
     const int port_tx = declare_parameter("port_tx", 52000);
-    const std::string peer = declare_parameter("sync_mcu_address", "127.0.0.1");
+    const std::string peer = declare_parameter("sync_mcu_address", "10.73.1.10");
+    // ARC_DRIVE_COMMAND rate: 500 Hz (TBC, ICD-sync-link, bus-load.csv); nothing sends commands yet
+    declare_parameter("drive_command_rate_hz", 500);
 
     RCLCPP_INFO(get_logger(), "car backend: not implemented yet");
 
