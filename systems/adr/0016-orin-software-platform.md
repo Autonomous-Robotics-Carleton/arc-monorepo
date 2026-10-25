@@ -1,6 +1,6 @@
 # ADR-0016: Orin software platform: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by ADR-0048 (the reserved real-time cores hold the platform, not estimation and MPC; experiments get real-time scheduling on their own cores)
 - **Date:** 2026-10-03
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-08, SYS-21, ADR-0010, ADR-0015, RSK-01, RSK-14

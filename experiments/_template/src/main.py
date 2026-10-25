@@ -1,6 +1,7 @@
 """Template experiment: does nothing yet.
 
-An experiment publishes to the classical control layer (SYS-22), whose
+An experiment publishes one vehicle command: speed, acceleration limit and
+steering angle, through the safety envelope (SYS-22, ADR-0048). Its
 interface isn't defined yet (ICD ros2-msgs).
 """
 

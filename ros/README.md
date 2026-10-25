@@ -1,6 +1,6 @@
 # ros
 
-The ROS 2 workspace for the car's Jetson Orin (the Orin Nano Super developer kit on v1.0, the Orin NX on v1.1; ADR-0046): the platform software (drivers, time sync, logging, state estimation, low-level control, teleop). The same workspace runs on a laptop or in CI against a simulator or a log replay (ADR-0028).
+The ROS 2 workspace for the car's Jetson Orin (the Orin Nano Super developer kit on v1.0, the Orin NX on v1.1; ADR-0046): the platform software (drivers, time sync, logging, teleop, choosing between the operator and the experiment). State estimation and control belong to experiments (ADR-0048). The same workspace runs on a laptop or in CI against a simulator or a log replay (ADR-0028).
 
 Platform: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT (ADR-0016). Experiments run in containers with resource limits and must never stop the platform from driving, logging or stopping (SYS-21).
 
@@ -49,8 +49,7 @@ Still to come:
 | Package | Job | Traces to |
 | --- | --- | --- |
 | `arc_drivers` | LiDAR and camera drivers (the Orin has no CAN: motor-controller and steering data come through `arc_backend_car`) | ADR-0001, ADR-0021 |
-| `arc_state_estimation` | Vehicle-state estimate | SYS-06 |
-| `arc_control` | Low-level control inside the safety envelope (the envelope itself is on the sync MCU) | SYS-06, SYS-22 |
+| `arc_control` | Chooses between the operator's teleop and the experiment's vehicle command (speed, acceleration limit, steering angle); the envelope itself is on the sync MCU | SYS-22, ADR-0048 |
 | `arc_safety` | Forwards the operator's heartbeat to the sync MCU; the watchdog and the safety envelope run on the sync MCU, not here | SYS-04, SYS-22 |
 | `arc_logging` | Time-aligned logs of every sensor, command and operator input | SYS-09, SYS-23, SYS-24 |
 | Teleop (package TBD) | Operator driving from the laptop | ADR-0015 |

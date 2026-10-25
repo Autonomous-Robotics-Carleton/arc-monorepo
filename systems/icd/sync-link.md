@@ -14,7 +14,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | --- | --- |
 | Link | Ethernet, sync MCU ↔ switch (E-06) ↔ Orin (ADR-0023, Proposed) |
 | Protocol | UDP, both directions |
-| Addresses and ports | Ports TBC: UDP 52000 into the sync MCU, 52001 into the Orin. Addresses TBD: fixed addresses on the car's internal network; 127.0.0.1 when the sync MCU runs as `native_sim` |
+| Addresses and ports | UDP 52000 into the sync MCU, 52001 into the Orin (set 2026-10-25). Addresses in [ICD-network](network.md): the sync MCU 192.168.70.2, the Orin 192.168.70.1 (TBC); the same in the twin; 127.0.0.1 for single-machine tests |
 | Datagram size | ≤ one Ethernet frame (no IP fragmentation) |
 | Encoding | MAVLink 2 with our own message set (ADR-0031) |
 | MAVLink IDs | System 1; component 1 the sync MCU, 2 the Orin bridge (TBC; what the code uses) |
@@ -37,7 +37,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | Steering telemetry | moteus-c1 angle and torque | ≥ 1 kHz (ADR-0019) | Reply built when the sync MCU's query arrives, stamped in sync-MCU time (ADR-0019, ADR-0024) |
 | Camera triggers | Trigger time and frame sequence number per camera | Each frame | The Orin pairs frames with trigger times (ADR-0021) |
 | Power | Battery V/I, cell voltages (rail currents TBD: not in the message set yet) | ≥ 100 Hz (SYS-32) | Path per ADR-0022 (Proposed) |
-| Safety state | Envelope in force, watchdog state, e-stop status | On change, plus TBD Hz | — |
+| Safety state | Envelope in force, watchdog state, e-stop status | On change, plus 50 Hz (set 2026-10-25) | — |
 | Faults and events | Bus errors, sequence gaps, watchdog trips, envelope clamps, brownouts | On occurrence | Stamped when detected (SYS-19) |
 | Link status | `ARC_LINK_STATUS`: protocol version, receive gaps and rejects | 1 Hz | Sent each way |
 
@@ -45,7 +45,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 
 | Message family | Content | Rate | Handling |
 | --- | --- | --- | --- |
-| Drive and steering commands | Speed, acceleration, steering angle | TBD (control rate) | Passed through the safety envelope before any CAN command (SYS-22) |
+| Drive and steering commands | Speed, acceleration, steering angle | As the commander sends them, up to 500 Hz, the command bus's rate (set 2026-10-25) | Passed through the safety envelope before any CAN command (SYS-22) |
 | Operator heartbeat | Forwarded by the Orin from the laptop's heartbeat stream (50–100 Hz, ADR-0015). Decided 2026-10-07: always via the Orin, so a hung Orin also stops the car | 50–100 Hz | Feeds the watchdog; lost heartbeat → braking (SYS-04) |
 | Envelope settings | Session limits for speed, acceleration and steering | Per session | Default 3 m/s for new experiments (SYS-22) |
 
@@ -54,8 +54,8 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 ## Open issues
 
 1. ~~Message catalogue~~ **Drafted** in `sync-link.xml`: one message per family above, except vehicle-state samples (IMU, angle and ride-height messages). Field lists to review with both owners.
-2. Addresses: the car's fixed addresses. Ports proposed (TBC): 52000 and 52001.
+2. ~~Addresses~~ **Set (2026-10-25):** ports 52000 and 52001; addresses in [ICD-network](network.md) (TBC there).
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
-4. Command rate and the safety-state rate.
+4. ~~Command rate and the safety-state rate~~ **Set (2026-10-25):** commands up to 500 Hz; safety state on change plus 50 Hz.
 5. Owners on both sides.
 6. Who the sync MCU accepts messages from. The link shares the car's switch (E-06) with the service port (E-09), so a laptop plugged in there can send to UDP 52000: drive commands, envelope settings and operator heartbeats, which would keep the watchdog (SYS-04) fed while the laptop is the one commanding. Nothing here restricts the sender yet. Options include accepting only the Orin's address, MAVLink 2 message signing, or a network the service port can't reach; none is chosen. Whatever is chosen guards SYS-04 and SYS-22, so it is a safety function: its own tests and a second reviewer.
