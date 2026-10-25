@@ -1,0 +1,44 @@
+/*
+ * native_sim: the four motor-controller UARTs (ICD-controller-telemetry,
+ * ADR-0034) as pseudo-terminals. Each prints its /dev/pts path at start-up;
+ * tools/sim attaches a fake controller to it. The console stays on stdout.
+ */
+/ {
+	aliases {
+		arc-can-command = &can_command_bus;
+		arc-ctrl-fl = &ctrl_uart_fl;
+		arc-ctrl-fr = &ctrl_uart_fr;
+		arc-ctrl-rl = &ctrl_uart_rl;
+		arc-ctrl-rr = &ctrl_uart_rr;
+	};
+
+	/* the command bus (ADR-0009): a loopback device; sim_can_bridge.c carries it over UDP */
+	can_command_bus: can_loopback0 {
+		status = "okay";
+		compatible = "zephyr,can-loopback";
+	};
+
+	ctrl_uart_fl: uart_ctrl_fl {
+		status = "okay";
+		compatible = "zephyr,native-pty-uart";
+		current-speed = <2000000>;
+	};
+
+	ctrl_uart_fr: uart_ctrl_fr {
+		status = "okay";
+		compatible = "zephyr,native-pty-uart";
+		current-speed = <2000000>;
+	};
+
+	ctrl_uart_rl: uart_ctrl_rl {
+		status = "okay";
+		compatible = "zephyr,native-pty-uart";
+		current-speed = <2000000>;
+	};
+
+	ctrl_uart_rr: uart_ctrl_rr {
+		status = "okay";
+		compatible = "zephyr,native-pty-uart";
+		current-speed = <2000000>;
+	};
+};

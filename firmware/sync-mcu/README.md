@@ -11,8 +11,8 @@ Pin and I/O tally: `systems/bom/electrical.md`. Board handoff: `systems/handoff/
 | Path | What |
 | --- | --- |
 | `west.yml` | Pins Zephyr (v4.4.2) and its modules. The dev container bakes this workspace in; nothing is fetched by hand |
-| `app/` | The application, one module per job: `time_base` (kernel uptime until the hardware timer), `sensors`, `can_buses` and `controller_links` (stubs), `safety` (fail-safe stubs: no envelope, so nothing can move the car; the watchdog always reads expired), `sync_link` (exchanges `ARC_LINK_STATUS` over UDP on `native_sim`; a stub on the boards until Ethernet is set up) |
-| `app/Kconfig`, `app/prj.conf`, `app/boards/` | Configuration (below); `boards/<board>.conf` adds per-board settings (`native_sim.conf` turns on the host's sockets) |
+| `app/` | The application, one module per job: `time_base` (kernel uptime until the hardware timer), `sensors`, `can_buses` (stub), `controller_link_core` (the any-corner-stop decisions, no I/O) and `controller_links` (its UARTs: `native_sim` only so far), `safety` (fail-safe stubs: no envelope, so nothing can move the car; the watchdog always reads expired), `sync_link` (exchanges `ARC_LINK_STATUS` over UDP on `native_sim`; a stub on the boards until Ethernet is set up) |
+| `app/Kconfig`, `app/prj.conf`, `app/boards/` | Configuration (below); `boards/<board>.conf` adds per-board settings (`native_sim.conf` turns on the host's sockets and the controller UARTs, `native_sim.overlay` defines the four pseudo-terminals) |
 | `app/generated/` | Generated code (see Rules) |
 | `boards/arc/arc_sync/` | Our board definition (skeleton: pins, crystal and package TBD from the EE; until then it runs from the 64 MHz internal oscillator with no console) |
 | `tests/` | Tests that run on `native_sim` with twister |
@@ -21,7 +21,7 @@ Pin and I/O tally: `systems/bom/electrical.md`. Board handoff: `systems/handoff/
 
 | Target | Board | Status |
 | --- | --- | --- |
-| Simulation | `native_sim`: runs as a program on a laptop or in CI; its sync link uses the host's sockets, so it talks to the ROS car backend (`nx test firmware-in-loop`) | Builds, runs and links up |
+| Simulation | `native_sim`: runs as a program on a laptop or in CI; its sync link uses the host's sockets, so it talks to the ROS car backend (`nx test firmware-in-loop`); its four controller UARTs are pseudo-terminals that the fake controllers in `tools/sim` attach to (`tools/sim/firmware_in_loop.sh`) | Builds, runs and links up; stops on a silent, faulted or braking corner |
 | Development hardware | `nucleo_h723zg`: same MCU, Ethernet and FD-CAN (CAN needs a transceiver breakout) | Builds; the sync link isn't enabled yet (no Ethernet config); 2 boards in the order (SQ-5) |
 | The car | `arc_sync` | Builds from the skeleton; nothing to run on until the board exists |
 
@@ -40,7 +40,9 @@ firmware/sync-mcu/build/native_sim/zephyr/zephyr.exe     # Ctrl-C to stop
 
 | Test (twister) | What it checks |
 | --- | --- |
-| `sync_mcu.safety` | The safety stubs are fail-safe |
+| `sync_mcu.can_command_core` | The frames for each decision (drive, zero, brake, nothing), byte by byte against the stock VESC packing: 11 cases |
+| `sync_mcu.safety` | The envelope clamp, the heartbeat watchdog (150 ms, latched) and the drive decision, in virtual time: 22 cases |
+| `sync_mcu.controller_link` | The any-corner stop's logic, in virtual time: a corner silent for more than 5 ms, fault, e-stop and command-timeout states, CRC and sequence handling, frames made by pymavlink (`tools/sim/make_golden.py`) |
 | `sync_mcu.sync_link` | `ARC_LINK_STATUS` round-trips through the generated MAVLink code |
 | `sync_mcu.can_command` | The generated command-bus frames pack like VESC's own `comm_can.c` |
 
@@ -53,9 +55,15 @@ Options in `app/Kconfig`, set with `west build … -- -DCONFIG_<name>=<value>`:
 | Option | Default | |
 | --- | --- | --- |
 | `ARC_HEARTBEAT_TIMEOUT_MS` | 150 | Operator heartbeat timeout (SYS-04, TBC) |
+| `ARC_CAN_BRAKE_CURRENT_MA` | 0 | Brake current sent to the four controllers on a stop (TBD). 0 sends nothing, and the controllers brake on their own timeout, later than SYS-25's 20 ms |
+| `ARC_CAN_ERPM_PER_MPS` | 0 | eRPM per m/s of commanded speed (TBD: wheel, gear ratio, pole pairs). 0 sends 0 A |
+| `ARC_COMMAND_RATE_HZ` | 500 | Expected `ARC_DRIVE_COMMAND` rate; a stream off by more than the tolerance is logged, never acted on (TBC; ICD-sync-link open issue 4) |
+| `ARC_COMMAND_RATE_TOLERANCE_PCT` | 20 | How far off the expected rate is reported (TBC) |
+| `ARC_COMMAND_TIMEOUT_MS` | 150 | Age after which an `ARC_DRIVE_COMMAND` is dropped and the output is zero (TBC; ICD-sync-link open issue 7) |
+| `ARC_CONTROLLER_SILENCE_MS` | 5 | Silence from a motor controller that stops the car (SYS-25, TBC). The firmware-in-the-loop run builds with 100: a laptop can't hold 5 ms in real time |
 | `ARC_SYNC_LINK_PORT_RX` | 52000 | UDP port the sync MCU listens on (ICD-sync-link, TBC) |
 | `ARC_SYNC_LINK_PORT_TX` | 52001 | UDP port the Orin listens on (ICD-sync-link, TBC) |
-| `ARC_SYNC_LINK_PEER` | `127.0.0.1` | The Orin's address: localhost for `native_sim`; the car's is TBD |
+| `ARC_SYNC_LINK_PEER` | `10.73.1.20` | The Orin's address on the car's internal network (proposed, TBC; ICD-sync-link); `native_sim` sets `127.0.0.1` |
 
 ## Flash (from your own computer, not the container)
 

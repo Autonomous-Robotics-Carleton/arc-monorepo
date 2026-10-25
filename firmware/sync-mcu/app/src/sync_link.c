@@ -10,6 +10,7 @@ LOG_MODULE_REGISTER(sync_link, LOG_LEVEL_INF);
 #include <zephyr/net/socket.h>
 
 #include "arc_sync_link/mavlink.h"
+#include "safety_task.h"
 #include "time_base.h"
 
 #define SYS_ID 1  /* MAVLink system and component IDs: one car, one sync MCU */
@@ -30,6 +31,55 @@ static void send_link_status(uint32_t gaps, uint32_t bad)
 	zsock_sendto(sock, buf, len, 0, (struct sockaddr *)&peer, sizeof(peer));
 }
 
+void sync_link_send_safety_state(float max_speed, float max_accel, float max_steer,
+				 int watchdog, int estop)
+{
+	mavlink_message_t msg;
+	uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+
+	if (sock < 0) {
+		return;
+	}
+	mavlink_msg_arc_safety_state_pack(SYS_ID, COMP_ID, &msg, time_base_now_ns(), max_speed,
+					  max_accel, max_steer, watchdog, estop);
+	uint16_t len = mavlink_msg_to_send_buffer(buf, &msg);
+
+	zsock_sendto(sock, buf, len, 0, (struct sockaddr *)&peer, sizeof(peer));
+}
+
+static void handle(const mavlink_message_t *msg, bool *peer_seen)
+{
+	switch (msg->msgid) {
+	case MAVLINK_MSG_ID_ARC_LINK_STATUS:
+		if (!*peer_seen) {
+			LOG_INF("sync link up: peer protocol v%u",
+				mavlink_msg_arc_link_status_get_protocol_version(msg));
+			*peer_seen = true;
+		}
+		break;
+	case MAVLINK_MSG_ID_ARC_OPERATOR_HEARTBEAT:
+		safety_task_heartbeat();
+		break;
+	case MAVLINK_MSG_ID_ARC_DRIVE_COMMAND: {
+		mavlink_arc_drive_command_t c;
+
+		mavlink_msg_arc_drive_command_decode(msg, &c);
+		safety_task_command((struct drive_cmd){c.speed, c.accel, c.steer});
+		break;
+	}
+	case MAVLINK_MSG_ID_ARC_ENVELOPE_SET: {
+		mavlink_arc_envelope_set_t e;
+
+		mavlink_msg_arc_envelope_set_decode(msg, &e);
+		safety_task_envelope(&(struct safety_envelope){e.max_speed, e.max_accel,
+							       e.max_steer});
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 static void link_thread(void *a, void *b, void *c)
 {
 	ARG_UNUSED(a);
@@ -48,19 +98,17 @@ static void link_thread(void *a, void *b, void *c)
 			next_status = k_uptime_get() + 1000;
 		}
 
-		ssize_t n = zsock_recv(sock, buf, sizeof(buf), ZSOCK_MSG_DONTWAIT);
+		/* one datagram per call: drain them all, the Orin sends 500 commands a second */
+		ssize_t n;
 
-		for (ssize_t i = 0; i < n; i++) {
-			if (!mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status)) {
-				continue;
-			}
-			if (msg.msgid == MAVLINK_MSG_ID_ARC_LINK_STATUS && !peer_seen) {
-				LOG_INF("sync link up: peer protocol v%u",
-					mavlink_msg_arc_link_status_get_protocol_version(&msg));
-				peer_seen = true;
+		while ((n = zsock_recv(sock, buf, sizeof(buf), ZSOCK_MSG_DONTWAIT)) > 0) {
+			for (ssize_t i = 0; i < n; i++) {
+				if (mavlink_parse_char(MAVLINK_COMM_0, buf[i], &msg, &status)) {
+					handle(&msg, &peer_seen);
+				}
 			}
 		}
-		k_sleep(K_MSEC(10));
+		k_sleep(K_MSEC(1));
 	}
 }
 
@@ -103,6 +151,16 @@ int sync_link_init(void)
 {
 	LOG_INF("not implemented yet");
 	return 0;
+}
+
+void sync_link_send_safety_state(float max_speed, float max_accel, float max_steer,
+				 int watchdog, int estop)
+{
+	ARG_UNUSED(max_speed);
+	ARG_UNUSED(max_accel);
+	ARG_UNUSED(max_steer);
+	ARG_UNUSED(watchdog);
+	ARG_UNUSED(estop);
 }
 
 #endif

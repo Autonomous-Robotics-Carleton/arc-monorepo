@@ -1,0 +1,7 @@
+tests:
+  sync_mcu.rate_monitor:
+    tags: monitor
+    platform_allow:
+      - native_sim
+    integration_platforms:
+      - native_sim

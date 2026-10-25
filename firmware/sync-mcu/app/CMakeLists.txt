@@ -22,8 +22,14 @@ target_sources(app PRIVATE
   src/time_base.c
   src/sensors.c
   src/can_buses.c
+  src/can_command_core.c
   generated/can_command/can_command.c
+  src/controller_link_core.c
   src/controller_links.c
   src/safety.c
+  src/rate_monitor.c
+  src/safety_task.c
   src/sync_link.c
 )
+
+target_sources_ifdef(CONFIG_ARC_SIM_CAN_BRIDGE app PRIVATE src/sim_can_bridge.c)

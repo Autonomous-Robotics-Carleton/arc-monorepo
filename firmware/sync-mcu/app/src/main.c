@@ -10,7 +10,10 @@
 
 #include "can_buses.h"
 #include "controller_links.h"
-#include "safety.h"
+#include "safety_task.h"
+#ifdef CONFIG_ARC_SIM_CAN_BRIDGE
+#include "sim_can_bridge.h"
+#endif
 #include "sensors.h"
 #include "sync_link.h"
 #include "time_base.h"
@@ -23,19 +26,17 @@ int main(void)
 
 	time_base_init();
 	sensors_init();
+	safety_task_init(); /* before anything that reads its decision */
 	can_buses_init();
 	controller_links_init();
 	sync_link_init();
-
-	struct safety_envelope envelope;
-	struct safety_watchdog watchdog;
-
-	safety_envelope_default(&envelope);
-	safety_watchdog_init(&watchdog, CONFIG_ARC_HEARTBEAT_TIMEOUT_MS, k_uptime_get());
+#ifdef CONFIG_ARC_SIM_CAN_BRIDGE
+	sim_can_bridge_init();
+#endif
 
 	while (true) {
-		/* No heartbeats reach the watchdog yet: this only shows the loop. */
-		k_sleep(K_MSEC(100));
+		/* everything runs in threads: the controller links, the sync link, the safety task */
+		k_sleep(K_SECONDS(1));
 	}
 
 	return 0;

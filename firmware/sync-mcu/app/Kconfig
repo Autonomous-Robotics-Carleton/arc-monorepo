@@ -7,23 +7,91 @@ config ARC_HEARTBEAT_TIMEOUT_MS
 	  Time without an operator heartbeat before the car starts braking
 	  (SYS-04: rolls <= 2 m first; ~150 ms is ~1.4 m at 9 m/s; TBC).
 
+config ARC_COMMAND_TIMEOUT_MS
+	int "Orin commands: age after which a command is dropped (ms)"
+	default 150
+	help
+	  With no fresh ARC_DRIVE_COMMAND the output is a zero command (no
+	  braking ramp). What the car should do when commands stop while the
+	  heartbeat goes on is ICD-sync-link open issue 7; 150 ms follows
+	  SYS-04's timeout and is TBC.
+
+config ARC_COMMAND_RATE_HZ
+	int "Orin commands: expected arrival rate (Hz)"
+	default 500
+	help
+	  The rate the Orin bridge sends ARC_DRIVE_COMMAND at (ICD-sync-link,
+	  TBC). ADR-0011 gives 200-500 Hz for motor commands; 500 Hz is the
+	  command-bus budget (budgets/bus-load.csv). Only used to report a
+	  stream that is off rate; it never stops the car.
+
+config ARC_COMMAND_RATE_TOLERANCE_PCT
+	int "Orin commands: how far off ARC_COMMAND_RATE_HZ is reported (%)"
+	default 20
+	help
+	  TBC, nobody has chosen it. The rate is measured over one second.
+
+config ARC_CAN_BRAKE_CURRENT_MA
+	int "Command bus: brake current sent to all four controllers on a stop (mA)"
+	default 0
+	help
+	  TBD: no value in the spec. 0 sends nothing on a stop, and the
+	  controllers brake on their own command timeout (ADR-0035), later than
+	  SYS-25's 20 ms. Needs the controllers' brake ramp (ADR-0012) settled.
+
+config ARC_CAN_ERPM_PER_MPS
+	int "Command bus: electrical rpm per m/s of commanded speed"
+	default 0
+	help
+	  TBD: depends on the wheel diameter, gear ratio and pole pairs, which
+	  are still changing (ADR-0026, ADR-0034, ADR-0040). 0 sends 0 A, so the
+	  car can't drive until it is set.
+
+config ARC_SIM_CAN_BRIDGE
+	bool "Simulation: carry the command bus over UDP"
+	depends on BOARD_NATIVE_SIM && NET_SOCKETS
+	help
+	  The command-bus loopback device, bridged to a simulator over UDP
+	  (sim_can_bridge.c). Never on the car.
+
+config ARC_SIM_CAN_PORT_RX
+	int "Simulation: UDP port for frames from the simulator"
+	default 52100
+	depends on ARC_SIM_CAN_BRIDGE
+
+config ARC_SIM_CAN_PORT_TX
+	int "Simulation: UDP port for frames to the simulator"
+	default 52101
+	depends on ARC_SIM_CAN_BRIDGE
+
+config ARC_CONTROLLER_SILENCE_MS
+	int "Controller links: silence that stops the car (ms)"
+	default 5
+	help
+	  A motor controller that sends no valid ARC_MOTOR_STATUS for longer
+	  than this stops all four corners (SYS-25, ADR-0035; 5 ms is TBC).
+	  A host running native_sim in real time with fake controllers can't
+	  keep a 5 ms cadence (the scheduler jitters by more); the
+	  firmware-in-the-loop run raises it, the unit tests keep the real value.
+
 config ARC_SYNC_LINK_PORT_RX
 	int "Sync link: UDP port the sync MCU listens on"
 	default 52000
 	help
-	  ICD-sync-link (TBC). The Orin's car backend sends here.
+	  ICD-sync-link. The Orin's car backend sends here.
 
 config ARC_SYNC_LINK_PORT_TX
 	int "Sync link: UDP port the Orin listens on"
 	default 52001
 	help
-	  ICD-sync-link (TBC).
+	  ICD-sync-link.
 
 config ARC_SYNC_LINK_PEER
 	string "Sync link: the Orin's IPv4 address"
-	default "127.0.0.1"
+	default "10.73.1.20"
 	help
-	  127.0.0.1 for native_sim on one machine; the car's address is TBD
-	  (ICD-sync-link).
+	  The Orin's wired address on the car's internal network
+	  (proposed, TBC; ICD-sync-link). boards/native_sim.conf sets 127.0.0.1 for the
+	  firmware and the bridge on one machine.
 
 source "Kconfig.zephyr"

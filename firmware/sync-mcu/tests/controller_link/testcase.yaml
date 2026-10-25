@@ -1,0 +1,6 @@
+tests:
+  sync_mcu.controller_link:
+    platform_allow: native_sim
+    tags: safety controller_link
+    integration_platforms:
+      - native_sim
