@@ -39,7 +39,10 @@ const systemsPages: Record<string, string> = {
   'mechanical/layout-brief.md': 'mechanical/layout-brief.md',
   'mechanical/cad-workflow.md': 'mechanical/cad-workflow.md',
   'bom/mechanical.md': 'mechanical/bom.md',
+  'handoff/software.md': 'software/handoff.md',
   'software/architecture.md': 'software/architecture.md',
+  'software/simulation.md': 'software/simulation.md',
+  'software/platform-plan.md': 'software/platform-plan.md',
   'software/setup-plan.md': 'software/setup-plan.md',
 };
 
@@ -64,7 +67,10 @@ const systemsTitles: Record<string, string> = {
   'mechanical/bom.md': 'Mechanical BOM',
   'mechanical/layout-brief.md': 'Layout brief',
   'mechanical/cad-workflow.md': 'CAD workflow',
+  'software/handoff.md': 'Software handoff',
   'software/architecture.md': 'Software architecture',
+  'software/simulation.md': 'Simulation (digital twin)',
+  'software/platform-plan.md': 'Platform plan',
   'software/setup-plan.md': 'Setup plan',
 };
 
