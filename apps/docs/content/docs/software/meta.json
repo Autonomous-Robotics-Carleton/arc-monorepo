@@ -2,7 +2,10 @@
   "title": "Software",
   "pages": [
     "index",
+    "handoff",
     "architecture",
+    "simulation",
+    "platform-plan",
     "setup-plan",
     "---Software code---",
     "ros",
