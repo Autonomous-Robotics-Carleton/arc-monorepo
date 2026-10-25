@@ -87,9 +87,11 @@ The motor controllers are off-the-shelf A50S boards running our build of the VES
 ## Phase 7: Experiments scaffold
 
 - [x] `experiments/` with a template experiment and its container definition
-- [ ] Resource limits (SYS-21), container runtime and the classical-layer interface (SYS-22): TBD, listed in `experiments/README.md`
+- [ ] Resource limits (SYS-21), container runtime and the experiment command interface (SYS-22, ADR-0048): TBD, listed in `experiments/README.md`
 
 ## Later (not in this plan)
+
+Planned in [`platform-plan.md`](platform-plan.md), which follows this plan:
 
 - The platform image and the path from a merged PR to the Orin (ADR-0016)
 - The real drivers, estimator, controllers and logging
