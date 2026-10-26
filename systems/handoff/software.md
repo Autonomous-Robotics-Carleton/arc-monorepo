@@ -86,13 +86,13 @@ The starting point for anyone writing the car's software. It collects, per compo
   - Platform nodes talk only to the car interface (`arc_msgs`); each target supplies what's under it (ADR-0028; ADR-0047 moves that split down to the devices).
   - Launch with `ros2 launch arc_bringup platform.launch.py target:=… sim:=… sensors:=…`.
 - **What exists:**
-  - `arc_msgs` with one placeholder message.
+  - `arc_msgs` with the car interface's messages (ICD-ros2-msgs, rev A, draft); nothing publishes them yet.
   - `arc_bringup` (launch, a launch test per backend). Each test waits for the literal log line "not implemented yet", so it breaks as soon as its backend is implemented.
   - The car backend, which only does the link handshake.
   - Stub backends for Gazebo, Webots, the gym and replay.
 - **Requirements:** SYS-06, -08, -09, -21, -22, -23, -24, -29, -30.
 - **Open:**
-  - **The car interface (ICD ros2-msgs, #84):** car state, faults, safety state, the estimate, the experiment command, and the topics the LiDAR and camera drivers publish (frames, timestamps).
+  - **The car interface (ICD-ros2-msgs, #84):** drafted (rev A); its topic names, types and QoS await sign-off, and its open issues list what waits on the car configuration (#143) and the operator link (#144).
   - **The car backend (#85):** every sync-link message to and from topics, with time mapped onto the Orin's clock.
   - **Nodes not started:**
 

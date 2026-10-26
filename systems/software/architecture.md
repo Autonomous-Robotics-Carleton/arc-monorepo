@@ -52,7 +52,7 @@ Each layer talks only to the one beside it, through a written interface (an ICD)
     │  experiment command: speed, acceleration limit, steering (ADR-0048)
  Platform software (ROS 2)    operator link, operator/experiment
                               switch, logging, health
-    │  car interface: arc_msgs (ICD ros2-msgs, not written yet)
+    │  car interface: arc_msgs (ICD ros2-msgs)
  Car backend and drivers      the Orin's end of the sync link;
                               LiDAR and camera drivers
     │  sync link: MAVLink 2 over UDP (ICD-sync-link)
@@ -212,7 +212,7 @@ How the simulator does this, and what it can and can't prove, is in [`simulation
 | Interface | Between | Defined in | Code |
 | --- | --- | --- | --- |
 | Operator link | Laptop ↔ Orin (heartbeat, teleop) | Not written (`icd/README.md`: operator-link, TBD); a working draft is `ground-station/protocol.md` on `yufeng/ground-station` | — |
-| Car interface | Backends and drivers ↔ platform nodes and experiments | Not written (ICD ros2-msgs); `arc_msgs` is a placeholder | `ros/src/arc_msgs/` |
+| Car interface | Backends and drivers ↔ platform nodes and experiments | ICD-ros2-msgs (draft, rev A) | `ros/src/arc_msgs/` |
 | Sync link | Orin ↔ sync MCU, UDP | ICD-sync-link, `sync-link.xml` (reviewed, version 3; MAVLink 2, ADR-0031) | Generated into the firmware and the car backend |
 | Command bus (classic CAN, 1 Mbit/s) | Sync MCU → motor controllers | `can-command.dbc` (reviewed; stock VESC frames) | Generated into the firmware |
 | Controller telemetry (UART, 2 Mbit/s each) | Motor controllers → sync MCU | ICD-controller-telemetry (message set reviewed; MAVLink 2, the ARC message set) | Generated into the firmware; not yet into the VESC firmware |

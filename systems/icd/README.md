@@ -13,7 +13,7 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 | [carrier-sync](carrier-sync.md) | Orin carrier | Sync board | Markdown (triggers, PPS/PTP, Ethernet) | Draft (rev A; approvals pending) |
 | [sync-link](sync-link.md) | Sync MCU firmware | Sync bridge on the Orin (`arc_backend_car`) | UDP; MAVLink 2 (ADR-0031), message set in `sync-link.xml` | Message set reviewed (2026-10-26, #73) |
 | [network](network.md) | The car (Orin, sync MCU, LiDAR, switch) | Ground equipment (team router, laptops; ADR-0015) | Markdown (networks, addresses, ports, rates) | Draft (rev A) |
-| ros2-msgs | Backends (sim, replay, car; ADR-0028) | ROS 2 stack | `.msg` files | TBD |
+| [ros2-msgs](ros2-msgs.md) | The car backend and the Orin's drivers (ADR-0028, ADR-0047) | Platform nodes, experiments, the ground station | ROS 2 topics; `.msg` files in `ros/src/arc_msgs/` | Draft (rev A; proposals TBC, sign-off pending, #84) |
 | steering-bus | Sync MCU | Steering controller (moteus-c1, CAN-FD, ADR-0019) | Markdown (moteus register protocol, rates, timeout mode) | TBD |
 | operator-link | Laptop | Orin (heartbeat, teleop; ADR-0015, SYS-04) | Markdown | TBD |
 | sim-link | Simulator (device models) | Sync MCU firmware on `native_sim` only (ADR-0047; `software/simulation.md`) | MAVLink 2 or Zephyr device emulators, TBD | TBD |
