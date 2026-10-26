@@ -1,6 +1,6 @@
 # ICD-controller-telemetry
 
-- **Revision:** draft (2026-10-09)
+- **Revision:** B (2026-10-26)
 - **Status:** Message set and IDs reviewed 2026-10-26 by the owner of both sides (#73). Firmware implementation, clock alignment (#74) and installed-harness qualification pending.
 - **Side A:** motor controller firmware (`firmware/vesc/`, our VESC build on the A50S; E-50) (owner: Shrikar Vempati, until reassigned)
 - **Side B:** sync MCU firmware (`firmware/sync-mcu/`, the `controller_links` module; E-30) (owner: Shrikar Vempati, until reassigned)

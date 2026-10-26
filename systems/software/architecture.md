@@ -142,7 +142,7 @@ The car never drives by surprise:
 4. **The operator re-arms from the laptop.** Commands start at zero, and the envelope is back at its 3 m/s default.
 5. **During a run,** if any corner goes silent, faults or brakes on its own, the sync MCU stops all four corners within 20 ms (SYS-25), and the car latches again. Losing the steering does the same (ADR-0038).
 
-The re-arm message is decided (ICD-sync-link) but not yet in `sync-link.xml` or the operator link.
+The re-arm message is `ARC_REARM` on the sync link (ICD-sync-link); the operator link doesn't carry it yet (#144).
 
 ### An experiment runs
 
