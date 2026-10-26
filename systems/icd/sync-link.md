@@ -47,8 +47,8 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | --- | --- | --- | --- |
 | Drive and steering commands | Speed, acceleration, steering angle | As the commander sends them, up to 500 Hz, the command bus's rate (set 2026-10-25) | Passed through the safety envelope before any CAN command (SYS-22) |
 | Operator heartbeat | Forwarded by the Orin from the laptop's heartbeat stream (50–100 Hz, ADR-0015). Decided 2026-10-07: always via the Orin, so a hung Orin also stops the car | 50–100 Hz | Feeds the watchdog; lost heartbeat → braking (SYS-04) |
-| Envelope settings | Session limits for speed, acceleration and steering | Per session | Default 3 m/s for new experiments (SYS-22) |
-| Re-arm | The operator's go after a reset (ADR-0039), forwarded by the Orin like the heartbeat. Decided 2026-10-25; the message is still to be added to `sync-link.xml` | On the operator's action | Accepted only after an e-stop cycle and passing power-on checks; the first commands after it are zero and the envelope returns to its 3 m/s default (SYS-22) |
+| Envelope settings | Session limits for speed, acceleration and steering | Per session | Defaults for new experiments: 3 m/s (SYS-22), 5 m/s² (TBC) and the full steering range; reverse under the same speed limit (ADR-0052) |
+| Re-arm | The operator's go after a reset (ADR-0039) or a heartbeat stop (ADR-0052), forwarded by the Orin like the heartbeat. Decided 2026-10-25; the message is still to be added to `sync-link.xml` | On the operator's action | After a fault stop, accepted only after an e-stop cycle and passing power-on checks; after a heartbeat stop, once heartbeats are arriving again (ADR-0052). The first commands after it are zero and the envelope returns to its 3 m/s default (SYS-22) |
 
 Commands are "latest wins": a dropped command is replaced by the next one, never retransmitted.
 
