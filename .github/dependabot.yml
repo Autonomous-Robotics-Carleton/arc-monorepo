@@ -1,0 +1,34 @@
+# Dependency updates (#158): monthly and grouped, so they arrive as a few
+# PRs a month rather than dozens. Security updates for known vulnerabilities
+# are a repository setting, separate from this file.
+#
+# Not covered: the dev container's pinned versions (the ARGs in
+# .devcontainer/Dockerfile; the base stays ubuntu:24.04 for ROS 2 Jazzy) and
+# Zephyr (firmware/sync-mcu/west.yml). Dependabot can't read either; update
+# them by hand.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: ci
+      include: scope
+
+  # pnpm workspace: the docs site, the club website and libs/
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      # majors come one PR each, since they can break the build
+      minor-and-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+      include: scope
