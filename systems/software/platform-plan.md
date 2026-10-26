@@ -2,7 +2,7 @@
 
 - **Status:** Draft (2026-10-25). Follows [`setup-plan.md`](setup-plan.md), which scaffolded every component.
 - **Goal:** one platform for every target (SYS-33). The car's software, firmware included, is complete and tested against a digital twin of the car. When hardware arrives, moving to it means writing board files, measuring the car's configuration and calibrating models, not changing code. After this plan, what's left is experiments.
-- **Builds on:** ADR-0016, ADR-0021, ADR-0024, ADR-0028, ADR-0031, ADR-0032, ADR-0034, ADR-0035, ADR-0038, ADR-0039; ADR-0047 for where the targets split; ADR-0049 for the twin's clock; ADR-0048 for what experiments own.
+- **Builds on:** ADR-0016, ADR-0021, ADR-0024, ADR-0028, ADR-0031, ADR-0032, ADR-0034, ADR-0035, ADR-0038, ADR-0039; ADR-0047 for where the targets split; ADR-0049 for the twin's clock; ADR-0050 for the images; ADR-0051 for the car configuration; ADR-0048 for what experiments own.
 - **Read with:** [`architecture.md`](architecture.md) (what the software is), [`simulation.md`](simulation.md) (the twin), [`handoff/software.md`](../handoff/software.md) (what's decided and open per component).
 
 The work is in four phases, in order. Each phase ends with something that runs. There are no dates: a phase is done when its exit check passes in CI. Issue numbers are given where an issue exists; "new" marks work that still needs one.
@@ -15,18 +15,18 @@ Most of the work below depends on these. Each ends as an ADR or ICD change, writ
 | --- | --- |
 | Where the targets split (ADR-0047) | Decided: at the devices |
 | Who keeps time in the twin (ADR-0049) | Decided: lockstep |
-| One platform image on the Orin and on laptops | new |
+| One platform image on the Orin and on laptops (ADR-0050) | Decided: one build, two bases |
 | Experiments own estimation and control, command speed and steering, may run in real time (ADR-0048) | Decided |
 | Real-time cores and priorities for experiments, per build | new, with #88 |
-| The re-arm message (ADR-0039) | new |
-| Who the sync MCU accepts commands from (ICD-sync-link, open issue 6) | new |
-| The car configuration's format | new |
-| A simulator image beside the dev container | new |
-| The ground station: what it is and where it lives | #71 |
+| The re-arm message (ADR-0039) | Decided: the operator re-arms; message to add |
+| Who the sync MCU accepts commands from (ICD-sync-link, open issue 6) | Deferred until before the car is assembled |
+| The car configuration (ADR-0051) | Decided: a file per car, compiled into the sync MCU |
+| A simulator image beside the dev container (ADR-0050) | Decided: amd64 and arm64 |
+| The ground station: what it is and where it lives | #71, later |
 | Sync-link addresses and rates (ICD-network) | Decided: ports and rates; addresses TBC |
 | Review of the message sets | #73 |
 | The controllers' clock mapping | #74 |
-| Experiment runtime and limits | #88 |
+| Experiment runtime and limits | #88: Docker (ADR-0050); limits measured on the dev kit |
 
 **Exit:** each decision recorded in `systems/`.
 
@@ -111,7 +111,7 @@ Every device modelled, every driver real, every safety function tested.
 | The platform image for Jetson; deploy and roll back | #89 |
 | The NUCLEO board configuration (Ethernet, FD-CAN, SPI) and the `hil` profile | new |
 | Every component built for every target in CI; the check that code above the split never names a target | new |
-| Sync MCU sender filtering, as decided | new |
+| Sync MCU sender filtering: decide (deferred from Phase A) and implement | new |
 | The fidelity list: each model's calibration test, written in `systems/tests/` | new |
 | Running the real ARM binaries in an emulator such as Renode: investigate | new |
 | The handbook page "Run the platform", followed and timed on Linux, macOS and Windows | new |

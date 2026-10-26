@@ -1,6 +1,6 @@
 # ADR-0048: Experiments own estimation and control, command speed and steering, and may run in real time
 
-- **Status:** Accepted (2026-10-25)
+- **Status:** Accepted (2026-10-25). Set on 2026-10-25: no per-wheel commands for now; experiments send the vehicle command only. Per-wheel speeds come when an experiment needs them; per-wheel torque only with a speed limiter on the sync MCU and its own safety review
 - **Date:** 2026-10-25
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-06, SYS-08, SYS-21, SYS-22, SYS-24, SYS-29, ADR-0016, ADR-0021, ADR-0034

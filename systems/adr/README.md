@@ -21,7 +21,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Superseded by 0036 |
 | [0014](0014-ground-speed-event-camera.md) | Ground speed: downward event camera with three lighting modes; dead-wheel pod as fallback | Accepted, amended by 0046 |
 | [0015](0015-ground-link.md) | Ground link: team router (Flint 3), laptop gateway, button hotspot, wired service port | Accepted |
-| [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted, amended by 0048 |
+| [0016](0016-orin-software-platform.md) | Orin: JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT, experiments in containers | Accepted, amended by 0048 and 0050 |
 | [0017](0017-sync-mcu-rtos.md) | Sync MCU firmware on Zephyr | Accepted |
 | [0018](0018-steering-actuator.md) | Steering: VESC-driven brushless actuator, belt reduction, return-to-centre on e-stop | Superseded by 0019 |
 | [0019](0019-steering-off-the-shelf-controller.md) | Steering: moteus-c1 + belt actuator on its own CAN-FD bus; integrated actuator (CubeMars AK class) as fallback | Accepted, amended by 0034 and 0038 |
@@ -55,3 +55,5 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0047](0047-one-platform-targets-differ-at-devices.md) | One platform for every target: the same stack everywhere, and targets differ only at the devices (simulated, development or the car's) | Accepted, amended by 0049 |
 | [0048](0048-experiments-own-estimation-and-control.md) | Experiments own estimation and control, command speed and steering, and may run in real time | Accepted |
 | [0049](0049-twin-runs-in-lockstep.md) | The twin runs in lockstep: the simulator's clock drives the firmware, the device models and the platform | Accepted |
+| [0050](0050-one-platform-build-and-images.md) | One platform build for the Orin and laptops; images for amd64 and arm64; experiments in Docker | Accepted |
+| [0051](0051-car-configuration.md) | Car configuration: one file per car in the repo, compiled into the sync MCU's build | Accepted |

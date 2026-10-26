@@ -2,8 +2,8 @@
 
 - **Revision:** draft (2026-10-07). The message catalogue is drafted in [`sync-link.xml`](sync-link.xml) (MAVLink 2, ADR-0031); code is generated from it by `tools/gen-interfaces.sh`.
 - **Status:** Draft. Needs an owner on each side and their sign-off.
-- **Side A:** sync MCU firmware (`firmware/sync-mcu/`, the `sync_link` module; E-30) (owner TBD)
-- **Side B:** the sync bridge on the Orin (`ros/src/arc_backend_car/`, the car backend of the car interface; ADR-0028) (owner TBD)
+- **Side A:** sync MCU firmware (`firmware/sync-mcu/`, the `sync_link` module; E-30) (owner: Shrikar Vempati, until reassigned)
+- **Side B:** the sync bridge on the Orin (`ros/src/arc_backend_car/`, the car backend of the car interface; ADR-0028) (owner: Shrikar Vempati, until reassigned)
 - **Traces to:** SYS-04, SYS-07, SYS-19, SYS-22, SYS-23, SYS-24, SYS-29, SYS-32, ADR-0021, ADR-0024, ADR-0028, ADR-0031, ADR-0034
 
 Everything that passes between the sync MCU and the Orin, apart from time synchronisation, which uses standard PTP in software-timestamping mode with a PPS cross-check (ADR-0021). The same protocol runs on every target: the sync MCU's `native_sim` build speaks it to the bridge on a laptop (ADR-0028).
@@ -48,6 +48,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | Drive and steering commands | Speed, acceleration, steering angle | As the commander sends them, up to 500 Hz, the command bus's rate (set 2026-10-25) | Passed through the safety envelope before any CAN command (SYS-22) |
 | Operator heartbeat | Forwarded by the Orin from the laptop's heartbeat stream (50–100 Hz, ADR-0015). Decided 2026-10-07: always via the Orin, so a hung Orin also stops the car | 50–100 Hz | Feeds the watchdog; lost heartbeat → braking (SYS-04) |
 | Envelope settings | Session limits for speed, acceleration and steering | Per session | Default 3 m/s for new experiments (SYS-22) |
+| Re-arm | The operator's go after a reset (ADR-0039), forwarded by the Orin like the heartbeat. Decided 2026-10-25; the message is still to be added to `sync-link.xml` | On the operator's action | Accepted only after an e-stop cycle and passing power-on checks; the first commands after it are zero and the envelope returns to its 3 m/s default (SYS-22) |
 
 Commands are "latest wins": a dropped command is replaced by the next one, never retransmitted.
 
@@ -57,5 +58,5 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 2. ~~Addresses~~ **Set (2026-10-25):** ports 52000 and 52001; addresses in [ICD-network](network.md) (TBC there).
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. ~~Command rate and the safety-state rate~~ **Set (2026-10-25):** commands up to 500 Hz; safety state on change plus 50 Hz.
-5. Owners on both sides.
-6. Who the sync MCU accepts messages from. The link shares the car's switch (E-06) with the service port (E-09), so a laptop plugged in there can send to UDP 52000: drive commands, envelope settings and operator heartbeats, which would keep the watchdog (SYS-04) fed while the laptop is the one commanding. Nothing here restricts the sender yet. Options include accepting only the Orin's address, MAVLink 2 message signing, or a network the service port can't reach; none is chosen. Whatever is chosen guards SYS-04 and SYS-22, so it is a safety function: its own tests and a second reviewer.
+5. ~~Owners on both sides~~ **Set (2026-10-25):** Shrikar Vempati on both sides until reassigned.
+6. Who the sync MCU accepts messages from. The link shares the car's switch (E-06) with the service port (E-09), so a laptop plugged in there can send to UDP 52000: drive commands, envelope settings and operator heartbeats, which would keep the watchdog (SYS-04) fed while the laptop is the one commanding. Nothing here restricts the sender yet. Options include accepting only the Orin's address, MAVLink 2 message signing, or a network the service port can't reach; none is chosen. Whatever is chosen guards SYS-04 and SYS-22, so it is a safety function: its own tests and a second reviewer. **Deferred (2026-10-25):** decided before the car is assembled; until then nothing restricts the sender.

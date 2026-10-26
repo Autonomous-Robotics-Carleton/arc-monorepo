@@ -1,9 +1,9 @@
 # ICD-network
 
 - **Revision:** A (2026-10-25)
-- **Status:** Draft. Addresses proposed (TBC); ports and rates set 2026-10-25. Needs an owner on each side.
-- **Side A:** the car: the Orin, the sync MCU, the LiDAR and the switch (E-02, E-06, E-09, E-10, E-30) (owner TBD)
-- **Side B:** the ground equipment: the team router, the operator's laptop, other laptops (ADR-0015) (owner TBD)
+- **Status:** Draft. Addresses proposed (TBC); ports and rates set 2026-10-25. Owners: Shrikar Vempati on both sides until reassigned.
+- **Side A:** the car: the Orin, the sync MCU, the LiDAR and the switch (E-02, E-06, E-09, E-10, E-30) (owner: Shrikar Vempati, until reassigned)
+- **Side B:** the ground equipment: the team router, the operator's laptop, other laptops (ADR-0015) (owner: Shrikar Vempati, until reassigned)
 - **Traces to:** SYS-04, SYS-24, SYS-26, SYS-27, ADR-0015, ADR-0021, ADR-0031, ADR-0047, ADR-0049
 
 Every network the car is on, every address on them, and the ports and rates of the traffic between them. What the messages contain is in the link ICDs: [sync-link](sync-link.md) for the sync MCU and the Orin, operator-link (TBD) for the laptop and the Orin.
@@ -93,7 +93,7 @@ The twin builds the same networks in Docker, at the same addresses (ADR-0047):
 
 ## Open issues
 
-1. Owners on both sides.
+1. ~~Owners on both sides~~ **Set (2026-10-25):** Shrikar Vempati on both sides until reassigned.
 2. The address ranges and addresses above: TBC until the router and the car are set up.
 3. The operator link's port, with the operator-link ICD.
 4. Who the sync MCU accepts messages from: open issue 6 in [sync-link](sync-link.md). The service port puts a laptop on the car network.
