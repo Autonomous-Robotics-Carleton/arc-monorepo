@@ -18,7 +18,7 @@ Most of the work below depends on these. Each ends as an ADR or ICD change, writ
 | One platform image on the Orin and on laptops (ADR-0050) | Decided: one build, two bases |
 | Experiments own estimation and control, command speed and steering, may run in real time (ADR-0048) | Decided |
 | Real-time cores and priorities for experiments, per build | #88 |
-| The re-arm message (ADR-0039) | Decided: the operator re-arms; message to add |
+| The re-arm message (ADR-0039) | Decided: the operator re-arms; `ARC_REARM` on the sync link (#73), the operator link still to add it (#144) |
 | Who the sync MCU accepts commands from (ICD-sync-link, open issue 6) | Deferred until before the car is assembled |
 | The car configuration (ADR-0051) | Decided: a file per car, compiled into the sync MCU |
 | A simulator image beside the dev container (ADR-0050) | Decided: amd64 and arm64 |

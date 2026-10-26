@@ -45,7 +45,7 @@ The starting point for anyone writing the car's software. It collects, per compo
   - Everything in the application: the envelope and watchdog (#75), message handling, sensors (#77), CAN (#78), controller links (#82), time base and triggers (#76), the latch and re-arm, power-monitor input, fault reporting (SYS-19).
   - **Splitting the vehicle command into four wheel speeds** from the car's geometry (ADR-0048): wheelbase, track width, wheel radius and gearing, from the car configuration (ADR-0051).
   - **Keep the logic free of Zephyr calls** (time and I/O passed in), as `safety.c` already is. The same code then runs on the host, in the simulator and on the board.
-  - **The re-arm message** is decided (ICD-sync-link: the operator re-arms, accepted only after an e-stop cycle) but not yet in `sync-link.xml`.
+  - **The re-arm message** is `ARC_REARM` in `sync-link.xml` (version 3); the sync MCU doesn't handle it yet, and the operator link doesn't carry it yet (#144).
   - **Who the sync MCU accepts commands from** (ICD-sync-link, open issue 6). A laptop on the service port could otherwise feed the watchdog. A safety function.
   - Gap counters and the version check (#119); the controllers' clock mapping (#74).
   - Board configuration for the NUCLEO: Ethernet, FD-CAN and SPI, so the board build is real before the boards arrive. `arc_sync`'s pins come from the EE (#98).
