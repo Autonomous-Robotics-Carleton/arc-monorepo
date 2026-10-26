@@ -38,17 +38,31 @@ The site starts at `http://localhost:3001` (the docs site uses 3000).
 The port is fixed, so if 3001 is taken `nx dev web` fails: stop the other process. `nx dev docs` uses 3000 and moves to the next free port if 3000 is busy, which can take 3001, so start web first.
 </Callout>
 
+## Deploying
+
+The site isn't deployed yet: CSES will host it, the way they host the docs site, once they've set it up. It isn't part of CI's publish steps until then.
+
+`apps/web/Dockerfile` builds a production image from the repo root:
+
+```bash
+docker build -f apps/web/Dockerfile -t arc-web .
+docker run -p 3000:3000 arc-web     # http://localhost:3000
+```
+
+- It mirrors `apps/docs/Dockerfile`: install with pnpm, `next build`, then a slim `next start` image on port 3000 (`PORT`), running as a non-root user.
+- The build doesn't call out to Instagram: the running server fetches the feed and caches it for 6 hours (see [Instagram Feed Setup](./instagram.mdx)), so the container needs outbound network access at runtime.
+- To publish it like the docs, the docs' CI steps (log in to GHCR, build and push, call the Watchtower hook) can be copied with `apps/web/Dockerfile`, a new image name and the hook URL CSES gives us.
+
 ## Pages at a Glance
 
 | Route | Purpose |
 |---|---|
-| `/` | Home — hero, identity, mission, sponsors |
-| `/robots` | Project cards with click-to-expand modal |
+| `/` | Home: hero with the trailer as a camera feed, who we are (with event photos), the car, the three subteams, Instagram, sponsors, join |
+| `/robots` | ARC v1: how it fits together, sensors, the two builds, safety, subsystems with links to their code, the first car |
 | `/team` | Exec grid + Instagram feed + join CTA |
-| `/governance` | Constitution, meeting minutes, current status |
+| `/governance` | The constitution in short: purpose, membership, the executive, meetings and elections |
 | `/contact` | Email, location, socials, GitHub, docs |
 | `/blueprint` | Easter egg — GSAP scroll exploded car view |
-| `/projects` | An older copy of `/robots` without the modal; not in the nav |
 
 ## Key Directories
 
@@ -72,6 +86,6 @@ apps/web/
   <Card title="File Structure" href="./structure.mdx" description="Routing, page anatomy, and where everything lives" />
   <Card title="Design System" href="./design-system.mdx" description="Colors, CSS variables, typography, utility classes" />
   <Card title="Components" href="./components.mdx" description="Guide to the key UI components" />
-  <Card title="Updating Content" href="./content.mdx" description="How to change team, projects, sponsors, and governance links" />
+  <Card title="Updating Content" href="./content.mdx" description="How to change team, the car, sponsors, governance and links" />
   <Card title="Instagram Feed" href="./instagram.mdx" description="Setting up the Behold.so feed on the Team page" />
 </Cards>

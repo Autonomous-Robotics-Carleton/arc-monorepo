@@ -94,9 +94,12 @@ All editable content lives in `data/`. These are plain TypeScript files — no C
 
 ```
 data/
-├── projects.ts    # Robots page cards
-├── team.ts        # Team page exec grid
-└── sponsors.ts    # Home page sponsor logos
+├── car.ts         # Robots page: computers, sensors, the two builds
+├── projects.ts    # Robots page: subsystems and their repo links
+├── team.ts        # Team page exec grid (and the leads on the home page)
+├── sponsors.ts    # Home page sponsor logos
+├── governance.ts  # Governance page, paraphrasing the constitution
+└── social.ts      # Every external link, the site URL and the Behold feed ID
 ```
 
 See [Updating Content](./content.mdx) for details on each file.
@@ -118,7 +121,7 @@ import TransitionLink from '@/components/ui/TransitionLink';
 `app/layout.tsx` loads fonts and wraps the app in `ClientProviders` (`components/providers/`):
 
 ```tsx
-// Fonts loaded: Chakra Petch (headings), Inter (body), JetBrains Mono (mono)
+// Fonts loaded: Archivo (headings, variable width), Inter (body), JetBrains Mono (mono)
 // ClientProviders: TransitionProvider (page transitions), with the LoadingScreen inside it
 ```
 

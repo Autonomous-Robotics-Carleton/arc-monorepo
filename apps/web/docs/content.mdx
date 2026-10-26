@@ -1,6 +1,6 @@
 ---
 title: Updating Content
-description: How to update team members, projects, sponsors, and governance links.
+description: How to update team members, the car, sponsors, governance and links.
 icon: FilePen
 ---
 
@@ -25,11 +25,13 @@ export const teamMembers: TeamMember[] = [
 **Current roles (in order):**
 1. President
 2. VP Finance & Administration
-3. VP External
-4. VP Media
-5. Software Lead
-6. Electrical Lead
-7. Mechanical Lead
+3. VP Media
+4. VP External
+5. Electrical Lead
+6. Mechanical Lead
+7. Software Lead
+
+The home page's "Where you fit" cards show the lead for each team by looking up the role (`Software Lead`, `Electrical Lead`, `Mechanical Lead`, `VP Media`), so keep those role names as they are.
 
 ### Adding a photo
 
@@ -59,113 +61,41 @@ export const teamMembers: TeamMember[] = [
 The image div needs `position: relative` on the parent for `fill` layout to work. Add `relative` to the photo container div.
 </Callout>
 
-## Projects / Robots (`data/projects.ts`)
+## The car (`data/car.ts`, `data/projects.ts`)
 
-```ts
-export type Project = {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  image?: string;  // relative path to image in /public
-  github?: string; // URL to the GitHub repo for this subsystem
-};
+The Robots page is about ARC v1, and its facts come from `systems/`, the source of truth:
 
-export const projects: Project[] = [
-  {
-    id: 'autonomy-stack',
-    title: 'Autonomy Stack',
-    description: 'Full self-driving pipeline...',
-    tags: ['ROS2', 'Python', 'C++'],
-    github: 'https://github.com/Autonomous-Robotics-Carleton/autonomy',
-  },
-  // ...
-];
-```
+- `data/car.ts`: the four computers and how they connect (`software/architecture.md`), the sensors (`bom/electrical.md`), and where v1.0 and v1.1 differ (`builds.md`, ADR-0046).
+- `data/projects.ts`: the subsystems listed under "Read the whole car", each with a link to its folder in the repo.
 
-Each project appears as a card on `/robots`. Clicking a card opens a modal with the full description and a GitHub link.
-
-### Adding a project image
-
-1. Drop the image into `public/projects/`
-2. Add the path to the project's `image` field
-3. The image placeholder div in the modal (`aspect-video w-full bg-bp-blue-light`) in `app/robots/page.tsx` currently renders a solid block — swap it for a `next/image` when you have real images
+When a decision in `systems/` changes one of these, update the file here to match. Don't put a value on the site that `systems/` doesn't have.
 
 ## Sponsors (`data/sponsors.ts`)
 
-```ts
-export const sponsors: Sponsor[] = [
-  { name: 'KEFC' },
-  { name: 'Notion' },
-  { name: 'Altium Designer' },
-];
-```
-
-Logos are mapped in `components/ui/SponsorLogos.tsx`. To add a new sponsor:
-
-<Steps>
-  <Step>
-    ### Add to sponsors.ts
-    ```ts
-    { name: 'NewSponsor' }
-    ```
-  </Step>
-  <Step>
-    ### Optional: add an SVG logo to SponsorLogos.tsx
-    A sponsor without a logo renders as a text wordmark, so this step is optional. For an SVG, add a `NewSponsorLogo({ className })` component that uses `fill={FILL}`, and a `case` in the `getSponsorLogo` switch:
-    ```tsx
-    case 'NewSponsor':
-      return <NewSponsorLogo className={logoClass} />;
-    ```
-    `FILL` is `currentColor`, so logos inherit the parent text colour.
-  </Step>
-</Steps>
-
-## Governance Links (`app/governance/page.tsx`)
-
-The constitution and meeting minutes links are hardcoded in the `ROWS` array at the top of the file:
+The list matches the last slide of the club's latest KEFC deck (Drive: *ARC KEFC Fall 2026 - Slides*): Altium, Notion, KEFC and Carleton's Faculty of Engineering and Design. The logos in `public/sponsors/` are cut from that slide, white on transparent.
 
 ```ts
-const ROWS = [
-  {
-    id: 'constitution',
-    label: 'CONSTITUTION',
-    description: 'Club founding documents and bylaws.',
-    action: 'OPEN IN DRIVE →',
-    href: '#',  // ← replace with real Google Drive share link
-  },
-  {
-    id: 'minutes',
-    label: 'MEETING MINUTES',
-    description: 'Most recent general meeting notes.',
-    action: 'OPEN NOTES →',
-    href: '#',  // ← replace with the latest meeting notes link (update weekly)
-  },
-  // ...
-];
+{ name: 'Altium', logo: '/sponsors/altium.png', width: 162, height: 36 },
 ```
 
-**Updating meeting minutes week to week:** change the `href` on the `minutes` row to the new Google Drive / Notion link. That's it.
+`width` and `height` are the logo file's pixel size. Logos keep their sizes relative to each other: the tallest (65px) shows at 2.75rem, the rest in proportion. For a new sponsor, add a white-on-transparent PNG cut at the same scale as the others (or from the next deck's sponsor slide) and a row here. Sponsor tiers and details stay off the site.
+
+## Governance (`data/governance.ts`)
+
+The Governance page paraphrases the current constitution (Drive: *ARC CONSTITUTION W26 v1*): its purpose, membership, the executive (the President, three VPs, the Design Leads and Junior Technical Leads), how the year runs, and elections. The constitution is the authority, so update this file when it's amended.
+
+Its Documents section links the constitution and the folder of weekly meeting minutes in the shared drive (`CONSTITUTION_URL` and `MINUTES_URL` in `data/social.ts`), with an email fallback.
 
 <Callout type="warn" title="Share settings">
-Make sure the Google Drive link is set to "Anyone with the link can view" before publishing.
+Visitors outside the club can only open these if each is set to "Anyone with the link can view" in Drive. Otherwise they get a request-access page.
 </Callout>
 
-## Contact Page Links (`app/contact/page.tsx`)
+## Links (`data/social.ts`)
 
-GitHub repo and docs links are also hardcoded. The GitHub row's two links, and the LinkedIn and GitHub entries in `SOCIAL_LINKS`, are still `href="#"`: set them like this:
+Every external link the site uses (Instagram, Discord, GitHub, email, docs, the Drive documents) and the Behold feed ID are constants in `data/social.ts`. The pages read them from there, so a link changes in one place. `SOCIAL_LINKS` is the list shown in the footer and the contact page's "Follow us" row; each entry names its icon.
 
-```tsx
-{/* GitHub row */}
-<a href="https://github.com/Autonomous-Robotics-Carleton/arc-monorepo" ...>
-  GITHUB
-</a>
-<a href="https://github.com/Autonomous-Robotics-Carleton/arc-monorepo" ...>
-  VIEW REPO →
-</a>
+LinkedIn is left out until the club has a page: set `LINKEDIN_URL` and add it to `SOCIAL_LINKS` then (Simple Icons has no LinkedIn logo, so it needs one of its own).
 
-{/* Docs row */}
-<a href="https://docs.arcarleton.ca" ...>OPEN DOCS →</a>
-```
+## Icons
 
-Social links (Instagram, LinkedIn, GitHub) are in the `SOCIAL_LINKS` constant at the top of the same file.
+Service logos come from [Simple Icons](https://simpleicons.org) through `components/ui/BrandIcon.tsx` (`<BrandIcon brand="discord" />`: `discord`, `instagram`, `github`, `drive`), one colour, so they take the surrounding text colour. Generic icons (mail, map pin, book) come from [Lucide](https://lucide.dev) (`lucide-react`). Use an icon where a link goes to a service or does something specific, not as decoration.

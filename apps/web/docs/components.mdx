@@ -58,20 +58,20 @@ This component only appears on the home page. Other pages use `BlueprintGrid` fo
 
 ## StackedLogos
 
-The sponsor logo grid on the home page. Each column cycles through logos using a CSS animation. Supports mouse-follow glow on hover.
+The sponsor logo grid on the home page, with a mouse-follow glow on hover. With up to `maxColumns` logos, each gets its own static cell. With more, the logos are dealt round-robin into `maxColumns` columns and each column cycles through its share using a CSS animation.
 
 ```tsx
 import StackedLogos from '@/components/ui/StackedLogos';
 
 <StackedLogos
-  logoGroups={logoGroups}  // ReactNode[][] — each inner array is one column
-  columns={4}
+  logos={sponsors.map(getSponsorLogo)}
+  maxColumns={4}           // default
   duration={28}            // seconds per full cycle
   stagger={3}              // seconds between column offsets
 />
 ```
 
-Logos are defined in `data/sponsors.ts` and mapped to SVG components in `components/ui/SponsorLogos.tsx`.
+Logos are image files listed in `data/sponsors.ts`; `getSponsorLogo` in `components/ui/SponsorLogos.tsx` renders one at its relative size.
 
 ## Button
 
@@ -86,18 +86,40 @@ Two variants: `primary` (accent background) and `outline` (bordered, transparent
 
 ## InstagramFeed
 
-Fetches posts from Behold.so and renders them as a card grid. Falls back to 6 placeholder cards when no feed ID is set.
+Shows the latest `@arcarleton` posts as a card grid, read from the site's cached feed route (`/api/instagram`). Shows a "follow us" panel when there are no posts.
 
 ```tsx
 import InstagramFeed from '@/components/ui/InstagramFeed';
 
-// In app/team/page.tsx — set BEHOLD_FEED_ID at the top of the file
-const BEHOLD_FEED_ID = ''; // ← paste your Behold feed ID here
-
-<InstagramFeed feedId={BEHOLD_FEED_ID || undefined} />
+<InstagramFeed count={6} />   // the Behold feed ID is BEHOLD_FEED_ID in data/social.ts
 ```
 
 See [Instagram Feed Setup](./instagram.mdx) for full setup instructions.
+
+## HUD pieces
+
+The site borrows the Instagram posts' computer-vision look. These are its building blocks:
+
+```tsx
+import CamFeed from '@/components/sections/CamFeed';
+import TrackingBox from '@/components/ui/TrackingBox';
+import SectionLabel from '@/components/ui/SectionLabel';
+import HudClock from '@/components/ui/HudClock';
+
+<CamFeed />                                       // the launch trailer as a CAM 01 feed (home hero)
+<TrackingBox label="ARC_V1" confidence={0.98}>    // red bounding box with a label tab
+  <Image ... />
+</TrackingBox>
+<SectionLabel index="01">Who we are</SectionLabel> // "01 —— WHO WE ARE" section marker
+<HudClock />                                      // live HH:MM:SS
+```
+
+`CamFeed` plays `public/media/trailer.mp4`: the media team's launch trailer (*FALL 25 / INSTAGRAM POSTS / FINAL V5*), muted, 540px wide, its one black second cut, about 2.8 MB. Visitors who prefer reduced motion get the poster frame. To replace it, re-encode the new video the same way:
+
+```bash
+ffmpeg -i trailer-source.mp4 -an -vf "scale=540:-2,fps=24" -c:v libx264 -pix_fmt yuv420p \
+  -crf 33 -preset veryslow -tune grain -movflags +faststart public/media/trailer.mp4
+```
 
 ## BlueprintExplode (Easter Egg)
 

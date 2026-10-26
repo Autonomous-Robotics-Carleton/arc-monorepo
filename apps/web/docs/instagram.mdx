@@ -8,74 +8,55 @@ The Team page shows a live Instagram feed from `@arcarleton` using [Behold.so](h
 
 ## How it works
 
-1. Behold connects to the `@arcarleton` Instagram account
-2. It creates a feed and gives you a URL like `https://feeds.behold.so/YOUR_FEED_ID`
-3. Our `InstagramFeed` component fetches that URL and renders the posts as cards
-4. If no feed ID is set, it shows 6 placeholder cards instead
+1. Behold connects to the `@arcarleton` Instagram account (the *source*)
+2. A Behold *feed* exposes that account's latest posts as JSON at `https://feeds.behold.so/<feed ID>`
+3. The site's route `app/api/instagram/route.ts` fetches that JSON on the server, keeps only what the cards need, and caches it for 6 hours
+4. `InstagramFeed` reads `/api/instagram` and renders the posts as cards; with no posts, it shows a "follow us" panel instead
 
-## Setup
+The site's feed is **ARC** in the Behold dashboard (signed in as the club's account), and its ID is `BEHOLD_FEED_ID` in `apps/web/data/social.ts`.
+
+<Callout type="info" title="Why the server route">
+Behold's free plan counts every feed request as a view, with 1,200 a month. Fetching from each visitor's browser would spend one view per page load. The server route fetches at most once every 6 hours, about 120 views a month however busy the site is. Change `revalidate` on the route's `fetch` to trade freshness against views. The route is dynamic, so builds (CI, Docker) never call Behold.
+</Callout>
+
+## Setting up a new feed
 
 <Steps>
   <Step>
-    ### Create a Behold account
-    Go to [behold.so](https://behold.so) and sign up. The free tier is sufficient for a club site.
-  </Step>
-  <Step>
-    ### Connect Instagram
-    In the Behold dashboard, click **Connect Instagram** and log in with the `@arcarleton` account credentials. Whoever manages the Instagram account will need to do this step.
+    ### Connect the account
+    In the [Behold dashboard](https://app.behold.so), go to **Sources** and connect `@arcarleton` (whoever manages the Instagram account logs in).
   </Step>
   <Step>
     ### Create a feed
-    Click **New Feed**, give it a name (e.g. "ARC Website"), and save. Behold will start syncing posts.
+    **Feeds → Add Feed**: content type **User**, then click **Source** and pick `@arcarleton` in the pop-up. Output type can be **JSON** or **Widget**: both serve the same JSON, and the site ignores the widget styling.
   </Step>
   <Step>
-    ### Copy the feed ID
-    In the feed settings, copy the **Feed ID** — it looks like a random string of characters.
-  </Step>
-  <Step>
-    ### Add it to the codebase
-    Open `apps/web/app/team/page.tsx` and paste the feed ID:
+    ### Add the ID
+    Copy the ID from the feed's URL (`app.behold.so/feeds/<feed ID>`) into `apps/web/data/social.ts`:
 
     ```ts
-    // Near the top of the file
-    const BEHOLD_FEED_ID = 'paste-your-feed-id-here';
+    export const BEHOLD_FEED_ID = 'paste-your-feed-id-here';
     ```
-
-    That's it. The `InstagramFeed` component will start fetching and rendering real posts.
   </Step>
 </Steps>
 
-<Callout type="info" title="Free tier limits">
-Behold's free tier refreshes the feed periodically (not real-time). For a club site this is perfectly fine — posts will appear within a few hours of being published.
-</Callout>
-
 ## What gets displayed
 
-The component fetches the 6 most recent posts. Each card shows:
-- The post image (or video thumbnail for video posts)
-- The first two lines of the caption
-- A **VIEW POST →** link to the post on Instagram
+The home page shows the 3 latest posts and the Team page 6 (the `count` prop). Each card shows:
+- The post image: Behold's 700px WebP (`sizes.medium`), or the thumbnail for videos
+- The first two lines of the caption, without hashtags (`prunedCaption`)
+- **View on Instagram**
 
-The **VIEW POST →** link opens the post on Instagram in a new tab; the rest of the card isn't a link.
+The whole card links to the post on Instagram, in a new tab. Placeholder cards show while the feed loads.
 
-## The component (`components/ui/InstagramFeed.tsx`)
+## The route (`app/api/instagram/route.ts`)
 
-```ts
-type BeholdPost = {
-  id: string;
-  mediaUrl: string;       // full image URL
-  thumbnailUrl?: string;  // video thumbnail (use this if present)
-  permalink: string;      // instagram.com/p/...
-  caption?: string;
-};
-```
-
-The component fetches from `https://feeds.behold.so/${feedId}`, parses the response as an array of `BeholdPost` objects, and slices to the first 6. If the fetch fails (network error, invalid ID), it silently falls back to placeholder cards.
+Current (v2) Behold feeds return an object with a `posts` array; older feeds return the array itself, and both are handled. The route returns `{ posts: [{ id, permalink, image, caption }] }`. If Behold fails or there's no feed ID, it returns no posts and the page shows the follow-us panel.
 
 ## Troubleshooting
 
 **Posts not showing up after adding the feed ID:**
-- Check the browser console for network errors on the Behold URL
+- Open `/api/instagram` on the site: it should list the posts. Remember it's cached for up to 6 hours after a deploy
 - Make sure the feed ID is correct (no extra spaces)
 - The Behold free tier may take a few minutes to sync on first connect
 

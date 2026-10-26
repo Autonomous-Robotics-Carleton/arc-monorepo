@@ -5,12 +5,12 @@ import Footer from '@/components/layout/Footer';
 import BlueprintGrid from '@/components/ui/BlueprintGrid';
 import CornerTicks from '@/components/ui/CornerTicks';
 import Button from '@/components/ui/Button';
+import BrandIcon from '@/components/ui/BrandIcon';
 import InstagramFeed from '@/components/ui/InstagramFeed';
+import SectionLabel from '@/components/ui/SectionLabel';
 import { useScrollReveal, useStaggerReveal } from '@/hooks/useScrollReveal';
 import { teamMembers } from '@/data/team';
-
-// Set your Behold feed ID here once you've set up behold.so
-const BEHOLD_FEED_ID = '';
+import { DISCORD_URL, INSTAGRAM_HANDLE, INSTAGRAM_URL } from '@/data/social';
 
 export default function TeamPage() {
   const gridRef = useStaggerReveal<HTMLDivElement>('[data-reveal-item]', {
@@ -27,14 +27,16 @@ export default function TeamPage() {
         <section className="relative px-6 pt-28 pb-24 md:px-10 lg:px-16">
           <BlueprintGrid variant="hero" />
           <div className="mx-auto max-w-[1440px]">
-            <p className="mb-8 text-xs tracking-widest text-fg/40 pt-8">— EXECS</p>
+            <div className="mb-8 pt-8">
+              <SectionLabel index="01">Execs &amp; leads</SectionLabel>
+            </div>
             <div
               ref={gridRef}
               className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
               {teamMembers.map((member) => (
                 <div
-                  key={member.name}
+                  key={`${member.name}-${member.role}`}
                   data-reveal-item
                   className="group relative overflow-hidden border border-bp-line transition-all duration-300 hover:border-accent/30 bp-glow-hover bp-glass"
                 >
@@ -43,7 +45,7 @@ export default function TeamPage() {
                   <div className="aspect-[3/4] w-full bg-bp-blue-light" />
                   {/* Info */}
                   <div className="border-t border-bp-line p-5">
-                    <h3 className="text-base font-bold italic">{member.name}</h3>
+                    <h3 className="text-base">{member.name}</h3>
                     <p className="mt-0.5 text-xs tracking-wider text-fg/50">{member.role}</p>
                   </div>
                 </div>
@@ -59,18 +61,19 @@ export default function TeamPage() {
             <div ref={instagramRef} className="mb-8 flex items-end justify-between">
               <div>
                 <p className="text-xs tracking-widest text-fg/40">— FOLLOW OUR BUILD</p>
-                <p className="mt-1 text-sm text-fg/30 font-mono">@arcarleton</p>
+                <p className="mt-1 text-sm text-fg/30 font-mono">{INSTAGRAM_HANDLE}</p>
               </div>
               <a
-                href="https://instagram.com/arcarleton"
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border border-accent/40 px-5 py-2.5 text-xs tracking-widest text-accent transition-all duration-200 hover:border-accent hover:bg-accent/10"
+                className="inline-flex items-center gap-2.5 border border-accent/40 px-5 py-2.5 text-xs tracking-widest text-accent transition-all duration-200 hover:border-accent hover:bg-accent/10"
               >
-                VIEW ON INSTAGRAM →
+                <BrandIcon brand="instagram" />
+                VIEW ON INSTAGRAM
               </a>
             </div>
-            <InstagramFeed feedId={BEHOLD_FEED_ID || undefined} />
+            <InstagramFeed />
           </div>
         </section>
 
@@ -86,7 +89,11 @@ export default function TeamPage() {
               We&apos;re always looking for passionate people. Whether you&apos;re into
               software, hardware, or design — there&apos;s a place for you.
             </p>
-            <div className="mt-8">
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <Button href={DISCORD_URL}>
+                <BrandIcon brand="discord" />
+                Join the Discord
+              </Button>
               <Button href="/contact" variant="outline">
                 Get in Touch
               </Button>
