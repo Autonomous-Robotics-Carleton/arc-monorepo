@@ -44,7 +44,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
 | [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
 | [0038](0038-steering-loss-stops-the-car.md) | Losing steering stops the car, and the car doesn't drive without it | Accepted |
-| [0039](0039-fault-stop-reset.md) | A fault stop latches, and only an e-stop cycle on the car resets it | Accepted, amended by 0052 |
+| [0039](0039-fault-stop-reset.md) | A fault stop latches, and only an e-stop cycle on the car resets it | Accepted, amended by 0052 and 0053 |
 | [0040](0040-custom-corners.md) | We design the corners; only generic parts are bought (Arrma 6S drivetrain and wheel parts, industrial bearings and rod ends) | Accepted |
 | [0041](0041-grounding-and-isolation.md) | Controlled return star / non-isolated review baseline; complete isolation alternative | Proposed |
 | [0042](0042-combined-power-sync-motherboard.md) | Power and sync MCU share one motherboard PCB; Jetson carrier stays separate | Accepted |
@@ -58,3 +58,4 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0050](0050-one-platform-build-and-images.md) | One platform build for the Orin and laptops; images for amd64 and arm64; experiments in Docker | Accepted |
 | [0051](0051-car-configuration.md) | Car configuration: one file per car in the repo, compiled into the sync MCU's build | Accepted |
 | [0052](0052-envelope-defaults-and-heartbeat-stop.md) | The envelope's defaults, reverse, and a heartbeat stop held until the operator re-arms | Accepted |
+| [0053](0053-fault-reset-details.md) | The fault reset's details: a 3 s check window, a stopped-wheel threshold, the steering check deferred | Accepted |
