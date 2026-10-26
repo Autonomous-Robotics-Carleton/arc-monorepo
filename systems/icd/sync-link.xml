@@ -1,20 +1,21 @@
 <?xml version="1.0"?>
 <!--
   ICD-sync-link message set (ADR-0031): MAVLink 2, ARC messages only.
-  Draft: field lists follow the message families in sync-link.md.
+  Reviewed 2026-10-26 (#73): field lists follow the message families in
+  sync-link.md. Version 3: the latch state, sensor status fields, re-arm.
   Every sample message starts with time_ns, the sample time in the sync
   MCU's clock (SYS-07, ADR-0021). Gaps are detected from MAVLink's
   per-link sequence number; definition mismatches are rejected by
   MAVLink's CRC_EXTRA. Generated code: tools/gen-interfaces.sh.
 -->
 <mavlink>
-  <version>2</version>
+  <version>3</version>
   <dialect>0</dialect>
   <enums>
     <enum name="ARC_IMU">
       <description>Which IMU.</description>
-      <entry value="0" name="ARC_IMU_CG"><description>Navigation-grade IMU at the centre of gravity.</description></entry>
-      <entry value="1" name="ARC_IMU_FRONT"><description>Consumer-grade IMU at the front axle.</description></entry>
+      <entry value="0" name="ARC_IMU_CG"><description>The ISM330DHCX at the centre of gravity (E-20, ADR-0045).</description></entry>
+      <entry value="1" name="ARC_IMU_FRONT"><description>The ISM330DHCX at the front axle (E-21, ADR-0045).</description></entry>
     </enum>
     <enum name="ARC_ANGLE_SENSOR">
       <description>Which angle sensor (AS5047 family).</description>
@@ -29,6 +30,13 @@
       <entry value="8" name="ARC_ANGLE_KNUCKLE_FL"/>
       <entry value="9" name="ARC_ANGLE_KNUCKLE_FR"/>
     </enum>
+    <enum name="ARC_ANGLE_STATUS" bitmask="true">
+      <description>An angle sensor's own error flags (AS5047P DIAAGC and ERRFL registers). 0 is valid; any bit means the angle can't be trusted (ADR-0038).</description>
+      <entry value="1" name="ARC_ANGLE_STATUS_MAGNET_LOW"><description>Magnetic field too weak (MAGL).</description></entry>
+      <entry value="2" name="ARC_ANGLE_STATUS_MAGNET_HIGH"><description>Magnetic field too strong (MAGH).</description></entry>
+      <entry value="4" name="ARC_ANGLE_STATUS_CORDIC_OVERFLOW"><description>The angle calculation overflowed (COF).</description></entry>
+      <entry value="8" name="ARC_ANGLE_STATUS_READ_ERROR"><description>The SPI read failed: parity, framing or an invalid command (ERRFL), or no reply.</description></entry>
+    </enum>
     <enum name="ARC_CORNER">
       <description>Which corner.</description>
       <entry value="0" name="ARC_CORNER_FL"/>
@@ -37,10 +45,30 @@
       <entry value="3" name="ARC_CORNER_RR"/>
     </enum>
     <enum name="ARC_WATCHDOG_STATE">
-      <description>Heartbeat watchdog (SYS-04).</description>
-      <entry value="0" name="ARC_WATCHDOG_OK"><description>Heartbeat arriving.</description></entry>
-      <entry value="1" name="ARC_WATCHDOG_ROLLING"><description>Heartbeat lost; within the roll-out before braking.</description></entry>
-      <entry value="2" name="ARC_WATCHDOG_BRAKING"><description>Braking on the e-stop ramp.</description></entry>
+      <description>Heartbeat watchdog (SYS-04, ADR-0052).</description>
+      <entry value="0" name="ARC_WATCHDOG_OK"><description>Armed, heartbeat arriving.</description></entry>
+      <entry value="1" name="ARC_WATCHDOG_NOT_ARMED"><description>Not armed: waiting for heartbeats and the operator's re-arm, at power-on or after a fault reset. Not braking.</description></entry>
+      <entry value="2" name="ARC_WATCHDOG_BRAKING"><description>Heartbeat lost: braking on the e-stop ramp, then held until heartbeats are back and the operator re-arms (ADR-0052).</description></entry>
+    </enum>
+    <enum name="ARC_LATCH_STATE">
+      <description>The fault latch and its reset (SYS-25, ADR-0039, ADR-0053).</description>
+      <entry value="0" name="ARC_LATCH_LATCHED"><description>Stopped: waiting for the e-stop button on the car.</description></entry>
+      <entry value="1" name="ARC_LATCH_ESTOP_HELD"><description>The e-stop is held: waiting for the motor-bus cut at T.</description></entry>
+      <entry value="2" name="ARC_LATCH_CHECKING"><description>Released after T: the power-on checks are running.</description></entry>
+      <entry value="3" name="ARC_LATCH_RESET"><description>Reset: the car may drive once the operator re-arms.</description></entry>
+      <entry value="4" name="ARC_LATCH_RESTART_REQUIRED"><description>Only a power cycle and an inspection clear it (ADR-0039 item 5).</description></entry>
+    </enum>
+    <enum name="ARC_LATCH_CAUSE">
+      <description>Why the fault latch is set. The detail (which corner, which check) is in ARC_FAULT.</description>
+      <entry value="0" name="ARC_LATCH_CAUSE_NONE"/>
+      <entry value="1" name="ARC_LATCH_CAUSE_POWER_ON"/>
+      <entry value="2" name="ARC_LATCH_CAUSE_ESTOP"><description>The e-stop button was pressed.</description></entry>
+      <entry value="3" name="ARC_LATCH_CAUSE_CORNER"><description>A SYS-25 stop.</description></entry>
+      <entry value="4" name="ARC_LATCH_CAUSE_CHECKS_FAILED"><description>The power-on checks didn't pass within the window.</description></entry>
+      <entry value="5" name="ARC_LATCH_CAUSE_TOO_MANY_STOPS"><description>Too many stops since power-on.</description></entry>
+      <entry value="6" name="ARC_LATCH_CAUSE_OVERCURRENT"><description>A motor controller reported over-current.</description></entry>
+      <entry value="7" name="ARC_LATCH_CAUSE_OVERVOLTAGE"><description>A motor controller reported over-voltage.</description></entry>
+      <entry value="8" name="ARC_LATCH_CAUSE_ESTOP_WIRING"><description>A corner reports the e-stop with the button released (ADR-0035).</description></entry>
     </enum>
     <enum name="ARC_MOTOR_STATE" bitmask="true">
       <description>Why a motor controller is braking on its own (ADR-0035). Any bit set stops all four corners (SYS-25).</description>
@@ -78,6 +106,7 @@
       <field type="uint64_t" name="time_ns" units="ns">Sample time.</field>
       <field type="float" name="angle" units="rad">Absolute angle.</field>
       <field type="uint8_t" name="sensor" enum="ARC_ANGLE_SENSOR">Which sensor.</field>
+      <field type="uint8_t" name="status" enum="ARC_ANGLE_STATUS" display="bitmask">The sensor's error flags; 0 is valid.</field>
     </message>
     <message id="52003" name="ARC_RIDE_HEIGHT_SAMPLE">
       <description>One ToF ride-height sample.</description>
@@ -110,6 +139,7 @@
       <field type="float" name="torque" units="N.m">Output torque estimate from q-axis current.</field>
       <field type="float" name="temp" units="degC">Controller temperature.</field>
       <field type="uint8_t" name="fault">moteus fault code; 0 is none.</field>
+      <field type="uint8_t" name="mode">The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.</field>
     </message>
     <message id="52006" name="ARC_CAMERA_TRIGGER">
       <description>A camera trigger pulse, for pairing frames with trigger times (ADR-0021).</description>
@@ -132,6 +162,8 @@
       <field type="float" name="max_steer" units="rad">Envelope in force: steering angle.</field>
       <field type="uint8_t" name="watchdog" enum="ARC_WATCHDOG_STATE">Heartbeat watchdog state.</field>
       <field type="uint8_t" name="estop">1 while the physical e-stop is active.</field>
+      <field type="uint8_t" name="latch" enum="ARC_LATCH_STATE">The fault latch: what the operator has to do next (ADR-0039).</field>
+      <field type="uint8_t" name="latch_cause" enum="ARC_LATCH_CAUSE">Why it is latched; NONE once reset.</field>
     </message>
     <message id="52009" name="ARC_FAULT">
       <description>A fault or event, when detected (SYS-19).</description>
@@ -159,6 +191,11 @@
       <field type="float" name="max_speed" units="m/s">Speed limit; 3 m/s by default for new experiments.</field>
       <field type="float" name="max_accel" units="m/s/s">Acceleration limit.</field>
       <field type="float" name="max_steer" units="rad">Steering-angle limit.</field>
+    </message>
+    <message id="52053" name="ARC_REARM">
+      <description>The operator's re-arm, forwarded by the Orin like the heartbeat. Ends a heartbeat stop once heartbeats are arriving again (ADR-0052); after a fault stop, accepted only after an e-stop cycle and the power-on checks (ADR-0039). The first commands after it are zero.</description>
+      <field type="uint64_t" name="time_ns" units="ns">When the Orin forwarded it, in sync-MCU time.</field>
+      <field type="uint32_t" name="counter">The laptop's re-arm counter, passed through.</field>
     </message>
   </messages>
 </mavlink>
