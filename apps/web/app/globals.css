@@ -1,26 +1,40 @@
 @import 'tailwindcss';
 
+/* Palette from the media team's colour research (Drive: BRAND IDENTITY / COLOUR RESEARCH).
+   The bp-* names are the blueprint theme's; they now map onto the ARC palette. */
 @theme {
-  --font-heading: 'Chakra Petch', sans-serif;
-  --font-body: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-heading: var(--font-archivo), 'Archivo', sans-serif;
+  --font-body: var(--font-inter), 'Inter', sans-serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', monospace;
 
-  --color-bg: #111111;
-  --color-fg: #f0f0f0;
-  --color-muted: #737373;
-  --color-border: #2e2e2e;
-  --color-accent: #d4d4d4;
+  /* The site's red is ARC RED (#f42319) toned down: at full strength it glares on black
+     across big headings and fills. Text and accents use arc-red; large areas use arc-red-fill. */
+  --color-arc-red: #d62a20;
+  --color-arc-red-fill: #b3231b;
+  --color-arc-red-dark: #7a120d; /* BARN RED */
+  --color-arc-black: #000000;
+  --color-arc-white: #ffffff;
+  --color-arc-gray-90: #282831;  /* RAISIN BLACK */
+  --color-arc-gray-70: #5b5b61;  /* DAVY'S GRAY */
+  --color-arc-gray-50: #8a8a90;  /* TAUPE GRAY */
+  --color-arc-gray-30: #b9b9bd;  /* FRENCH GRAY */
 
-  --color-bp-blue: #111111;
-  --color-bp-blue-light: #1a1a1a;
-  --color-bp-blue-dark: #0a0a0a;
-  --color-bp-cyan: #d4d4d4;
-  --color-bp-cyan-dim: #a0a0a0;
-  --color-bp-grid: rgba(212, 212, 212, 0.10);
-  --color-bp-grid-major: rgba(212, 212, 212, 0.18);
-  --color-bp-glow: rgba(212, 212, 212, 0.20);
-  --color-bp-line: rgba(212, 212, 212, 0.22);
-  --color-bp-muted: #737373;
+  --color-bg: #000000;
+  --color-fg: #ffffff;
+  --color-muted: #8a8a90;
+  --color-border: #282831;
+  --color-accent: #d62a20;
+
+  --color-bp-blue: #000000;
+  --color-bp-blue-light: #121216;
+  --color-bp-blue-dark: #000000;
+  --color-bp-cyan: #d62a20;
+  --color-bp-cyan-dim: #7a120d;
+  --color-bp-grid: rgba(255, 255, 255, 0.05);
+  --color-bp-grid-major: rgba(255, 255, 255, 0.09);
+  --color-bp-glow: rgba(214, 42, 32, 0.25);
+  --color-bp-line: rgba(255, 255, 255, 0.14);
+  --color-bp-muted: #8a8a90;
 }
 
 @layer base {
@@ -37,16 +51,18 @@
   }
 
   ::selection {
-    background-color: var(--color-accent);
-    color: var(--color-bg);
+    background-color: var(--color-arc-red);
+    color: var(--color-arc-white);
   }
 
+  /* Extended black grotesk, like the Instagram posts */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    font-weight: 700;
-    font-style: italic;
+    font-weight: 900;
+    font-stretch: 125%;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.01em;
+    line-height: 0.95;
   }
 }
 
@@ -148,13 +164,13 @@
    bp-glass (cards): warm dark red — most visible, used on content surfaces.
    bp-glass-strong (header/modal): deeper cooler red — dominant, recedes behind content. */
 .bp-glass {
-  background-color: rgba(20, 14, 14, 0.74);
+  background-color: rgba(10, 10, 12, 0.78);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
 .bp-glass-strong {
-  background-color: rgba(12, 8, 8, 0.92);
+  background-color: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -162,29 +178,29 @@
 /* Blueprint glow effects */
 .bp-glow {
   box-shadow:
-    0 0 4px rgba(212, 212, 212, 0.15),
-    0 0 12px rgba(212, 212, 212, 0.08);
+    0 0 4px rgba(214, 42, 32, 0.25),
+    0 0 16px rgba(214, 42, 32, 0.12);
 }
 
 .bp-glow-hover:hover {
   box-shadow:
-    0 0 6px rgba(212, 212, 212, 0.3),
-    0 0 20px rgba(212, 212, 212, 0.15);
+    0 0 6px rgba(214, 42, 32, 0.3),
+    0 0 24px rgba(214, 42, 32, 0.15);
 }
 
 .bp-border {
-  border-color: rgba(212, 212, 212, 0.15);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .bp-border-hover:hover {
-  border-color: rgba(212, 212, 212, 0.35);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* Focus ring for accessibility */
 .bp-focus:focus-visible {
   outline: 1.5px solid var(--color-accent);
   outline-offset: 2px;
-  box-shadow: 0 0 8px rgba(212, 212, 212, 0.3);
+  box-shadow: 0 0 8px rgba(214, 42, 32, 0.4);
 }
 
 /* SVG stroke draw animation base */
@@ -209,7 +225,7 @@
 /* ── Background Boxes ripple animation ── */
 @keyframes cell-ripple {
   0%   { background-color: transparent; }
-  30%  { background-color: rgba(212, 212, 212, 0.40); }
+  30%  { background-color: rgba(214, 42, 32, 0.35); }
   100% { background-color: transparent; }
 }
 

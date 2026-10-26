@@ -23,7 +23,7 @@ export default function Header() {
       <nav className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3 md:px-10 lg:px-16">
         {/* Logo */}
         <TransitionLink href="/" aria-label="ARC Home">
-          <ArcLogo className="h-10 w-auto text-white md:h-12" />
+          <ArcLogo className="h-7 w-auto text-white md:h-8" />
         </TransitionLink>
 
         {/* Desktop nav */}
@@ -35,7 +35,7 @@ export default function Header() {
                 <TransitionLink
                   href={item.href}
                   className={`group flex items-center gap-2.5 text-sm tracking-widest transition-colors duration-200 ${
-                    active ? 'text-accent' : 'text-fg/60 hover:text-accent/80'
+                    active ? 'text-white' : 'text-fg/50 hover:text-white'
                   }`}
                 >
                   <NavIcon filled={active} />

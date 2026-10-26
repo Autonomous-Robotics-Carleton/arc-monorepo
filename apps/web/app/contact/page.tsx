@@ -4,15 +4,11 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import VerticalLine from '@/components/ui/VerticalLine';
 import BlueprintGrid from '@/components/ui/BlueprintGrid';
-import NavIcon from '@/components/ui/NavIcon';
+import { BookOpen, Mail, MapPin } from 'lucide-react';
+import BrandIcon from '@/components/ui/BrandIcon';
 import ContactTypography from '@/components/ui/ContactTypography';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-
-const SOCIAL_LINKS = [
-  { label: 'Instagram', href: 'https://instagram.com/arcarleton' },
-  { label: 'LinkedIn', href: '#' },
-  { label: 'GitHub', href: '#' },
-] as const;
+import { DISCORD_URL, DOCS_URL, EMAIL, GITHUB_REPO_URL, SOCIAL_LINKS } from '@/data/social';
 
 export default function ContactPage() {
   const leftRef = useScrollReveal<HTMLDivElement>({ y: 30 });
@@ -40,16 +36,39 @@ export default function ContactPage() {
               <div className="border-t border-bp-line py-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <a
-                    href="mailto:contact@arcarleton.ca"
+                    href={`mailto:${EMAIL}`}
                     className="flex items-center gap-2.5 text-sm tracking-widest transition-colors hover:text-accent"
                   >
-                    <NavIcon />
-                    CONTACT@ARCARLETON.CA
+                    <Mail className="h-4 w-4 text-arc-red" aria-hidden="true" />
+                    {EMAIL.toUpperCase()}
                   </a>
                   <p className="max-w-[240px] text-right text-sm leading-relaxed text-fg/60">
                     Feel free to reach out if you want to collaborate with us, or
                     simply have a chat!
                   </p>
+                </div>
+              </div>
+
+              {/* Discord */}
+              <div className="border-t border-bp-line py-8">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+                  <a
+                    href={DISCORD_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 text-sm tracking-widest transition-colors hover:text-accent"
+                  >
+                    <BrandIcon brand="discord" className="h-4 w-4 text-arc-red" />
+                    DISCORD
+                  </a>
+                  <a
+                    href={DISCORD_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 border border-accent/40 px-5 py-2.5 text-xs tracking-widest text-accent transition-all duration-200 hover:border-accent hover:bg-accent/10"
+                  >
+                    JOIN THE SERVER →
+                  </a>
                 </div>
               </div>
 
@@ -62,7 +81,7 @@ export default function ContactPage() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-sm tracking-widest transition-colors hover:text-accent"
                   >
-                    <NavIcon />
+                    <MapPin className="h-4 w-4 text-arc-red" aria-hidden="true" />
                     VIEW ON GOOGLE MAPS
                   </a>
                   <div className="text-right text-sm leading-relaxed text-fg/60">
@@ -76,7 +95,6 @@ export default function ContactPage() {
               <div className="border-t border-bp-line py-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <span className="flex items-center gap-2.5 text-sm tracking-widest text-fg/60">
-                    <NavIcon />
                     FOLLOW US
                   </span>
                   <ul className="flex items-center gap-6 text-right">
@@ -86,8 +104,9 @@ export default function ContactPage() {
                           href={link.href}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm tracking-widest text-fg/40 transition-colors hover:text-accent"
+                          className="flex items-center gap-2 text-sm tracking-widest text-fg/40 transition-colors hover:text-accent"
                         >
+                          <BrandIcon brand={link.icon} className="h-4 w-4" />
                           {link.label}
                         </a>
                       </li>
@@ -100,16 +119,16 @@ export default function ContactPage() {
               <div className="border-t border-bp-line py-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <a
-                    href="#"
+                    href={GITHUB_REPO_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-sm tracking-widest transition-colors hover:text-accent"
                   >
-                    <NavIcon />
+                    <BrandIcon brand="github" className="h-4 w-4 text-arc-red" />
                     GITHUB
                   </a>
                   <a
-                    href="#"
+                    href={GITHUB_REPO_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 border border-accent/40 px-5 py-2.5 text-xs tracking-widest text-accent transition-all duration-200 hover:border-accent hover:bg-accent/10"
@@ -123,16 +142,16 @@ export default function ContactPage() {
               <div className="border-t border-bp-line py-8">
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <a
-                    href="https://docs.arcarleton.ca"
+                    href={DOCS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2.5 text-sm tracking-widest transition-colors hover:text-accent"
                   >
-                    <NavIcon />
+                    <BookOpen className="h-4 w-4 text-arc-red" aria-hidden="true" />
                     DOCS
                   </a>
                   <a
-                    href="https://docs.arcarleton.ca"
+                    href={DOCS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="shrink-0 border border-accent/40 px-5 py-2.5 text-xs tracking-widest text-accent transition-all duration-200 hover:border-accent hover:bg-accent/10"
