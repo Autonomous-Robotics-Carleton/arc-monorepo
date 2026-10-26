@@ -36,7 +36,7 @@ Scaffolding: every package builds and starts; apart from the car backend's sync-
 
 | Package | Job | State | Traces to |
 | --- | --- | --- | --- |
-| `arc_msgs` | The car interface: messages and services, implemented by every backend | Placeholder message; ICD ros2-msgs isn't written yet | ADR-0028 |
+| `arc_msgs` | The car interface: the messages and services in ICD-ros2-msgs that have no standard type | Messages defined (rev A, draft); nothing publishes them yet. A test in `arc_backend_car` checks their constants against the sync link's | ADR-0028, ADR-0047 |
 | `arc_bringup` | Launch files and parameters; `target:=`, `sim:=`, `sensors:=` | Picks the backend; a launch test per backend | ADR-0028, ADR-0032 |
 | `arc_backend_sim_gazebo` | Gazebo Harmonic: full sensor suite, event cameras; Linux with a GPU | Stub | ADR-0032 |
 | `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
