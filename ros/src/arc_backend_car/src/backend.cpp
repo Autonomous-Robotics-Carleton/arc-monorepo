@@ -32,8 +32,6 @@ public:
     const int port_tx = declare_parameter("port_tx", 52000);
     const std::string peer = declare_parameter("sync_mcu_address", "127.0.0.1");
 
-    RCLCPP_INFO(get_logger(), "car backend: not implemented yet");
-
     sock_ = socket(AF_INET, SOCK_DGRAM | SOCK_NONBLOCK, 0);
     sockaddr_in local{};
     local.sin_family = AF_INET;
@@ -41,17 +39,21 @@ public:
     local.sin_addr.s_addr = htonl(INADDR_ANY);
     if (sock_ < 0 || bind(sock_, reinterpret_cast<sockaddr *>(&local), sizeof(local)) < 0) {
       RCLCPP_ERROR(get_logger(), "sync link: can't bind UDP %d", port_rx);
-      return;
-    }
-    peer_.sin_family = AF_INET;
-    peer_.sin_port = htons(port_tx);
-    inet_pton(AF_INET, peer.c_str(), &peer_.sin_addr);
-    RCLCPP_INFO(get_logger(), "sync link: listening on UDP %d, sending to %s:%d",
-      port_rx, peer.c_str(), port_tx);
+    } else {
+      peer_.sin_family = AF_INET;
+      peer_.sin_port = htons(port_tx);
+      inet_pton(AF_INET, peer.c_str(), &peer_.sin_addr);
+      RCLCPP_INFO(get_logger(), "sync link: listening on UDP %d, sending to %s:%d",
+        port_rx, peer.c_str(), port_tx);
 
-    using namespace std::chrono_literals;
-    status_timer_ = create_wall_timer(1s, [this] {send_link_status();});
-    poll_timer_ = create_wall_timer(10ms, [this] {poll();});
+      using namespace std::chrono_literals;
+      status_timer_ = create_wall_timer(1s, [this] {send_link_status();});
+      poll_timer_ = create_wall_timer(10ms, [this] {poll();});
+    }
+
+    // Logged last: the launch test stops the node as soon as it sees this
+    // line, and creating a timer after that shutdown aborts the process.
+    RCLCPP_INFO(get_logger(), "car backend: not implemented yet");
   }
 
   ~CarBackend() override
