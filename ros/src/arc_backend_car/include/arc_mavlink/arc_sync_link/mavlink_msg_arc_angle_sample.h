@@ -10,15 +10,16 @@ typedef struct __mavlink_arc_angle_sample_t {
  uint64_t time_ns; /*< [ns] Sample time.*/
  float angle; /*< [rad] Absolute angle.*/
  uint8_t sensor; /*<  Which sensor.*/
+ uint8_t status; /*<  The sensor's error flags; 0 is valid.*/
 } mavlink_arc_angle_sample_t;
 
-#define MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN 13
-#define MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN 13
-#define MAVLINK_MSG_ID_52002_LEN 13
-#define MAVLINK_MSG_ID_52002_MIN_LEN 13
+#define MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN 14
+#define MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN 14
+#define MAVLINK_MSG_ID_52002_LEN 14
+#define MAVLINK_MSG_ID_52002_MIN_LEN 14
 
-#define MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC 100
-#define MAVLINK_MSG_ID_52002_CRC 100
+#define MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC 189
+#define MAVLINK_MSG_ID_52002_CRC 189
 
 
 
@@ -26,19 +27,21 @@ typedef struct __mavlink_arc_angle_sample_t {
 #define MAVLINK_MESSAGE_INFO_ARC_ANGLE_SAMPLE { \
     52002, \
     "ARC_ANGLE_SAMPLE", \
-    3, \
+    4, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_angle_sample_t, time_ns) }, \
          { "angle", NULL, MAVLINK_TYPE_FLOAT, 0, 8, offsetof(mavlink_arc_angle_sample_t, angle) }, \
          { "sensor", NULL, MAVLINK_TYPE_UINT8_T, 0, 12, offsetof(mavlink_arc_angle_sample_t, sensor) }, \
+         { "status", NULL, MAVLINK_TYPE_UINT8_T, 0, 13, offsetof(mavlink_arc_angle_sample_t, status) }, \
          } \
 }
 #else
 #define MAVLINK_MESSAGE_INFO_ARC_ANGLE_SAMPLE { \
     "ARC_ANGLE_SAMPLE", \
-    3, \
+    4, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_angle_sample_t, time_ns) }, \
          { "angle", NULL, MAVLINK_TYPE_FLOAT, 0, 8, offsetof(mavlink_arc_angle_sample_t, angle) }, \
          { "sensor", NULL, MAVLINK_TYPE_UINT8_T, 0, 12, offsetof(mavlink_arc_angle_sample_t, sensor) }, \
+         { "status", NULL, MAVLINK_TYPE_UINT8_T, 0, 13, offsetof(mavlink_arc_angle_sample_t, status) }, \
          } \
 }
 #endif
@@ -52,16 +55,18 @@ typedef struct __mavlink_arc_angle_sample_t {
  * @param time_ns [ns] Sample time.
  * @param angle [rad] Absolute angle.
  * @param sensor  Which sensor.
+ * @param status  The sensor's error flags; 0 is valid.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_angle_sample_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
-                               uint64_t time_ns, float angle, uint8_t sensor)
+                               uint64_t time_ns, float angle, uint8_t sensor, uint8_t status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN];
     _mav_put_uint64_t(buf, 0, time_ns);
     _mav_put_float(buf, 8, angle);
     _mav_put_uint8_t(buf, 12, sensor);
+    _mav_put_uint8_t(buf, 13, status);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);
 #else
@@ -69,6 +74,7 @@ static inline uint16_t mavlink_msg_arc_angle_sample_pack(uint8_t system_id, uint
     packet.time_ns = time_ns;
     packet.angle = angle;
     packet.sensor = sensor;
+    packet.status = status;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);
 #endif
@@ -87,16 +93,18 @@ static inline uint16_t mavlink_msg_arc_angle_sample_pack(uint8_t system_id, uint
  * @param time_ns [ns] Sample time.
  * @param angle [rad] Absolute angle.
  * @param sensor  Which sensor.
+ * @param status  The sensor's error flags; 0 is valid.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_angle_sample_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
-                               uint64_t time_ns, float angle, uint8_t sensor)
+                               uint64_t time_ns, float angle, uint8_t sensor, uint8_t status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN];
     _mav_put_uint64_t(buf, 0, time_ns);
     _mav_put_float(buf, 8, angle);
     _mav_put_uint8_t(buf, 12, sensor);
+    _mav_put_uint8_t(buf, 13, status);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);
 #else
@@ -104,6 +112,7 @@ static inline uint16_t mavlink_msg_arc_angle_sample_pack_status(uint8_t system_i
     packet.time_ns = time_ns;
     packet.angle = angle;
     packet.sensor = sensor;
+    packet.status = status;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);
 #endif
@@ -125,17 +134,19 @@ static inline uint16_t mavlink_msg_arc_angle_sample_pack_status(uint8_t system_i
  * @param time_ns [ns] Sample time.
  * @param angle [rad] Absolute angle.
  * @param sensor  Which sensor.
+ * @param status  The sensor's error flags; 0 is valid.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_angle_sample_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
                                mavlink_message_t* msg,
-                                   uint64_t time_ns,float angle,uint8_t sensor)
+                                   uint64_t time_ns,float angle,uint8_t sensor,uint8_t status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN];
     _mav_put_uint64_t(buf, 0, time_ns);
     _mav_put_float(buf, 8, angle);
     _mav_put_uint8_t(buf, 12, sensor);
+    _mav_put_uint8_t(buf, 13, status);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);
 #else
@@ -143,6 +154,7 @@ static inline uint16_t mavlink_msg_arc_angle_sample_pack_chan(uint8_t system_id,
     packet.time_ns = time_ns;
     packet.angle = angle;
     packet.sensor = sensor;
+    packet.status = status;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);
 #endif
@@ -161,7 +173,7 @@ static inline uint16_t mavlink_msg_arc_angle_sample_pack_chan(uint8_t system_id,
  */
 static inline uint16_t mavlink_msg_arc_angle_sample_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_arc_angle_sample_t* arc_angle_sample)
 {
-    return mavlink_msg_arc_angle_sample_pack(system_id, component_id, msg, arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor);
+    return mavlink_msg_arc_angle_sample_pack(system_id, component_id, msg, arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor, arc_angle_sample->status);
 }
 
 /**
@@ -175,7 +187,7 @@ static inline uint16_t mavlink_msg_arc_angle_sample_encode(uint8_t system_id, ui
  */
 static inline uint16_t mavlink_msg_arc_angle_sample_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_arc_angle_sample_t* arc_angle_sample)
 {
-    return mavlink_msg_arc_angle_sample_pack_chan(system_id, component_id, chan, msg, arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor);
+    return mavlink_msg_arc_angle_sample_pack_chan(system_id, component_id, chan, msg, arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor, arc_angle_sample->status);
 }
 
 /**
@@ -189,7 +201,7 @@ static inline uint16_t mavlink_msg_arc_angle_sample_encode_chan(uint8_t system_i
  */
 static inline uint16_t mavlink_msg_arc_angle_sample_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_arc_angle_sample_t* arc_angle_sample)
 {
-    return mavlink_msg_arc_angle_sample_pack_status(system_id, component_id, _status, msg,  arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor);
+    return mavlink_msg_arc_angle_sample_pack_status(system_id, component_id, _status, msg,  arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor, arc_angle_sample->status);
 }
 
 /**
@@ -199,16 +211,18 @@ static inline uint16_t mavlink_msg_arc_angle_sample_encode_status(uint8_t system
  * @param time_ns [ns] Sample time.
  * @param angle [rad] Absolute angle.
  * @param sensor  Which sensor.
+ * @param status  The sensor's error flags; 0 is valid.
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
-static inline void mavlink_msg_arc_angle_sample_send(mavlink_channel_t chan, uint64_t time_ns, float angle, uint8_t sensor)
+static inline void mavlink_msg_arc_angle_sample_send(mavlink_channel_t chan, uint64_t time_ns, float angle, uint8_t sensor, uint8_t status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN];
     _mav_put_uint64_t(buf, 0, time_ns);
     _mav_put_float(buf, 8, angle);
     _mav_put_uint8_t(buf, 12, sensor);
+    _mav_put_uint8_t(buf, 13, status);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE, buf, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC);
 #else
@@ -216,6 +230,7 @@ static inline void mavlink_msg_arc_angle_sample_send(mavlink_channel_t chan, uin
     packet.time_ns = time_ns;
     packet.angle = angle;
     packet.sensor = sensor;
+    packet.status = status;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE, (const char *)&packet, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC);
 #endif
@@ -229,7 +244,7 @@ static inline void mavlink_msg_arc_angle_sample_send(mavlink_channel_t chan, uin
 static inline void mavlink_msg_arc_angle_sample_send_struct(mavlink_channel_t chan, const mavlink_arc_angle_sample_t* arc_angle_sample)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
-    mavlink_msg_arc_angle_sample_send(chan, arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor);
+    mavlink_msg_arc_angle_sample_send(chan, arc_angle_sample->time_ns, arc_angle_sample->angle, arc_angle_sample->sensor, arc_angle_sample->status);
 #else
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE, (const char *)arc_angle_sample, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC);
 #endif
@@ -243,13 +258,14 @@ static inline void mavlink_msg_arc_angle_sample_send_struct(mavlink_channel_t ch
   is usually the receive buffer for the channel, and allows a reply to an
   incoming message with minimum stack space usage.
  */
-static inline void mavlink_msg_arc_angle_sample_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, float angle, uint8_t sensor)
+static inline void mavlink_msg_arc_angle_sample_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, float angle, uint8_t sensor, uint8_t status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char *buf = (char *)msgbuf;
     _mav_put_uint64_t(buf, 0, time_ns);
     _mav_put_float(buf, 8, angle);
     _mav_put_uint8_t(buf, 12, sensor);
+    _mav_put_uint8_t(buf, 13, status);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE, buf, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC);
 #else
@@ -257,6 +273,7 @@ static inline void mavlink_msg_arc_angle_sample_send_buf(mavlink_message_t *msgb
     packet->time_ns = time_ns;
     packet->angle = angle;
     packet->sensor = sensor;
+    packet->status = status;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE, (const char *)packet, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_MIN_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_CRC);
 #endif
@@ -299,6 +316,16 @@ static inline uint8_t mavlink_msg_arc_angle_sample_get_sensor(const mavlink_mess
 }
 
 /**
+ * @brief Get field status from arc_angle_sample message
+ *
+ * @return  The sensor's error flags; 0 is valid.
+ */
+static inline uint8_t mavlink_msg_arc_angle_sample_get_status(const mavlink_message_t* msg)
+{
+    return _MAV_RETURN_uint8_t(msg,  13);
+}
+
+/**
  * @brief Decode a arc_angle_sample message into a struct
  *
  * @param msg The message to decode
@@ -310,6 +337,7 @@ static inline void mavlink_msg_arc_angle_sample_decode(const mavlink_message_t* 
     arc_angle_sample->time_ns = mavlink_msg_arc_angle_sample_get_time_ns(msg);
     arc_angle_sample->angle = mavlink_msg_arc_angle_sample_get_angle(msg);
     arc_angle_sample->sensor = mavlink_msg_arc_angle_sample_get_sensor(msg);
+    arc_angle_sample->status = mavlink_msg_arc_angle_sample_get_status(msg);
 #else
         uint8_t len = msg->len < MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN? msg->len : MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN;
         memset(arc_angle_sample, 0, MAVLINK_MSG_ID_ARC_ANGLE_SAMPLE_LEN);

@@ -23,7 +23,7 @@ extern "C" {
 #endif
 
 #ifndef MAVLINK_MESSAGE_CRCS
-#define MAVLINK_MESSAGE_CRCS {{52000, 7, 18, 18, 0, 0, 0}, {52001, 54, 33, 33, 0, 0, 0}, {52002, 100, 13, 13, 0, 0, 0}, {52003, 243, 14, 14, 0, 0, 0}, {52004, 76, 47, 47, 0, 0, 0}, {52005, 76, 25, 25, 0, 0, 0}, {52006, 17, 13, 13, 0, 0, 0}, {52007, 171, 32, 32, 0, 0, 0}, {52008, 127, 22, 22, 0, 0, 0}, {52009, 43, 15, 15, 0, 0, 0}, {52050, 17, 20, 20, 0, 0, 0}, {52051, 49, 12, 12, 0, 0, 0}, {52052, 102, 20, 20, 0, 0, 0}}
+#define MAVLINK_MESSAGE_CRCS {{52000, 7, 18, 18, 0, 0, 0}, {52001, 54, 33, 33, 0, 0, 0}, {52002, 189, 14, 14, 0, 0, 0}, {52003, 243, 14, 14, 0, 0, 0}, {52004, 76, 47, 47, 0, 0, 0}, {52005, 95, 26, 26, 0, 0, 0}, {52006, 17, 13, 13, 0, 0, 0}, {52007, 171, 32, 32, 0, 0, 0}, {52008, 71, 24, 24, 0, 0, 0}, {52009, 43, 15, 15, 0, 0, 0}, {52050, 17, 20, 20, 0, 0, 0}, {52051, 49, 12, 12, 0, 0, 0}, {52052, 102, 20, 20, 0, 0, 0}, {52053, 21, 12, 12, 0, 0, 0}}
 #endif
 
 #include "../protocol.h"
@@ -38,8 +38,8 @@ extern "C" {
 #define HAVE_ENUM_ARC_IMU
 typedef enum ARC_IMU
 {
-   ARC_IMU_CG=0, /* Navigation-grade IMU at the centre of gravity. | */
-   ARC_IMU_FRONT=1, /* Consumer-grade IMU at the front axle. | */
+   ARC_IMU_CG=0, /* The ISM330DHCX at the centre of gravity (E-20, ADR-0045). | */
+   ARC_IMU_FRONT=1, /* The ISM330DHCX at the front axle (E-21, ADR-0045). | */
    ARC_IMU_ENUM_END=2, /*  | */
 } ARC_IMU;
 #endif
@@ -63,6 +63,19 @@ typedef enum ARC_ANGLE_SENSOR
 } ARC_ANGLE_SENSOR;
 #endif
 
+/** @brief An angle sensor's own error flags (AS5047P DIAAGC and ERRFL registers). 0 is valid; any bit means the angle can't be trusted (ADR-0038). */
+#ifndef HAVE_ENUM_ARC_ANGLE_STATUS
+#define HAVE_ENUM_ARC_ANGLE_STATUS
+typedef enum ARC_ANGLE_STATUS
+{
+   ARC_ANGLE_STATUS_MAGNET_LOW=1, /* Magnetic field too weak (MAGL). | */
+   ARC_ANGLE_STATUS_MAGNET_HIGH=2, /* Magnetic field too strong (MAGH). | */
+   ARC_ANGLE_STATUS_CORDIC_OVERFLOW=4, /* The angle calculation overflowed (COF). | */
+   ARC_ANGLE_STATUS_READ_ERROR=8, /* The SPI read failed: parity, framing or an invalid command (ERRFL), or no reply. | */
+   ARC_ANGLE_STATUS_ENUM_END=9, /*  | */
+} ARC_ANGLE_STATUS;
+#endif
+
 /** @brief Which corner. */
 #ifndef HAVE_ENUM_ARC_CORNER
 #define HAVE_ENUM_ARC_CORNER
@@ -76,16 +89,48 @@ typedef enum ARC_CORNER
 } ARC_CORNER;
 #endif
 
-/** @brief Heartbeat watchdog (SYS-04). */
+/** @brief Heartbeat watchdog (SYS-04, ADR-0052). */
 #ifndef HAVE_ENUM_ARC_WATCHDOG_STATE
 #define HAVE_ENUM_ARC_WATCHDOG_STATE
 typedef enum ARC_WATCHDOG_STATE
 {
-   ARC_WATCHDOG_OK=0, /* Heartbeat arriving. | */
-   ARC_WATCHDOG_ROLLING=1, /* Heartbeat lost; within the roll-out before braking. | */
-   ARC_WATCHDOG_BRAKING=2, /* Braking on the e-stop ramp. | */
+   ARC_WATCHDOG_OK=0, /* Armed, heartbeat arriving. | */
+   ARC_WATCHDOG_NOT_ARMED=1, /* Not armed: waiting for heartbeats and the operator's re-arm, at power-on or after a fault reset. Not braking. | */
+   ARC_WATCHDOG_BRAKING=2, /* Heartbeat lost: braking on the e-stop ramp, then held until heartbeats are back and the operator re-arms (ADR-0052). | */
    ARC_WATCHDOG_STATE_ENUM_END=3, /*  | */
 } ARC_WATCHDOG_STATE;
+#endif
+
+/** @brief The fault latch and its reset (SYS-25, ADR-0039, ADR-0053). */
+#ifndef HAVE_ENUM_ARC_LATCH_STATE
+#define HAVE_ENUM_ARC_LATCH_STATE
+typedef enum ARC_LATCH_STATE
+{
+   ARC_LATCH_LATCHED=0, /* Stopped: waiting for the e-stop button on the car. | */
+   ARC_LATCH_ESTOP_HELD=1, /* The e-stop is held: waiting for the motor-bus cut at T. | */
+   ARC_LATCH_CHECKING=2, /* Released after T: the power-on checks are running. | */
+   ARC_LATCH_RESET=3, /* Reset: the car may drive once the operator re-arms. | */
+   ARC_LATCH_RESTART_REQUIRED=4, /* Only a power cycle and an inspection clear it (ADR-0039 item 5). | */
+   ARC_LATCH_STATE_ENUM_END=5, /*  | */
+} ARC_LATCH_STATE;
+#endif
+
+/** @brief Why the fault latch is set. The detail (which corner, which check) is in ARC_FAULT. */
+#ifndef HAVE_ENUM_ARC_LATCH_CAUSE
+#define HAVE_ENUM_ARC_LATCH_CAUSE
+typedef enum ARC_LATCH_CAUSE
+{
+   ARC_LATCH_CAUSE_NONE=0, /*  | */
+   ARC_LATCH_CAUSE_POWER_ON=1, /*  | */
+   ARC_LATCH_CAUSE_ESTOP=2, /* The e-stop button was pressed. | */
+   ARC_LATCH_CAUSE_CORNER=3, /* A SYS-25 stop. | */
+   ARC_LATCH_CAUSE_CHECKS_FAILED=4, /* The power-on checks didn't pass within the window. | */
+   ARC_LATCH_CAUSE_TOO_MANY_STOPS=5, /* Too many stops since power-on. | */
+   ARC_LATCH_CAUSE_OVERCURRENT=6, /* A motor controller reported over-current. | */
+   ARC_LATCH_CAUSE_OVERVOLTAGE=7, /* A motor controller reported over-voltage. | */
+   ARC_LATCH_CAUSE_ESTOP_WIRING=8, /* A corner reports the e-stop with the button released (ADR-0035). | */
+   ARC_LATCH_CAUSE_ENUM_END=9, /*  | */
+} ARC_LATCH_CAUSE;
 #endif
 
 /** @brief Why a motor controller is braking on its own (ADR-0035). Any bit set stops all four corners (SYS-25). */
@@ -117,12 +162,12 @@ typedef enum ARC_FAULT_SOURCE
 // MAVLINK VERSION
 
 #ifndef MAVLINK_VERSION
-#define MAVLINK_VERSION 2
+#define MAVLINK_VERSION 3
 #endif
 
 #if (MAVLINK_VERSION == 0)
 #undef MAVLINK_VERSION
-#define MAVLINK_VERSION 2
+#define MAVLINK_VERSION 3
 #endif
 
 // MESSAGE DEFINITIONS
@@ -139,14 +184,15 @@ typedef enum ARC_FAULT_SOURCE
 #include "./mavlink_msg_arc_drive_command.h"
 #include "./mavlink_msg_arc_operator_heartbeat.h"
 #include "./mavlink_msg_arc_envelope_set.h"
+#include "./mavlink_msg_arc_rearm.h"
 
 // base include
 
 
 
 #if MAVLINK_ARC_SYNC_LINK_XML_HASH == MAVLINK_PRIMARY_XML_HASH
-# define MAVLINK_MESSAGE_INFO {MAVLINK_MESSAGE_INFO_ARC_LINK_STATUS, MAVLINK_MESSAGE_INFO_ARC_IMU_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_ANGLE_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_RIDE_HEIGHT_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_MOTOR_STATUS, MAVLINK_MESSAGE_INFO_ARC_STEERING_STATUS, MAVLINK_MESSAGE_INFO_ARC_CAMERA_TRIGGER, MAVLINK_MESSAGE_INFO_ARC_POWER_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_SAFETY_STATE, MAVLINK_MESSAGE_INFO_ARC_FAULT, MAVLINK_MESSAGE_INFO_ARC_DRIVE_COMMAND, MAVLINK_MESSAGE_INFO_ARC_OPERATOR_HEARTBEAT, MAVLINK_MESSAGE_INFO_ARC_ENVELOPE_SET}
-# define MAVLINK_MESSAGE_NAMES {{ "ARC_ANGLE_SAMPLE", 52002 }, { "ARC_CAMERA_TRIGGER", 52006 }, { "ARC_DRIVE_COMMAND", 52050 }, { "ARC_ENVELOPE_SET", 52052 }, { "ARC_FAULT", 52009 }, { "ARC_IMU_SAMPLE", 52001 }, { "ARC_LINK_STATUS", 52000 }, { "ARC_MOTOR_STATUS", 52004 }, { "ARC_OPERATOR_HEARTBEAT", 52051 }, { "ARC_POWER_SAMPLE", 52007 }, { "ARC_RIDE_HEIGHT_SAMPLE", 52003 }, { "ARC_SAFETY_STATE", 52008 }, { "ARC_STEERING_STATUS", 52005 }}
+# define MAVLINK_MESSAGE_INFO {MAVLINK_MESSAGE_INFO_ARC_LINK_STATUS, MAVLINK_MESSAGE_INFO_ARC_IMU_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_ANGLE_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_RIDE_HEIGHT_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_MOTOR_STATUS, MAVLINK_MESSAGE_INFO_ARC_STEERING_STATUS, MAVLINK_MESSAGE_INFO_ARC_CAMERA_TRIGGER, MAVLINK_MESSAGE_INFO_ARC_POWER_SAMPLE, MAVLINK_MESSAGE_INFO_ARC_SAFETY_STATE, MAVLINK_MESSAGE_INFO_ARC_FAULT, MAVLINK_MESSAGE_INFO_ARC_DRIVE_COMMAND, MAVLINK_MESSAGE_INFO_ARC_OPERATOR_HEARTBEAT, MAVLINK_MESSAGE_INFO_ARC_ENVELOPE_SET, MAVLINK_MESSAGE_INFO_ARC_REARM}
+# define MAVLINK_MESSAGE_NAMES {{ "ARC_ANGLE_SAMPLE", 52002 }, { "ARC_CAMERA_TRIGGER", 52006 }, { "ARC_DRIVE_COMMAND", 52050 }, { "ARC_ENVELOPE_SET", 52052 }, { "ARC_FAULT", 52009 }, { "ARC_IMU_SAMPLE", 52001 }, { "ARC_LINK_STATUS", 52000 }, { "ARC_MOTOR_STATUS", 52004 }, { "ARC_OPERATOR_HEARTBEAT", 52051 }, { "ARC_POWER_SAMPLE", 52007 }, { "ARC_REARM", 52053 }, { "ARC_RIDE_HEIGHT_SAMPLE", 52003 }, { "ARC_SAFETY_STATE", 52008 }, { "ARC_STEERING_STATUS", 52005 }}
 # if MAVLINK_COMMAND_24BIT
 #  include "../mavlink_get_info.h"
 # endif

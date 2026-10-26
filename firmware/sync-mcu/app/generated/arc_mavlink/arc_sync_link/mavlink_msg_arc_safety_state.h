@@ -13,15 +13,17 @@ typedef struct __mavlink_arc_safety_state_t {
  float max_steer; /*< [rad] Envelope in force: steering angle.*/
  uint8_t watchdog; /*<  Heartbeat watchdog state.*/
  uint8_t estop; /*<  1 while the physical e-stop is active.*/
+ uint8_t latch; /*<  The fault latch: what the operator has to do next (ADR-0039).*/
+ uint8_t latch_cause; /*<  Why it is latched; NONE once reset.*/
 } mavlink_arc_safety_state_t;
 
-#define MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN 22
-#define MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN 22
-#define MAVLINK_MSG_ID_52008_LEN 22
-#define MAVLINK_MSG_ID_52008_MIN_LEN 22
+#define MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN 24
+#define MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN 24
+#define MAVLINK_MSG_ID_52008_LEN 24
+#define MAVLINK_MSG_ID_52008_MIN_LEN 24
 
-#define MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC 127
-#define MAVLINK_MSG_ID_52008_CRC 127
+#define MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC 71
+#define MAVLINK_MSG_ID_52008_CRC 71
 
 
 
@@ -29,25 +31,29 @@ typedef struct __mavlink_arc_safety_state_t {
 #define MAVLINK_MESSAGE_INFO_ARC_SAFETY_STATE { \
     52008, \
     "ARC_SAFETY_STATE", \
-    6, \
+    8, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_safety_state_t, time_ns) }, \
          { "max_speed", NULL, MAVLINK_TYPE_FLOAT, 0, 8, offsetof(mavlink_arc_safety_state_t, max_speed) }, \
          { "max_accel", NULL, MAVLINK_TYPE_FLOAT, 0, 12, offsetof(mavlink_arc_safety_state_t, max_accel) }, \
          { "max_steer", NULL, MAVLINK_TYPE_FLOAT, 0, 16, offsetof(mavlink_arc_safety_state_t, max_steer) }, \
          { "watchdog", NULL, MAVLINK_TYPE_UINT8_T, 0, 20, offsetof(mavlink_arc_safety_state_t, watchdog) }, \
          { "estop", NULL, MAVLINK_TYPE_UINT8_T, 0, 21, offsetof(mavlink_arc_safety_state_t, estop) }, \
+         { "latch", NULL, MAVLINK_TYPE_UINT8_T, 0, 22, offsetof(mavlink_arc_safety_state_t, latch) }, \
+         { "latch_cause", NULL, MAVLINK_TYPE_UINT8_T, 0, 23, offsetof(mavlink_arc_safety_state_t, latch_cause) }, \
          } \
 }
 #else
 #define MAVLINK_MESSAGE_INFO_ARC_SAFETY_STATE { \
     "ARC_SAFETY_STATE", \
-    6, \
+    8, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_safety_state_t, time_ns) }, \
          { "max_speed", NULL, MAVLINK_TYPE_FLOAT, 0, 8, offsetof(mavlink_arc_safety_state_t, max_speed) }, \
          { "max_accel", NULL, MAVLINK_TYPE_FLOAT, 0, 12, offsetof(mavlink_arc_safety_state_t, max_accel) }, \
          { "max_steer", NULL, MAVLINK_TYPE_FLOAT, 0, 16, offsetof(mavlink_arc_safety_state_t, max_steer) }, \
          { "watchdog", NULL, MAVLINK_TYPE_UINT8_T, 0, 20, offsetof(mavlink_arc_safety_state_t, watchdog) }, \
          { "estop", NULL, MAVLINK_TYPE_UINT8_T, 0, 21, offsetof(mavlink_arc_safety_state_t, estop) }, \
+         { "latch", NULL, MAVLINK_TYPE_UINT8_T, 0, 22, offsetof(mavlink_arc_safety_state_t, latch) }, \
+         { "latch_cause", NULL, MAVLINK_TYPE_UINT8_T, 0, 23, offsetof(mavlink_arc_safety_state_t, latch_cause) }, \
          } \
 }
 #endif
@@ -64,10 +70,12 @@ typedef struct __mavlink_arc_safety_state_t {
  * @param max_steer [rad] Envelope in force: steering angle.
  * @param watchdog  Heartbeat watchdog state.
  * @param estop  1 while the physical e-stop is active.
+ * @param latch  The fault latch: what the operator has to do next (ADR-0039).
+ * @param latch_cause  Why it is latched; NONE once reset.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_safety_state_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
-                               uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop)
+                               uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop, uint8_t latch, uint8_t latch_cause)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN];
@@ -77,6 +85,8 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack(uint8_t system_id, uint
     _mav_put_float(buf, 16, max_steer);
     _mav_put_uint8_t(buf, 20, watchdog);
     _mav_put_uint8_t(buf, 21, estop);
+    _mav_put_uint8_t(buf, 22, latch);
+    _mav_put_uint8_t(buf, 23, latch_cause);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);
 #else
@@ -87,6 +97,8 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack(uint8_t system_id, uint
     packet.max_steer = max_steer;
     packet.watchdog = watchdog;
     packet.estop = estop;
+    packet.latch = latch;
+    packet.latch_cause = latch_cause;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);
 #endif
@@ -108,10 +120,12 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack(uint8_t system_id, uint
  * @param max_steer [rad] Envelope in force: steering angle.
  * @param watchdog  Heartbeat watchdog state.
  * @param estop  1 while the physical e-stop is active.
+ * @param latch  The fault latch: what the operator has to do next (ADR-0039).
+ * @param latch_cause  Why it is latched; NONE once reset.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_safety_state_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
-                               uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop)
+                               uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop, uint8_t latch, uint8_t latch_cause)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN];
@@ -121,6 +135,8 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack_status(uint8_t system_i
     _mav_put_float(buf, 16, max_steer);
     _mav_put_uint8_t(buf, 20, watchdog);
     _mav_put_uint8_t(buf, 21, estop);
+    _mav_put_uint8_t(buf, 22, latch);
+    _mav_put_uint8_t(buf, 23, latch_cause);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);
 #else
@@ -131,6 +147,8 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack_status(uint8_t system_i
     packet.max_steer = max_steer;
     packet.watchdog = watchdog;
     packet.estop = estop;
+    packet.latch = latch;
+    packet.latch_cause = latch_cause;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);
 #endif
@@ -155,11 +173,13 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack_status(uint8_t system_i
  * @param max_steer [rad] Envelope in force: steering angle.
  * @param watchdog  Heartbeat watchdog state.
  * @param estop  1 while the physical e-stop is active.
+ * @param latch  The fault latch: what the operator has to do next (ADR-0039).
+ * @param latch_cause  Why it is latched; NONE once reset.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_safety_state_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
                                mavlink_message_t* msg,
-                                   uint64_t time_ns,float max_speed,float max_accel,float max_steer,uint8_t watchdog,uint8_t estop)
+                                   uint64_t time_ns,float max_speed,float max_accel,float max_steer,uint8_t watchdog,uint8_t estop,uint8_t latch,uint8_t latch_cause)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN];
@@ -169,6 +189,8 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack_chan(uint8_t system_id,
     _mav_put_float(buf, 16, max_steer);
     _mav_put_uint8_t(buf, 20, watchdog);
     _mav_put_uint8_t(buf, 21, estop);
+    _mav_put_uint8_t(buf, 22, latch);
+    _mav_put_uint8_t(buf, 23, latch_cause);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);
 #else
@@ -179,6 +201,8 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack_chan(uint8_t system_id,
     packet.max_steer = max_steer;
     packet.watchdog = watchdog;
     packet.estop = estop;
+    packet.latch = latch;
+    packet.latch_cause = latch_cause;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);
 #endif
@@ -197,7 +221,7 @@ static inline uint16_t mavlink_msg_arc_safety_state_pack_chan(uint8_t system_id,
  */
 static inline uint16_t mavlink_msg_arc_safety_state_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_arc_safety_state_t* arc_safety_state)
 {
-    return mavlink_msg_arc_safety_state_pack(system_id, component_id, msg, arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop);
+    return mavlink_msg_arc_safety_state_pack(system_id, component_id, msg, arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop, arc_safety_state->latch, arc_safety_state->latch_cause);
 }
 
 /**
@@ -211,7 +235,7 @@ static inline uint16_t mavlink_msg_arc_safety_state_encode(uint8_t system_id, ui
  */
 static inline uint16_t mavlink_msg_arc_safety_state_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_arc_safety_state_t* arc_safety_state)
 {
-    return mavlink_msg_arc_safety_state_pack_chan(system_id, component_id, chan, msg, arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop);
+    return mavlink_msg_arc_safety_state_pack_chan(system_id, component_id, chan, msg, arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop, arc_safety_state->latch, arc_safety_state->latch_cause);
 }
 
 /**
@@ -225,7 +249,7 @@ static inline uint16_t mavlink_msg_arc_safety_state_encode_chan(uint8_t system_i
  */
 static inline uint16_t mavlink_msg_arc_safety_state_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_arc_safety_state_t* arc_safety_state)
 {
-    return mavlink_msg_arc_safety_state_pack_status(system_id, component_id, _status, msg,  arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop);
+    return mavlink_msg_arc_safety_state_pack_status(system_id, component_id, _status, msg,  arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop, arc_safety_state->latch, arc_safety_state->latch_cause);
 }
 
 /**
@@ -238,10 +262,12 @@ static inline uint16_t mavlink_msg_arc_safety_state_encode_status(uint8_t system
  * @param max_steer [rad] Envelope in force: steering angle.
  * @param watchdog  Heartbeat watchdog state.
  * @param estop  1 while the physical e-stop is active.
+ * @param latch  The fault latch: what the operator has to do next (ADR-0039).
+ * @param latch_cause  Why it is latched; NONE once reset.
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
-static inline void mavlink_msg_arc_safety_state_send(mavlink_channel_t chan, uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop)
+static inline void mavlink_msg_arc_safety_state_send(mavlink_channel_t chan, uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop, uint8_t latch, uint8_t latch_cause)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN];
@@ -251,6 +277,8 @@ static inline void mavlink_msg_arc_safety_state_send(mavlink_channel_t chan, uin
     _mav_put_float(buf, 16, max_steer);
     _mav_put_uint8_t(buf, 20, watchdog);
     _mav_put_uint8_t(buf, 21, estop);
+    _mav_put_uint8_t(buf, 22, latch);
+    _mav_put_uint8_t(buf, 23, latch_cause);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_SAFETY_STATE, buf, MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC);
 #else
@@ -261,6 +289,8 @@ static inline void mavlink_msg_arc_safety_state_send(mavlink_channel_t chan, uin
     packet.max_steer = max_steer;
     packet.watchdog = watchdog;
     packet.estop = estop;
+    packet.latch = latch;
+    packet.latch_cause = latch_cause;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_SAFETY_STATE, (const char *)&packet, MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC);
 #endif
@@ -274,7 +304,7 @@ static inline void mavlink_msg_arc_safety_state_send(mavlink_channel_t chan, uin
 static inline void mavlink_msg_arc_safety_state_send_struct(mavlink_channel_t chan, const mavlink_arc_safety_state_t* arc_safety_state)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
-    mavlink_msg_arc_safety_state_send(chan, arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop);
+    mavlink_msg_arc_safety_state_send(chan, arc_safety_state->time_ns, arc_safety_state->max_speed, arc_safety_state->max_accel, arc_safety_state->max_steer, arc_safety_state->watchdog, arc_safety_state->estop, arc_safety_state->latch, arc_safety_state->latch_cause);
 #else
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_SAFETY_STATE, (const char *)arc_safety_state, MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC);
 #endif
@@ -288,7 +318,7 @@ static inline void mavlink_msg_arc_safety_state_send_struct(mavlink_channel_t ch
   is usually the receive buffer for the channel, and allows a reply to an
   incoming message with minimum stack space usage.
  */
-static inline void mavlink_msg_arc_safety_state_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop)
+static inline void mavlink_msg_arc_safety_state_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, float max_speed, float max_accel, float max_steer, uint8_t watchdog, uint8_t estop, uint8_t latch, uint8_t latch_cause)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char *buf = (char *)msgbuf;
@@ -298,6 +328,8 @@ static inline void mavlink_msg_arc_safety_state_send_buf(mavlink_message_t *msgb
     _mav_put_float(buf, 16, max_steer);
     _mav_put_uint8_t(buf, 20, watchdog);
     _mav_put_uint8_t(buf, 21, estop);
+    _mav_put_uint8_t(buf, 22, latch);
+    _mav_put_uint8_t(buf, 23, latch_cause);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_SAFETY_STATE, buf, MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC);
 #else
@@ -308,6 +340,8 @@ static inline void mavlink_msg_arc_safety_state_send_buf(mavlink_message_t *msgb
     packet->max_steer = max_steer;
     packet->watchdog = watchdog;
     packet->estop = estop;
+    packet->latch = latch;
+    packet->latch_cause = latch_cause;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_SAFETY_STATE, (const char *)packet, MAVLINK_MSG_ID_ARC_SAFETY_STATE_MIN_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN, MAVLINK_MSG_ID_ARC_SAFETY_STATE_CRC);
 #endif
@@ -380,6 +414,26 @@ static inline uint8_t mavlink_msg_arc_safety_state_get_estop(const mavlink_messa
 }
 
 /**
+ * @brief Get field latch from arc_safety_state message
+ *
+ * @return  The fault latch: what the operator has to do next (ADR-0039).
+ */
+static inline uint8_t mavlink_msg_arc_safety_state_get_latch(const mavlink_message_t* msg)
+{
+    return _MAV_RETURN_uint8_t(msg,  22);
+}
+
+/**
+ * @brief Get field latch_cause from arc_safety_state message
+ *
+ * @return  Why it is latched; NONE once reset.
+ */
+static inline uint8_t mavlink_msg_arc_safety_state_get_latch_cause(const mavlink_message_t* msg)
+{
+    return _MAV_RETURN_uint8_t(msg,  23);
+}
+
+/**
  * @brief Decode a arc_safety_state message into a struct
  *
  * @param msg The message to decode
@@ -394,6 +448,8 @@ static inline void mavlink_msg_arc_safety_state_decode(const mavlink_message_t* 
     arc_safety_state->max_steer = mavlink_msg_arc_safety_state_get_max_steer(msg);
     arc_safety_state->watchdog = mavlink_msg_arc_safety_state_get_watchdog(msg);
     arc_safety_state->estop = mavlink_msg_arc_safety_state_get_estop(msg);
+    arc_safety_state->latch = mavlink_msg_arc_safety_state_get_latch(msg);
+    arc_safety_state->latch_cause = mavlink_msg_arc_safety_state_get_latch_cause(msg);
 #else
         uint8_t len = msg->len < MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN? msg->len : MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN;
         memset(arc_safety_state, 0, MAVLINK_MSG_ID_ARC_SAFETY_STATE_LEN);

@@ -1,7 +1,7 @@
 # ICD-controller-telemetry
 
 - **Revision:** draft (2026-10-09)
-- **Status:** Draft. Needs an owner on each side and their sign-off. Firmware implementation, clock alignment and installed-harness qualification pending.
+- **Status:** Message set and IDs reviewed 2026-10-26 by the owner of both sides (#73). Firmware implementation, clock alignment (#74) and installed-harness qualification pending.
 - **Side A:** motor controller firmware (`firmware/vesc/`, our VESC build on the A50S; E-50) (owner: Shrikar Vempati, until reassigned)
 - **Side B:** sync MCU firmware (`firmware/sync-mcu/`, the `controller_links` module; E-30) (owner: Shrikar Vempati, until reassigned)
 - **Traces to:** SYS-06, SYS-07, SYS-19, SYS-24, SYS-25, SYS-29, ADR-0021, ADR-0024, ADR-0031, ADR-0034
@@ -51,7 +51,7 @@ At 59 bytes per unsigned, full-length `ARC_MOTOR_STATUS` frame (47-byte payload 
 1. Clock alignment method between each controller and the sync MCU.
 2. ~~Link rate~~ **Set (2026-10-08): 2 Mbit/s baseline.** On the A50S, the UART (USART3) is clocked from APB1 at 42 MHz, and upstream's ChibiOS drivers use 16× oversampling: their maximum is 2.625 Mbit/s, and 2 Mbit/s divides exactly. Still to confirm on the built harness.
 3. ~~Owners on both sides~~ **Set (2026-10-25):** Shrikar Vempati on both sides until reassigned.
-4. How a controller knows its corner for the `corner` field (presumably its VESC controller ID, 1–4 as in `can-command.dbc`): TBD.
-5. MAVLink system and component IDs on this link: TBD.
+4. ~~Corner~~ **Set (2026-10-26, #73):** from its VESC controller ID, 1–4 = FL, FR, RL, RR as in `can-command.dbc`; `corner` = ID − 1.
+5. ~~MAVLink IDs~~ **Set (2026-10-26, #73):** system 1; the controllers are components 11–14 (FL, FR, RL, RR), so no two senders share an ID with the sync MCU (1) or the Orin bridge (2).
 6. Final H723 UART/DMA pin map, A50S connector-contact verification and reference/grounding design. PB10/PB11 are the A50S's USART3 TX/RX.
 7. The schema's `corner` enum is 0–3, while VESC command-bus IDs are 1–4. The explicit mapping must be implemented and verified; these values are not interchangeable.
