@@ -23,8 +23,8 @@ Most of the work below depends on these. Each ends as an ADR or ICD change, writ
 | The car configuration (ADR-0051) | Decided: a file per car, compiled into the sync MCU |
 | A simulator image beside the dev container (ADR-0050) | Decided: amd64 and arm64 |
 | The ground station: what it is and where it lives | #71, later |
-| Sync-link addresses and rates (ICD-network) | Decided: ports and rates; addresses TBC |
-| Review of the message sets | #73 |
+| Sync-link addresses and rates (ICD-network) | Decided: ports, rates and addresses |
+| Review of the message sets | Reviewed: `sync-link.xml` version 3 (#73) |
 | The controllers' clock mapping | #74 |
 | Experiment runtime and limits | #88: Docker (ADR-0050); limits measured on the dev kit |
 

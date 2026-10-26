@@ -167,4 +167,4 @@ The [wiring diagram and count schedule](../bom/motherboard-wiring.md) propose 17
 | **Mass and CG** (SYS-16) | Mechanical | Power scenarios, bus clamp, pack choice |
 | Steering motor peak current | Mechanical (actuator design) | Steering switched output |
 | Aero fan power (SYS-15) | Capstone | Motor bus reserve |
-| ICD owners and sign-offs (corner connector, controller telemetry, can-command, sync link, corner mechanical, deck grid, power-rails, power-sync-stack and carrier-sync; the last three now have draft logical contracts) | Team | Fab gate |
+| ICD owners and sign-offs (corner connector, corner mechanical, deck grid, power-rails, power-sync-stack and carrier-sync; the last three now have draft logical contracts) | Team | Fab gate |

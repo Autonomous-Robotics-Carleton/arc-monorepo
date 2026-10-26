@@ -45,7 +45,7 @@ Each phase ends with something that builds and passes CI. Tick items as they lan
 - [x] ICD-sync-link: what the sync MCU sends the Orin and back, framing, versioning, timing (ADR-0024); message set drafted in `systems/icd/sync-link.xml`
 - [x] Sync-link code generation (`tools/gen-interfaces.sh`, mavgen) into the sync MCU firmware and the ROS car backend, with a round-trip test on each side
 - [x] Decision on the sync-link encoding: MAVLink 2 (ADR-0031)
-- [x] `can-command.dbc` (stock VESC frames from `release_7_00`: set current, brake, RPM; status 1, 4, 5; controller IDs 1–4 draft) with cantools code generation into the sync MCU and a test against VESC's own packing
+- [x] `can-command.dbc` (stock VESC frames from `release_7_00`: set current, brake, RPM; status 1, 4, 5; controller IDs 1–4, set in #73) with cantools code generation into the sync MCU and a test against VESC's own packing
 - [x] ICD controller-telemetry: the UART link, drafted (reuses `ARC_MOTOR_STATUS` from the sync-link message set; clock alignment open)
 - [x] CI fails if generated code doesn't match its source (`nx check sync-mcu`, `nx check ros`, in the dev-container job)
 - [ ] Generate the controller-telemetry messages into the VESC firmware, with the telemetry module

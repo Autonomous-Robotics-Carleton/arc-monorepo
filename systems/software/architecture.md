@@ -213,9 +213,9 @@ How the simulator does this, and what it can and can't prove, is in [`simulation
 | --- | --- | --- | --- |
 | Operator link | Laptop ↔ Orin (heartbeat, teleop) | Not written (`icd/README.md`: operator-link, TBD); a working draft is `ground-station/protocol.md` on `yufeng/ground-station` | — |
 | Car interface | Backends and drivers ↔ platform nodes and experiments | Not written (ICD ros2-msgs); `arc_msgs` is a placeholder | `ros/src/arc_msgs/` |
-| Sync link | Orin ↔ sync MCU, UDP | ICD-sync-link, `sync-link.xml` (draft; MAVLink 2, ADR-0031) | Generated into the firmware and the car backend |
-| Command bus (classic CAN, 1 Mbit/s) | Sync MCU → motor controllers | `can-command.dbc` (draft; stock VESC frames) | Generated into the firmware |
-| Controller telemetry (UART, 2 Mbit/s each) | Motor controllers → sync MCU | ICD-controller-telemetry (draft; MAVLink 2, the ARC message set) | Generated into the firmware; not yet into the VESC firmware |
+| Sync link | Orin ↔ sync MCU, UDP | ICD-sync-link, `sync-link.xml` (reviewed, version 3; MAVLink 2, ADR-0031) | Generated into the firmware and the car backend |
+| Command bus (classic CAN, 1 Mbit/s) | Sync MCU → motor controllers | `can-command.dbc` (reviewed; stock VESC frames) | Generated into the firmware |
+| Controller telemetry (UART, 2 Mbit/s each) | Motor controllers → sync MCU | ICD-controller-telemetry (message set reviewed; MAVLink 2, the ARC message set) | Generated into the firmware; not yet into the VESC firmware |
 | Steering bus (CAN-FD) | Sync MCU ↔ moteus-c1 | Not written (the moteus register protocol, ADR-0019) | — |
 | Sim link | Simulator ↔ `native_sim` firmware | Not written (required by ADR-0047; [`simulation.md`](simulation.md)) | — |
 
