@@ -6,6 +6,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-const eslintConfig = [...compat.extends('next/core-web-vitals')];
+const eslintConfig = [
+  // Build output, not source: linting it fails whenever a dev server or build has run
+  { ignores: ['.next/**', 'node_modules/**', 'next-env.d.ts'] },
+  ...compat.extends('next/core-web-vitals'),
+];
 
 export default eslintConfig;
