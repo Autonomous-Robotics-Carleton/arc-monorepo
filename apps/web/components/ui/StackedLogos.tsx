@@ -3,16 +3,32 @@
 import { useRef, useCallback, type ReactNode } from 'react';
 
 interface StackedLogosProps {
-  /** Each inner array is one column of logos that cycle */
-  logoGroups: ReactNode[][];
-  columns?: number;
+  logos: ReactNode[];
+  /** Most columns to show; with more logos than this, each column cycles */
+  maxColumns?: number;
   duration?: number;
   stagger?: number;
   className?: string;
 }
 
+// The appear keyframes show each item for a quarter of the cycle
+const ITEMS_PER_CYCLE = 4;
+
+/** Deal logos round-robin into columns, padding cycling columns to a full cycle. */
+function buildColumns(logos: ReactNode[], maxColumns: number): ReactNode[][] {
+  const columns = Math.max(1, Math.min(logos.length, maxColumns));
+  const groups: ReactNode[][] = Array.from({ length: columns }, () => []);
+  logos.forEach((logo, i) => groups[i % columns].push(logo));
+  return groups.map((group) =>
+    group.length > 1
+      ? Array.from({ length: ITEMS_PER_CYCLE }, (_, i) => group[i % group.length])
+      : group,
+  );
+}
+
 export default function StackedLogos({
-  logoGroups,
+  logos,
+  maxColumns = 4,
   duration = 30,
   stagger = 2,
   className = '',
@@ -20,8 +36,8 @@ export default function StackedLogos({
   const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
+  const logoGroups = buildColumns(logos, maxColumns);
   const columns = logoGroups.length;
-  const itemsPerCol = logoGroups[0]?.length || 1;
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || !gridRef.current) return;
@@ -36,7 +52,7 @@ export default function StackedLogos({
       className={`stacked-logos group relative w-full ${className}`}
       style={{
         '--duration': duration,
-        '--items': itemsPerCol,
+        '--items': ITEMS_PER_CYCLE,
         '--lists': columns,
         '--stagger': stagger,
       } as React.CSSProperties}
@@ -67,7 +83,7 @@ export default function StackedLogos({
           }}
         />
 
-        {logoGroups.map((logos, colIdx) => (
+        {logoGroups.map((column, colIdx) => (
           <div
             key={colIdx}
             className="stacked-logos__cell relative grid"
@@ -79,13 +95,17 @@ export default function StackedLogos({
             <div className="absolute top-0 right-0 left-0 h-px" style={{ backgroundColor: 'rgba(212,212,212,0.22)' }} />
             {colIdx === 0 && <div className="absolute top-0 bottom-0 left-0 w-px" style={{ backgroundColor: 'rgba(212,212,212,0.22)' }} />}
 
-            {logos.map((logo, itemIdx) => (
+            {column.map((logo, itemIdx) => (
               <div
                 key={itemIdx}
                 className="stacked-logos__item col-start-1 row-start-1 grid place-items-center px-4 py-10 md:px-8 md:py-14"
                 style={{ '--i': itemIdx } as React.CSSProperties}
               >
-                <div className="stacked-logos__logo flex h-8 w-full items-center justify-center [&>svg]:h-full [&>svg]:w-auto">
+                <div
+                  className={`flex h-11 w-full items-center justify-center ${
+                    column.length > 1 ? 'stacked-logos__logo' : ''
+                  }`}
+                >
                   {logo}
                 </div>
               </div>
