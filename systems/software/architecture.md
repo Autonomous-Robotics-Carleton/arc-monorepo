@@ -142,7 +142,7 @@ The car never drives by surprise:
 4. **The operator re-arms from the laptop.** Commands start at zero, and the envelope is back at its 3 m/s default.
 5. **During a run,** if any corner goes silent, faults or brakes on its own, the sync MCU stops all four corners within 20 ms (SYS-25), and the car latches again. Losing the steering does the same (ADR-0038).
 
-The re-arm message isn't on the sync link or the operator link yet (ADR-0039, Consequences).
+The re-arm message is decided (ICD-sync-link) but not yet in `sync-link.xml` or the operator link.
 
 ### An experiment runs
 
@@ -152,7 +152,7 @@ The re-arm message isn't on the sync link or the operator link yet (ADR-0039, Co
 4. Commands reach the motors only through `arc_control` (operator or experiment) and the sync MCU's envelope. The operator can take over at any time, and the heartbeat still governs everything.
 5. If the experiment crashes or hogs resources, the platform keeps driving, logging and able to stop (SYS-21). If it starves the Orin despite its limits, the heartbeat stops being forwarded and the sync MCU stops the car (SYS-04).
 
-Per-wheel commands, for traction and torque-vectoring research, are an open option (ADR-0048).
+Per-wheel commands, for traction and torque-vectoring research, aren't offered for now (ADR-0048, set 2026-10-25): per-wheel speeds come when an experiment needs them, per-wheel torque only with a speed limiter on the sync MCU.
 
 ## Time
 

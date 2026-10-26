@@ -43,9 +43,9 @@ The starting point for anyone writing the car's software. It collects, per compo
 - **Requirements:** SYS-04, -07, -19, -22, -24, -25, -29, -33.
 - **Open:**
   - Everything in the application: the envelope and watchdog (#75), message handling, sensors (#77), CAN (#78), controller links (#82), time base and triggers (#76), the latch and re-arm, power-monitor input, fault reporting (SYS-19).
-  - **Splitting the vehicle command into four wheel speeds** from the car's geometry (ADR-0048): wheelbase, track width, wheel radius and gearing, from the car configuration.
+  - **Splitting the vehicle command into four wheel speeds** from the car's geometry (ADR-0048): wheelbase, track width, wheel radius and gearing, from the car configuration (ADR-0051).
   - **Keep the logic free of Zephyr calls** (time and I/O passed in), as `safety.c` already is. The same code then runs on the host, in the simulator and on the board.
-  - **The re-arm message** isn't on the sync link yet (ADR-0039, Consequences).
+  - **The re-arm message** is decided (ICD-sync-link: the operator re-arms, accepted only after an e-stop cycle) but not yet in `sync-link.xml`.
   - **Who the sync MCU accepts commands from** (ICD-sync-link, open issue 6). A laptop on the service port could otherwise feed the watchdog. A safety function.
   - Gap counters and the version check (#119); the controllers' clock mapping (#74).
   - Board configuration for the NUCLEO: Ethernet, FD-CAN and SPI, so the board build is real before the boards arrive. `arc_sync`'s pins come from the EE (#98).
@@ -115,10 +115,10 @@ The starting point for anyone writing the car's software. It collects, per compo
 ### 5. Orin runtime: image and deploy (`platform/`)
 
 - **Decided:** a reproducible image, with JetPack, kernel configuration and packages pinned (ADR-0016); experiments in containers with limits (SYS-21).
+- **Decided:** one platform build for the Orin and laptops, on a Jetson base and an Ubuntu base, with the real-time settings in configuration; experiments run in Docker (ADR-0050).
 - **What exists:** nothing but notes for the developer kit (`platform/dev-kit/`).
 - **Requirements:** SYS-08, -09, -21, -30.
 - **Open:**
-  - **Whether the platform runs from the same container image on the Orin as on a laptop,** with the real-time settings in configuration that has no effect off the car. One image means the twin runs exactly what the car runs. Touches ADR-0016.
   - Process supervision so the platform stays up (SYS-21); deploying a merged PR to the Orin and rolling back (#89); images for both laptop architectures and for Jetson, where experiments need GPU access.
 
 ### 6. Ground station
@@ -140,13 +140,14 @@ The starting point for anyone writing the car's software. It collects, per compo
   - They command speed, an acceleration limit and a steering angle.
   - Any number may run. How they fit together (which one commands the car, how they share data) is for later, not platform work.
   - They may run threads at real-time priority on cores kept for experiments.
+  - No per-wheel commands for now (set 2026-10-25): per-wheel speeds when an experiment needs them; per-wheel torque only with a speed limiter on the sync MCU.
+  - They run in Docker (ADR-0050).
 - **What exists:** a template that prints a line, and an open-items table in `experiments/README.md` (runtime, limits, interface: all TBD).
 - **Requirements:** SYS-21, -22, -24.
 - **Open:**
   - The runtime and limits (#88). Limits need measuring on the developer kit.
   - **Real-time scheduling for experiments:** which cores, which priorities, per build. How a container gets real-time scheduling on JetPack's PREEMPT_RT kernel: to check.
   - **The baseline estimator:** an example experiment, off the platform's critical path and the safety path. Once it exists, SYS-06's timing is checked with it.
-  - **Per-wheel commands** for traction and torque-vectoring research. Four wheel speeds are easy to clamp; per-wheel torque needs a speed limiter on the sync MCU, a new safety function.
   - The base image experiments build from: laptop and Jetson variants.
   - The first experiment: a gamepad teleop that drives through the experiment interface, exercising the path end to end.
 
@@ -177,11 +178,5 @@ The starting point for anyone writing the car's software. It collects, per compo
 
 | Question | Recommendation | Who decides | Blocks |
 | --- | --- | --- | --- |
-| **One platform image on the Orin and on laptops** | Yes; the real-time settings in configuration | Systems lead, with the platform owner | The twin's fidelity, deploys |
-| **Per-wheel commands** | Later: four wheel speeds first; torque only with a speed limiter on the sync MCU and its own safety review | Systems lead | Wheel-speed splitting on the sync MCU, #84 |
-| **SYS-06's wording** now that estimation belongs to experiments (ADR-0048) | Keep the numbers; read it as what the car supports for an estimator, checked with the baseline estimator once it exists | Systems lead | The verification plan |
-| **The re-arm message** | Add to the sync link and the operator link; accepted only after an e-stop cycle (ADR-0039) | Sync link owners | The latch and re-arm, the ground station |
-| **Who the sync MCU accepts commands from** | Undecided (ICD-sync-link, open issue 6): the Orin's address only, message signing, or a network the service port can't reach | Systems lead; a safety reviewer | Firmware message handling |
-| **The car configuration** | One file per car in the repo; defaults generated from `systems/`, measured values on top | Systems lead | Every component that needs IDs or calibration |
-| **A simulator image** beside the amd64-only dev container | Yes, built for amd64 and arm64 | Systems lead | The twin on Apple Silicon |
-| ICD owners for the software interfaces (sync link, controller telemetry, command bus; the operator link, steering bus, car interface and sim link once written) | — | Team | Their sign-off |
+| **Who the sync MCU accepts commands from** | Deferred (2026-10-25) until before the car is assembled (ICD-sync-link, open issue 6): the Orin's address only, message signing, or a network the service port can't reach | Systems lead; a safety reviewer | The car's first drive |
+| ICD owners for the interfaces still to be written (operator link, steering bus, car interface, sim link); the existing software ICDs are owned by Shrikar Vempati until reassigned | — | Team | Their sign-off |

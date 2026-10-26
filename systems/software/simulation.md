@@ -157,7 +157,6 @@ The twin's timing is simulated (ADR-0049), so timing results show the logic, not
 | Question | Blocks |
 | --- | --- |
 | Whether `native_sim` can follow an outside clock without changes to Zephyr (the ADR-0049 spike) | Lockstep |
-| A simulator image for Gazebo beside the dev container, which is amd64 only | The twin on Apple Silicon |
 | How the sim link carries data into `native_sim`: simulator-only MAVLink messages, Zephyr's emulators, or both | The sensor emulators, the motor-controller model |
 | Whether Linux virtual CAN works on Docker Desktop (macOS, Windows) | The `twin` profile on those laptops |
 | Whether a SCIP emulator for the Hokuyo is worth it, or a LiDAR model at the topic level | The LiDAR in the twin |

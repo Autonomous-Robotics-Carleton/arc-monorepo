@@ -28,7 +28,7 @@ Scaffolding only: nothing here runs yet. Still to decide, by the platform owners
 
 | Item | Value | Traces to |
 | --- | --- | --- |
-| Container runtime on the Orin (Docker, Podman, ...) | TBD | SYS-21 |
+| Container runtime on the Orin | Docker, with NVIDIA's container runtime for the GPU (ADR-0050) | SYS-21 |
 | CPU limit per experiment | TBD | SYS-21 |
 | GPU share per experiment | TBD | SYS-21 |
 | Memory limit per experiment | TBD | SYS-21 |
@@ -36,4 +36,4 @@ Scaffolding only: nothing here runs yet. Still to decide, by the platform owners
 | The vehicle command's topic and message (speed, acceleration limit, steering angle) | TBD (ICD ros2-msgs, not written yet) | SYS-22, ADR-0048 |
 | Cores and real-time priorities for experiments, per build | TBD | SYS-21, ADR-0048 |
 | The baseline estimator (an example experiment, off the platform's critical path) | TBD | SYS-06, ADR-0048 |
-| The platform base image experiments build on | TBD (ADR-0016's platform image) | |
+| The platform base image experiments build on | The platform build (ADR-0050); not built yet | |
