@@ -2,12 +2,13 @@
 
 Fake nodes around the sync MCU firmware, so it can be tested without the car. The design, and what is still missing, are in [DESIGN.md](DESIGN.md).
 
-So far there are two kinds of fake node, both speaking the ARC MAVLink 2 message set generated from `systems/icd/sync-link.xml` at start-up (so they can't drift from the firmware's schema):
+The fake nodes, both speaking the ARC MAVLink 2 message set generated from `systems/icd/sync-link.xml` at start-up (so they can't drift from the firmware's schema):
 
 | Node | Plays | Interface | Spec |
 | --- | --- | --- | --- |
 | `FL` `FR` `RL` `RR` | One A50S motor controller each: `ARC_MOTOR_STATUS` at 1 kHz, `ARC_LINK_STATUS` at 1 Hz | One UART per controller | ICD-controller-telemetry (draft) |
 | `can` | The four controllers' side of the classic CAN command bus: receives `SET_CURRENT`, `SET_CURRENT_BRAKE`, `SET_RPM`, sends `STATUS_1` at 50 Hz, times out after 150 ms without a command | UDP, through the firmware's simulation-only bridge | can-command.dbc, ADR-0035 |
+| `estop` | The e-stop button on the car: sets the firmware's e-stop input, and every controller reports `ESTOP`, ignores the command bus and brakes; at T (2.4 s) the motor bus is cut and the controllers go silent, then boot about 200 ms after release (ADR-0012, ADR-0034, ADR-0039) | UDP, one byte, through the firmware's simulation-only bridge (`sim_estop.c`) | ADR-0039 |
 | `orin` | The Orin's bridge: `ARC_OPERATOR_HEARTBEAT` at 50 Hz, `ARC_DRIVE_COMMAND` at 500 Hz (repeating the latest output between 100 Hz controller updates), `ARC_ENVELOPE_SET`, `ARC_LINK_STATUS` at 1 Hz | UDP | ICD-sync-link (draft; the rates and addresses in it are proposals) |
 
 Not a safety function. The motor model is plausible, not calibrated.
@@ -69,7 +70,8 @@ JSON, times in milliseconds. An event is for the fake Orin with `"node": "orin"`
 | orin | `command` | `speed`, `accel`, `steer` (each optional) | A new controller output |
 | orin | `command_stop`, `command_resume` | | Drive commands stop while the heartbeat goes on (ICD open issue 6) |
 | orin | `heartbeat_stop`, `heartbeat_resume` | | The watchdog's trigger (SYS-04) |
-| orin | `rearm` | | One `ARC_REARM`. The firmware drives only after one, sent while heartbeats arrive (ADR-0052), so every Orin scenario starts with it |
+| orin | `rearm` | | One `ARC_REARM`. The firmware drives only after one, sent while heartbeats arrive and once the fault latch is reset (ADR-0039, ADR-0052) |
+| estop | `press`, `release` | | The e-stop button. The firmware boots latched, so every Orin scenario starts with a press held 3 s (T is 2.4 s), a release and a re-arm |
 | orin | `envelope` | `max_speed`, `max_accel`, `max_steer` | One `ARC_ENVELOPE_SET` |
 | orin | `drop`, `corrupt` | `count` | As for controllers, on the sync link |
 

@@ -31,7 +31,13 @@ enum cl_reason controller_links_stop(int *corner);
  */
 enum cl_reason controller_links_state(int *corner);
 
-/* Clears the latch. Only the reset sequence may call it (ADR-0039, not written yet). */
+/* What the reset's power-on checks need (fault_latch.h): the condition now,
+ * the corner it names, that corner's fault code, and whether every wheel is
+ * stopped. On a board without the UARTs: CL_NOT_READY, so it never resets. */
+void controller_links_reset_inputs(enum cl_reason *reason, int *corner, uint8_t *fault_code,
+				   bool *stopped);
+
+/* Clears the latch. Only the reset sequence calls it (fault_latch.h, ADR-0039). */
 void controller_links_reset(void);
 
 #endif /* ARC_CONTROLLER_LINKS_H */

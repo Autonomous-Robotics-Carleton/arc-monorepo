@@ -173,7 +173,15 @@ bool safety_on_rearm(struct safety *s, int64_t now_ms)
 		return false;
 	}
 	s->have_command = false;
+	safety_envelope_default(&s->envelope, &s->car);
 	return true;
+}
+
+void safety_disarm(struct safety *s)
+{
+	s->watchdog.armed = false;
+	s->watchdog.tripped = false;
+	s->have_command = false;
 }
 
 struct safety_output safety_decide(struct safety *s, int64_t now_ms, bool controllers_stopped,

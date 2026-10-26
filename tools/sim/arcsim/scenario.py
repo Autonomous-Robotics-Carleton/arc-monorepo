@@ -5,15 +5,16 @@
       {"t_ms": 2000, "corner": "FL", "action": "silence", "duration_ms": 20}
     ]}
 
-Times are milliseconds. An event with "node": "orin" is for the fake Orin;
-any other is for motor controllers, "corner" being FL, FR, RL, RR, a list of
-them, or "all" (the default)."""
+Times are milliseconds. An event with "node": "orin" is for the fake Orin,
+"node": "estop" for the e-stop button (press, release); any other is for
+motor controllers, "corner" being FL, FR, RL, RR, a list of them, or "all"
+(the default)."""
 
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from . import controller, orin
+from . import controller, estop, orin
 
 
 @dataclass(order=True)
@@ -34,6 +35,9 @@ def load_scenario(source):
         node = e.pop("node", "controllers")
         if node == "orin":
             table, nodes = orin.ACTIONS, ("orin",)
+            e.pop("corner", None)
+        elif node == "estop":
+            table, nodes = estop.ACTIONS, ("estop",)
             e.pop("corner", None)
         elif node == "controllers":
             table = controller.ACTIONS

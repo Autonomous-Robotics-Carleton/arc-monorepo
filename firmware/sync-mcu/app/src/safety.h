@@ -127,8 +127,14 @@ void safety_on_command(struct safety *s, struct drive_cmd cmd, int64_t now_ms);
 /* False, and the envelope unchanged, if the new one is invalid or above the car's maximum. */
 bool safety_on_envelope(struct safety *s, const struct safety_envelope *env);
 /* The operator's re-arm (ARC_REARM). False if refused: no heartbeat arriving. A command
- * that arrived before it is dropped, so only commands sent after the re-arm drive. */
+ * that arrived before it is dropped, so only commands sent after the re-arm drive, and
+ * the envelope returns to its default (ADR-0039). The caller refuses it first while the
+ * fault latch isn't reset (fault_latch.h). */
 bool safety_on_rearm(struct safety *s, int64_t now_ms);
+
+/* A stop that needs the operator's re-arm afterwards (a latched fault, ADR-0039):
+ * unarmed, but not braking for the heartbeat. */
+void safety_disarm(struct safety *s);
 
 /*
  * What the car should do now. controllers_stopped is the any-corner stop

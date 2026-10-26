@@ -37,6 +37,7 @@ struct cl_corner {
 	int64_t last_valid_ns; /* sync-MCU time the last valid status completed */
 	uint8_t fault;
 	uint8_t state; /* ARC_MOTOR_STATE bitmask */
+	int32_t erpm;  /* electrical speed, from the last valid status */
 	bool version_known;
 	uint16_t peer_version;
 	bool seq_known;
@@ -65,6 +66,10 @@ void cl_feed(struct cl_links *l, int corner, const uint8_t *buf, size_t len, int
  * isn't ready: that is CL_NOT_READY, which refuses drive without stopping.
  */
 enum cl_reason cl_check(const struct cl_links *l, int64_t now_ns, int *corner);
+
+/* Every corner has reported and its last |eRPM| is at most max_erpm: the
+ * wheels are stopped (ADR-0039's power-on checks). Freshness is cl_check's. */
+bool cl_all_stopped(const struct cl_links *l, int32_t max_erpm);
 
 const char *cl_reason_name(enum cl_reason r);
 bool cl_is_stop(enum cl_reason r);

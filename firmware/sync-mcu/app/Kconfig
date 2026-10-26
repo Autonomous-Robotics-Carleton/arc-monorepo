@@ -70,6 +70,47 @@ config ARC_CAN_ERPM_PER_MPS
 	  are still changing (ADR-0026, ADR-0034, ADR-0040). 0 sends 0 A, so the
 	  car can't drive until it is set.
 
+config ARC_ESTOP_CUT_MS
+	int "Reset: how long the e-stop must be held (ms)"
+	default 2400
+	help
+	  T, the motor-bus cut after an e-stop press (ADR-0034, TBC 2.4 s).
+	  A press released sooner doesn't reset a stop (ADR-0039).
+
+config ARC_RESET_CHECK_WINDOW_MS
+	int "Reset: how long the power-on checks may take after release (ms)"
+	default 3000
+	help
+	  The controllers restart after the cut and must report again, with
+	  no state bits or faults and every wheel stopped, within this time;
+	  otherwise the car stays latched (ADR-0039; 3 s set 2026-10-25, TBC).
+
+config ARC_RESET_MAX_STOPS
+	int "Reset: stops since power-on that need a restart"
+	default 3
+	help
+	  ADR-0039 item 5 (TBC). Corners reporting the e-stop don't count.
+
+config ARC_WHEEL_STOPPED_ERPM
+	int "Reset: the largest |eRPM| that counts as a stopped wheel"
+	default 100
+	help
+	  For the power-on checks' "all wheels stopped" (ADR-0039): an
+	  allowance for the speed estimate's noise at standstill
+	  (set 2026-10-25, TBC until measured).
+
+config ARC_SIM_ESTOP
+	bool "Simulation: the e-stop button over UDP"
+	depends on BOARD_NATIVE_SIM && NET_SOCKETS && GPIO_EMUL
+	help
+	  The emulated e-stop input, set by a simulator over UDP (sim_estop.c).
+	  Never on the car.
+
+config ARC_SIM_ESTOP_PORT
+	int "Simulation: UDP port for the e-stop button"
+	default 52102
+	depends on ARC_SIM_ESTOP
+
 config ARC_SIM_CAN_BRIDGE
 	bool "Simulation: carry the command bus over UDP"
 	depends on BOARD_NATIVE_SIM && NET_SOCKETS

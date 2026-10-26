@@ -14,7 +14,8 @@ This is a proposal, not a decision of the repo's owners. It follows ADR-0028: Ze
 | Steering CAN-FD | moteus-c1 | ADR-0019 only; the protocol is mjbots' and isn't in the repo | | Not started. Needs mjbots' protocol documentation |
 | SPI sensors, 12 | 2 IMUs, 4 wheel, 4 suspension and 2 knuckle encoders | Only the sensor choices (BOM); no register-level spec, and the firmware drivers aren't written | | Not started |
 | I2C ToF, 5 | Ride-height sensors | The part is TBD (E-26) | | Blocked |
-| GPIO | E-stop in, LEDs, lighting modes, camera triggers and PPS out, low-battery signal out | BOM tally | | Not started: needs pins to drive and observe |
+| GPIO: e-stop in | The e-stop button (E-32) | ADR-0039; ICD-power-sync-stack ESTOP_STATUS (level and polarity TBD, #95) | `FakeEstop` | Done on `native_sim`: an emulated pin set over UDP (`sim_estop.c`); also drives the controllers' `ESTOP`, the motor-bus cut and their restart |
+| GPIO, other | LEDs, lighting modes, camera triggers and PPS out, low-battery signal out | BOM tally | | Not started: needs pins to drive and observe |
 | Power-board header | Battery, cells, faults | ICD power-sync-stack not written; ADR-0022 proposed | | Blocked |
 | Time | Orin PTP/PPS | ADR-0021 | | Out of scope |
 
@@ -49,7 +50,8 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 | M3b | `safety.c` (envelope clamp, heartbeat watchdog, drive decision) and `safety_task.c`, fed by the fake Orin's heartbeat, re-arm, commands and envelope; the firmware answers with `ARC_SAFETY_STATE` | M2 | Done: 36 unit tests; `firmware_in_loop.sh` checks 6 Orin scenarios. Still missing: brake commands on the CAN bus (M4) |
 | M4 | The command CAN bus: controllers receive commands, answer with `STATUS_1`, brake on `COMMAND_TIMEOUT` | The firmware's CAN code | Done: `can_command_core` (11 unit tests), `can_buses`, `sim_can_bridge`, `FakeCommandBus` (10 tests); `firmware_in_loop.sh` checks that a heartbeat loss and a corner fault put brake frames on all four controllers, and that drive and zero commands never leave a gap. Missing: the STATUS_1 watch (SYS-25, ~60 ms) and bus-off, and how the sync MCU commands the brake *ramp* (see below) |
 | M5 | Steering controller | mjbots protocol | Not started |
-| M6 | Sensors, e-stop, camera triggers | Sensor driver specs; pins | Not started |
+| M6a | The e-stop button and the reset (`fault_latch`, ADR-0039) | Emulated GPIO | Done: 18 unit tests; `firmware_in_loop.sh` resets after a corner fault, and refuses to drive before the re-arm |
+| M6b | Sensors, camera triggers | Sensor driver specs; pins | Not started |
 | M7 | Lockstep with the guest clock; CI job | | Not started |
 
 ## Decisions for the owners
@@ -57,7 +59,7 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 1. Where it lives: `tools/sim/` here, or under `firmware/sync-mcu/`, and whether `tools/sim/firmware_in_loop.sh` and the Python tests become Nx targets with a CI job.
 2. The silence window: 5 ms (TBC in SYS-25) is what the unit tests check. A real-time run on a laptop can't hold it, so the integration run uses 100 ms. Whether a real-time check of 5 ms is wanted (on hardware, rig R1) is for the verification plan.
 3. Who reviews the firmware: the any-corner stop is a safety function, and the repo requires a second reviewer.
-4. What the sync MCU does at the stop (brake commands need the CAN bus), and the reset sequence of ADR-0039, neither of which exists yet.
+4. What the sync MCU does at the stop (brake commands need the CAN bus). The reset sequence of ADR-0039 is in `fault_latch.c`; the steering check is skipped until a steering driver exists (decided 2026-10-25).
 
 ## Addresses
 

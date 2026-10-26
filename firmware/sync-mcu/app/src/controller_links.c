@@ -15,6 +15,8 @@ static enum cl_reason latched = CL_OK;
 static int latched_corner = -1;
 static enum cl_reason current = CL_NOT_READY;
 static int current_corner = -1;
+static uint8_t current_fault;
+static bool wheels_stopped;
 
 /* K_SPINLOCK must be left by falling out of its block: a return inside skips the unlock */
 enum cl_reason controller_links_stop(int *corner)
@@ -45,6 +47,17 @@ enum cl_reason controller_links_state(int *corner)
 		*corner = c;
 	}
 	return r;
+}
+
+void controller_links_reset_inputs(enum cl_reason *reason, int *corner, uint8_t *fault_code,
+				   bool *stopped)
+{
+	K_SPINLOCK(&lock) {
+		*reason = current;
+		*corner = current_corner;
+		*fault_code = current_fault;
+		*stopped = wheels_stopped;
+	}
 }
 
 void controller_links_reset(void)
@@ -109,10 +122,15 @@ static void update(int64_t now)
 	bool first_stop = false;
 	bool changed = false;
 
+	bool stopped = cl_all_stopped(&links, CONFIG_ARC_WHEEL_STOPPED_ERPM);
+	uint8_t fault = corner >= 0 ? links.c[corner].fault : 0;
+
 	K_SPINLOCK(&lock) {
 		changed = (r != current || corner != current_corner);
 		current = r;
 		current_corner = corner;
+		current_fault = fault;
+		wheels_stopped = stopped;
 		if (cl_is_stop(r) && latched == CL_OK) {
 			latched = r;
 			latched_corner = corner;

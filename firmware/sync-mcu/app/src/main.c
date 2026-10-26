@@ -14,6 +14,9 @@
 #ifdef CONFIG_ARC_SIM_CAN_BRIDGE
 #include "sim_can_bridge.h"
 #endif
+#ifdef CONFIG_ARC_SIM_ESTOP
+#include "sim_estop.h"
+#endif
 #include "sensors.h"
 #include "sync_link.h"
 #include "time_base.h"
@@ -32,6 +35,9 @@ int main(void)
 	sync_link_init();
 #ifdef CONFIG_ARC_SIM_CAN_BRIDGE
 	sim_can_bridge_init();
+#endif
+#ifdef CONFIG_ARC_SIM_ESTOP
+	sim_estop_init();
 #endif
 
 	while (true) {

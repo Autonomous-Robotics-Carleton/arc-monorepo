@@ -33,15 +33,16 @@ static struct drive_cmd cmd(float speed, float accel, float steer)
 	return (struct drive_cmd){speed, accel, steer};
 }
 
-/* A safety struct with an envelope, a heartbeat, the re-arm and a command at t = 0. */
+/* A safety struct with a heartbeat, the re-arm, an envelope and a command at t = 0.
+ * The envelope comes after the re-arm, which resets it to the default. */
 static void armed(struct safety *s)
 {
 	init(s);
 	struct safety_envelope e = env(3.0f, 5.0f, 0.4f);
 
-	zassert_true(safety_on_envelope(s, &e));
 	safety_on_heartbeat(s, 0);
 	zassert_true(safety_on_rearm(s, 0));
+	zassert_true(safety_on_envelope(s, &e));
 	safety_on_command(s, cmd(1.0f, 1.0f, 0.1f), 0);
 }
 
@@ -456,6 +457,39 @@ ZTEST(safety, test_rearm_does_not_clear_a_controller_stop)
 	armed(&s);
 	zassert_true(safety_on_rearm(&s, 1));
 	zassert_equal(safety_decide(&s, 2, true, true).reason, SAFETY_CONTROLLER_STOP);
+}
+
+ZTEST(safety, test_rearm_returns_the_envelope_to_its_default)
+{
+	struct safety s;
+
+	armed(&s);
+	zassert_true(safety_on_envelope(&s, &car));
+	safety_on_heartbeat(&s, 10);
+	zassert_true(safety_on_rearm(&s, 10)); /* ADR-0039 item 4 */
+	zassert_equal(s.envelope.max_speed_mps, 3.0f);
+	zassert_equal(s.envelope.max_accel_mps2, 5.0f);
+	zassert_equal(s.envelope.max_steer_rad, car.max_steer_rad);
+}
+
+ZTEST(safety, test_after_disarm_driving_needs_a_rearm_but_does_not_brake)
+{
+	struct safety s;
+
+	armed(&s);
+	zassert_equal(safety_decide(&s, 1, false, true).reason, SAFETY_DRIVING);
+	safety_disarm(&s); /* a latched fault was reset (ADR-0039) */
+	for (int64_t t = 2; t < 500; t += 20) {
+		safety_on_heartbeat(&s, t);
+		safety_on_command(&s, cmd(2.0f, 1.0f, 0.0f), t);
+		struct safety_output o = safety_decide(&s, t, false, true);
+
+		zassert_equal(o.reason, SAFETY_NOT_ARMED);
+		zassert_false(o.brake);
+	}
+	zassert_true(safety_on_rearm(&s, 500));
+	safety_on_command(&s, cmd(2.0f, 1.0f, 0.0f), 501);
+	zassert_equal(safety_decide(&s, 502, false, true).reason, SAFETY_DRIVING);
 }
 
 ZTEST(safety, test_an_invalid_command_brakes)

@@ -27,9 +27,12 @@ target_sources(app PRIVATE
   src/controller_link_core.c
   src/controller_links.c
   src/safety.c
+  src/fault_latch.c
+  src/estop_input.c
   src/rate_monitor.c
   src/safety_task.c
   src/sync_link.c
 )
 
 target_sources_ifdef(CONFIG_ARC_SIM_CAN_BRIDGE app PRIVATE src/sim_can_bridge.c)
+target_sources_ifdef(CONFIG_ARC_SIM_ESTOP app PRIVATE src/sim_estop.c)
