@@ -80,7 +80,7 @@ driver: {scripted: {speed: 3.0}}
 events:
   - {at: 5.0, cut: heartbeat}
 pass:
-  - watchdog reaches BRAKING within CONFIG_ARC_HEARTBEAT_TIMEOUT_MS
+  - watchdog reaches NO_HEARTBEAT within CONFIG_ARC_HEARTBEAT_TIMEOUT_MS
   - rolled before braking <= 2 m
 ```
 

@@ -27,7 +27,7 @@ public:
   CarBackend()
   : Node("car_backend")
   {
-    // UDP ports and the sync MCU's address: ICD-sync-link (TBC)
+    // UDP ports: ICD-sync-link; the sync MCU's address on the car: ICD-network
     const int port_rx = declare_parameter("port_rx", 52001);
     const int port_tx = declare_parameter("port_tx", 52000);
     const std::string peer = declare_parameter("sync_mcu_address", "127.0.0.1");
