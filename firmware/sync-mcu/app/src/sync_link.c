@@ -60,6 +60,9 @@ static void handle(const mavlink_message_t *msg, bool *peer_seen)
 	case MAVLINK_MSG_ID_ARC_OPERATOR_HEARTBEAT:
 		safety_task_heartbeat();
 		break;
+	case MAVLINK_MSG_ID_ARC_REARM:
+		safety_task_rearm();
+		break;
 	case MAVLINK_MSG_ID_ARC_DRIVE_COMMAND: {
 		mavlink_arc_drive_command_t c;
 

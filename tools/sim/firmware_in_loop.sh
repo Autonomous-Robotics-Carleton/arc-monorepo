@@ -81,7 +81,9 @@ run "Orin drives, inside the envelope"  orin-driving.json         3 'safety: dri
 run "Orin command rate is measured"  orin-driving.json         4 'command rate: (4[5-9][0-9]|5[0-4][0-9]) Hz' 'command rate: [0-9]+ Hz, expected' 'ARC_SAFETY_STATE'
 run "Orin commands beyond the envelope" orin-clamp.json           3 'safety: driving \[clamped to the envelope\] speed=3000 mm/s accel=5000 mm/s2 steer=400 mrad' 'heartbeat lost|controller stop' 'max_speed=3 max_accel=5 max_steer=0.4'
 # the heartbeat is lost at 1.5 s, the watchdog (500 ms here) trips, all four get brake frames
-run "heartbeat stops at 1.5 s"          orin-heartbeat-loss.json  4 'safety: heartbeat lost: braking \[brake\]' '' 'watchdog=2' "4:$bus_line.* brake=[1-9][0-9]* first_brake_ms=(19[5-9][0-9]|20[0-9][0-9])\\."
+run "heartbeat stops at 1.5 s"          orin-heartbeat-loss.json  4 'safety: heartbeat lost: braking \[brake\]' 're-armed after' 'watchdog=2' "4:$bus_line.* brake=[1-9][0-9]* first_brake_ms=(19[5-9][0-9]|20[0-9][0-9])\\."
+# ADR-0052: a re-arm while the heartbeat is lost is refused; once it's back, a re-arm drives again
+run "re-arm after a heartbeat stop"     orin-heartbeat-rearm.json 4 're-armed after a heartbeat stop' '' 'watchdog=0'
 # commands stop but the heartbeat goes on: a zero command, and the bus stays alive
 run "commands stop, heartbeat goes on"  orin-command-stop.json    4 'safety: no fresh command' 'heartbeat lost|\[brake\]' 'watchdog=0' "4:$bus_line.* current=[0-9]{3,} .* brake=0 .*max_gap_ms=([0-9]|[1-3][0-9]|4[0-9])\\."
 # a corner fault at 1.5 s: all four corners get brake frames within 60 ms (SYS-25 wants 20 ms: a laptop can't hold it)

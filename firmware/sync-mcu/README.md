@@ -41,7 +41,7 @@ firmware/sync-mcu/build/native_sim/zephyr/zephyr.exe     # Ctrl-C to stop
 | Test (twister) | What it checks |
 | --- | --- |
 | `sync_mcu.can_command_core` | The frames for each decision (drive, zero, brake, nothing), byte by byte against the stock VESC packing: 11 cases |
-| `sync_mcu.safety` | The envelope clamp, the heartbeat watchdog (150 ms, latched) and the drive decision, in virtual time: 22 cases |
+| `sync_mcu.safety` | The envelope (ADR-0052 defaults, capped at the car's maximum), the heartbeat watchdog (150 ms; a stop holds until re-armed) and the drive decision, in virtual time: 36 cases |
 | `sync_mcu.controller_link` | The any-corner stop's logic, in virtual time: a corner silent for more than 5 ms, fault, e-stop and command-timeout states, CRC and sequence handling, frames made by pymavlink (`tools/sim/make_golden.py`) |
 | `sync_mcu.sync_link` | `ARC_LINK_STATUS` round-trips through the generated MAVLink code |
 | `sync_mcu.can_command` | The generated command-bus frames pack like VESC's own `comm_can.c` |
@@ -55,6 +55,9 @@ Options in `app/Kconfig`, set with `west build … -- -DCONFIG_<name>=<value>`:
 | Option | Default | |
 | --- | --- | --- |
 | `ARC_HEARTBEAT_TIMEOUT_MS` | 150 | Operator heartbeat timeout (SYS-04, TBC) |
+| `ARC_CAR_MAX_SPEED_MMPS` | 9000 | The car's top speed, the cap for raising the envelope (SYS-01); moves to the car's configuration (ADR-0051) |
+| `ARC_CAR_MAX_ACCEL_MMPS2` | 5000 | The car's maximum acceleration (TBD until measured; equal to the default, so it can't be raised yet) |
+| `ARC_CAR_MAX_STEER_MRAD` | 436 | The car's steering range each side, about ±25° (ADR-0019, TBC); the default envelope allows all of it (ADR-0052) |
 | `ARC_CAN_BRAKE_CURRENT_MA` | 0 | Brake current sent to the four controllers on a stop (TBD). 0 sends nothing, and the controllers brake on their own timeout, later than SYS-25's 20 ms |
 | `ARC_CAN_ERPM_PER_MPS` | 0 | eRPM per m/s of commanded speed (TBD: wheel, gear ratio, pole pairs). 0 sends 0 A |
 | `ARC_COMMAND_RATE_HZ` | 500 | Expected `ARC_DRIVE_COMMAND` rate; a stream off by more than the tolerance is logged, never acted on (TBC; ICD-sync-link open issue 4) |

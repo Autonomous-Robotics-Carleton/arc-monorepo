@@ -1,5 +1,6 @@
-"""A fake Orin on the sync link (ICD-sync-link): the operator heartbeat, drive
-commands, envelope settings and link status, UDP, MAVLink 2.
+"""A fake Orin on the sync link (ICD-sync-link): the operator heartbeat, the
+operator's re-arm, drive commands, envelope settings and link status, UDP,
+MAVLink 2.
 
 Rates are the ICD's: ARC_DRIVE_COMMAND every 2 ms (500 Hz, the command bus
 rate) carrying the latest controller output, which updates at the control
@@ -11,7 +12,7 @@ from .node import NS, MavNode
 LINK_PERIOD_NS = NS  # ARC_LINK_STATUS, 1 Hz
 
 ACTIONS = {  # action: required arguments
-    "heartbeat_stop": (), "heartbeat_resume": (),
+    "heartbeat_stop": (), "heartbeat_resume": (), "rearm": (),
     "command": (), "command_stop": (), "command_resume": (),
     "envelope": ("max_speed", "max_accel", "max_steer"),
     "drop": ("count",), "corrupt": ("count",), "version": ("value",),
@@ -38,6 +39,8 @@ class FakeOrin(MavNode):
         self.target = (0.0, 0.0, 0.0)  # speed, accel, steer
         self.command_time_ns = 0
         self.pending_envelope = None
+        self.pending_rearm = False
+        self.rearms = 0
         self.to_drop = 0
         # sync-MCU time = ours + offset, learned from what the MCU sends; the
         # Orin's clock isn't synced yet (ICD), so until then it is our own
@@ -56,6 +59,8 @@ class FakeOrin(MavNode):
             self.heartbeat_on = False
         elif action == "heartbeat_resume":
             self.heartbeat_on = True
+        elif action == "rearm":
+            self.pending_rearm = True
         elif action == "command":
             self.target = (float(a.get("speed", self.target[0])),
                            float(a.get("accel", self.target[1])),
@@ -108,6 +113,11 @@ class FakeOrin(MavNode):
                         time_ns=self.mcu_time_ns(t), counter=self.counter), t)
             else:
                 self.next_command_ns += self.command_period
+                if self.pending_rearm:
+                    self.pending_rearm = False
+                    self.rearms += 1
+                    self._send(m.MAVLink_arc_rearm_message(
+                        time_ns=self.mcu_time_ns(t), counter=self.rearms), t)
                 if self.pending_envelope:
                     s, a, st = self.pending_envelope
                     self.pending_envelope = None

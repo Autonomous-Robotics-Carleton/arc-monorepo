@@ -56,7 +56,22 @@ bool safety_task_envelope(const struct safety_envelope *env)
 
 	k_mutex_unlock(&lock);
 	if (!ok) {
-		LOG_WRN("envelope refused: a limit is negative or not a number");
+		LOG_WRN("envelope refused: a limit is negative, not a number or above the car's");
+	}
+	return ok;
+}
+
+bool safety_task_rearm(void)
+{
+	k_mutex_lock(&lock, K_FOREVER);
+	bool after_stop = state.watchdog.tripped;
+	bool ok = safety_on_rearm(&state, now_ms());
+
+	k_mutex_unlock(&lock);
+	if (ok) {
+		LOG_INF("re-armed%s", after_stop ? " after a heartbeat stop" : "");
+	} else {
+		LOG_WRN("re-arm refused: no heartbeat arriving");
 	}
 	return ok;
 }
@@ -74,7 +89,8 @@ struct safety_output safety_task_output(void)
 
 static int watchdog_state(const struct safety_output *o)
 {
-	/* ARC_WATCHDOG_STATE has no "no heartbeat yet": report it as ROLLING (not arriving, not braking) */
+	/* ARC_WATCHDOG_STATE has no "not armed yet": report it as ROLLING (not driving, not braking).
+	 * A heartbeat stop stays BRAKING until re-armed (ADR-0052). */
 	switch (o->reason) {
 	case SAFETY_HEARTBEAT_LOST:
 		return ARC_WATCHDOG_BRAKING;
@@ -178,7 +194,13 @@ static struct k_thread task_data;
 
 int safety_task_init(void)
 {
-	safety_init(&state, CONFIG_ARC_HEARTBEAT_TIMEOUT_MS, CONFIG_ARC_COMMAND_TIMEOUT_MS,
+	const struct safety_envelope car = {
+		.max_speed_mps = CONFIG_ARC_CAR_MAX_SPEED_MMPS / 1000.0f,
+		.max_accel_mps2 = CONFIG_ARC_CAR_MAX_ACCEL_MMPS2 / 1000.0f,
+		.max_steer_rad = CONFIG_ARC_CAR_MAX_STEER_MRAD / 1000.0f,
+	};
+
+	safety_init(&state, &car, CONFIG_ARC_HEARTBEAT_TIMEOUT_MS, CONFIG_ARC_COMMAND_TIMEOUT_MS,
 		    now_ms());
 	rate_monitor_init(&command_rate, RATE_WINDOW_NS, time_base_now_ns());
 	k_thread_create(&task_data, task_stack, K_THREAD_STACK_SIZEOF(task_stack), task, NULL,

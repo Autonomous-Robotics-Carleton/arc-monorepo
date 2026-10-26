@@ -46,7 +46,7 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 | M1 | Fake controllers (UART) | ICD-controller-telemetry | Done |
 | M2 | Fake Orin (UDP) | ICD-sync-link | Done |
 | M3a | Firmware: parse the four controller links and decide when to stop (`controller_link_core`, `controller_links`), with tests in virtual time | M1 | Done: 21 unit tests; `firmware_in_loop.sh` passes 5 scenarios, 3 runs in a row |
-| M3b | `safety.c` (envelope clamp, heartbeat watchdog, drive decision) and `safety_task.c`, fed by the fake Orin's heartbeat, commands and envelope; the firmware answers with `ARC_SAFETY_STATE` | M2 | Done: 22 unit tests; `firmware_in_loop.sh` checks 5 Orin scenarios. Still missing: brake commands on the CAN bus (M4) |
+| M3b | `safety.c` (envelope clamp, heartbeat watchdog, drive decision) and `safety_task.c`, fed by the fake Orin's heartbeat, re-arm, commands and envelope; the firmware answers with `ARC_SAFETY_STATE` | M2 | Done: 36 unit tests; `firmware_in_loop.sh` checks 6 Orin scenarios. Still missing: brake commands on the CAN bus (M4) |
 | M4 | The command CAN bus: controllers receive commands, answer with `STATUS_1`, brake on `COMMAND_TIMEOUT` | The firmware's CAN code | Done: `can_command_core` (11 unit tests), `can_buses`, `sim_can_bridge`, `FakeCommandBus` (10 tests); `firmware_in_loop.sh` checks that a heartbeat loss and a corner fault put brake frames on all four controllers, and that drive and zero commands never leave a gap. Missing: the STATUS_1 watch (SYS-25, ~60 ms) and bus-off, and how the sync MCU commands the brake *ramp* (see below) |
 | M5 | Steering controller | mjbots protocol | Not started |
 | M6 | Sensors, e-stop, camera triggers | Sensor driver specs; pins | Not started |
@@ -68,7 +68,7 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 - The decision is made, logged, reported to the Orin and put on the command bus. On the bench it reaches all four fake controllers about 5 ms after a corner fault (1 run, laptop jitter included); SYS-25's 20 ms is not asserted, because a laptop can't hold it.
 - The spec does not say how the sync MCU commands the brake. `can-command.dbc` has only the stock VESC frames (current, brake current, rpm), and the ramp lives in the controllers (ADR-0012). The firmware sends `SET_CURRENT_BRAKE` at `ARC_CAN_BRAKE_CURRENT_MA`, which has no value in the spec (TBD): with none set, it sends nothing on a stop and the controllers brake on their own 150 ms timeout, later than SYS-25's 20 ms. The simulator build uses 10 A as a placeholder. Likewise `ARC_CAN_ERPM_PER_MPS` (wheel, gear ratio and pole pairs are still changing: ADR-0026, 0034, 0040) is 0 on the car, so it sends 0 A; the simulator uses the fake controller's model.
 - The command bus carries no STATUS_1 watch (SYS-25: ~60 ms) and no bus-off handling yet; the frames are counted and nothing acts on them.
-- `watchdog` in `ARC_SAFETY_STATE` has no value for "no heartbeat yet"; the firmware reports ROLLING.
+- `watchdog` in `ARC_SAFETY_STATE` has no value for "not armed yet"; the firmware reports ROLLING. After a heartbeat stop it reports BRAKING until the operator re-arms (ADR-0052).
 - The nucleo and arc_sync boards build but have no controller UARTs, so they use a stub.
 - Real-time runs on a loaded machine can add jitter; the firmware-in-the-loop test uses a 100 ms window for that reason.
 - The motor model is plausible, not calibrated.

@@ -7,6 +7,29 @@ config ARC_HEARTBEAT_TIMEOUT_MS
 	  Time without an operator heartbeat before the car starts braking
 	  (SYS-04: rolls <= 2 m first; ~150 ms is ~1.4 m at 9 m/s; TBC).
 
+config ARC_CAR_MAX_SPEED_MMPS
+	int "The car's top speed (mm/s)"
+	default 9000
+	help
+	  The cap for raising the safety envelope's speed limit (SYS-22):
+	  SYS-01's 9 m/s. Moves to the car's configuration (ADR-0051).
+
+config ARC_CAR_MAX_ACCEL_MMPS2
+	int "The car's maximum acceleration (mm/s^2)"
+	default 5000
+	help
+	  The cap for raising the envelope's acceleration limit (SYS-22).
+	  TBD until measured; until then it equals the 5 m/s^2 default
+	  (ADR-0052), so the limit can't be raised. Moves to the car's
+	  configuration (ADR-0051).
+
+config ARC_CAR_MAX_STEER_MRAD
+	int "The car's steering range at the wheels, each side (mrad)"
+	default 436
+	help
+	  About +/-25 degrees (ADR-0019; TBC). The default envelope allows
+	  all of it (ADR-0052). Moves to the car's configuration (ADR-0051).
+
 config ARC_COMMAND_TIMEOUT_MS
 	int "Orin commands: age after which a command is dropped (ms)"
 	default 150

@@ -39,7 +39,7 @@ A `--link` target is a device or pseudo-terminal path (what `native_sim` gives i
 tools/sim/firmware_in_loop.sh
 ```
 
-It builds the firmware with a 100 ms silence window, starts it in real time, attaches a fake controller to each pseudo-terminal it prints, and checks the firmware's log and what the fake Orin received: all four healthy gives no stop; a corner silent for 300 ms, a fault code, `COMMAND_TIMEOUT` and `ESTOP` each stop the car and name the right corner and reason. The stop holds after the frames come back (ADR-0039). With the fake Orin: a command inside the envelope drives, one beyond it is clamped, a lost heartbeat brakes (and a returning heartbeat doesn't restart the car), commands that stop give a zero command, and a controller fault while driving brakes. The strict 5 ms and 20 ms limits are checked where time is injected: `firmware/sync-mcu/tests/controller_link`.
+It builds the firmware with a 100 ms silence window, starts it in real time, attaches a fake controller to each pseudo-terminal it prints, and checks the firmware's log and what the fake Orin received: all four healthy gives no stop; a corner silent for 300 ms, a fault code, `COMMAND_TIMEOUT` and `ESTOP` each stop the car and name the right corner and reason. The stop holds after the frames come back (ADR-0039). With the fake Orin: a command inside the envelope drives, one beyond it is clamped, a lost heartbeat brakes (and a returning heartbeat doesn't restart the car; a re-arm once it's back does, ADR-0052), commands that stop give a zero command, and a controller fault while driving brakes. The strict 5 ms and 20 ms limits are checked where time is injected: `firmware/sync-mcu/tests/controller_link`.
 
 ## On the proposed addresses
 
@@ -69,6 +69,7 @@ JSON, times in milliseconds. An event is for the fake Orin with `"node": "orin"`
 | orin | `command` | `speed`, `accel`, `steer` (each optional) | A new controller output |
 | orin | `command_stop`, `command_resume` | | Drive commands stop while the heartbeat goes on (ICD open issue 6) |
 | orin | `heartbeat_stop`, `heartbeat_resume` | | The watchdog's trigger (SYS-04) |
+| orin | `rearm` | | One `ARC_REARM`. The firmware drives only after one, sent while heartbeats arrive (ADR-0052), so every Orin scenario starts with it |
 | orin | `envelope` | `max_speed`, `max_accel`, `max_steer` | One `ARC_ENVELOPE_SET` |
 | orin | `drop`, `corrupt` | `count` | As for controllers, on the sync link |
 

@@ -76,6 +76,13 @@ class Faults(unittest.TestCase):
         self.assertEqual((m.max_speed, m.max_accel), (3.0, 2.0))
         self.assertAlmostEqual(m.max_steer, 0.4, places=5)
 
+    def test_rearm_is_sent_once_per_action(self):
+        frames = of_type(orin_run([{"t_ms": 50, "node": "orin", "action": "rearm"},
+                                   {"t_ms": 300, "node": "orin", "action": "rearm"}]),
+                         "ARC_REARM")
+        self.assertEqual([m.counter for _, m in frames], [1, 2])
+        self.assertTrue(50 * MS <= frames[0][0] < 53 * MS)
+
     def test_dropped_datagrams_show_as_a_sequence_gap(self):
         frames = orin_run([{"t_ms": 100, "node": "orin", "action": "drop", "count": 2}],
                           duration_ms=300)
