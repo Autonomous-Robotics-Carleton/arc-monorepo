@@ -19,18 +19,18 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | Encoding | MAVLink 2 with our own message set (ADR-0031) |
 | MAVLink IDs | System 1; component 1 the sync MCU, 2 the Orin bridge (TBC; what the code uses) |
 
-### Addresses (proposed, TBC)
+### Addresses
 
-The values below are a proposal for the owners to confirm; the ports are the ones already in this ICD. The car's internal network is the wired segment through the Ethernet switch (E-06). Every address on it is static: no DHCP, no default gateway (ADR-0015 rule 5).
+Set 2026-10-25 (#72); ICD-network holds every network's addresses. The car's internal network is the wired segment through the Ethernet switch (E-06). Every address on it is static: no DHCP, no default gateway (ADR-0015 rule 5).
 
 | Node | Address | Notes |
 | --- | --- | --- |
-| Sync MCU | 10.73.1.10/24 | |
-| Orin, wired port | 10.73.1.20/24 | The bridge's peer; also where a laptop on the service port reaches the car (SSH, logs) |
-| Service port | none of its own | An unmanaged switch port has no address. A laptop plugged in sets a static 10.73.1.250/24 and no gateway (SYS-27) |
+| Sync MCU | 192.168.70.2/24 | |
+| Orin, wired port | 192.168.70.1/24 | The bridge's peer; also where a laptop on the service port reaches the car (SSH, logs) |
+| Service port | none of its own | An unmanaged switch port has no address. A laptop plugged in sets a static 192.168.70.100/24 and no gateway (SYS-27) |
 | `native_sim` | 127.0.0.1 | Firmware and bridge on one machine |
 
-- The Orin also sits on the team network (Wi-Fi) and, when the button is pressed, on its own hotspot (ADR-0015). It routes between its interfaces, so neither may use a subnet that overlaps 10.73.1.0/24. 10.73.1.0/24 avoids the defaults of the tools that will share the Orin: Docker bridges (172.17.0.0/16 upward), NetworkManager's shared mode (10.42.0.0/24) and common router LANs (192.168.0.x, 192.168.1.x, 192.168.8.x).
+- The Orin also sits on the team network (Wi-Fi) and, when the button is pressed, on its own hotspot (ADR-0015). It routes between its interfaces, so the three use separate subnets: the car 192.168.70.0/24, the team network 192.168.71.0/24, the hotspot 192.168.72.0/24 (ICD-network). They avoid the defaults of the tools that will share the Orin: Docker bridges (172.17.0.0/16 upward), NetworkManager's shared mode (10.42.0.0/24) and common router LANs (192.168.0.x, 192.168.1.x, 192.168.8.x).
 - Linux hands 32768–60999 to outgoing connections, which includes 52001. The Orin reserves it (`net.ipv4.ip_local_reserved_ports = 52001`) so no other process can take the port before the bridge binds it.
 
 ## Every message carries
@@ -70,7 +70,7 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 ## Open issues
 
 1. ~~Message catalogue~~ **Drafted** in `sync-link.xml`: one message per family above, except vehicle-state samples (IMU, angle and ride-height messages). Field lists to review with both owners.
-2. Addresses: 10.73.1.10 (sync MCU) and 10.73.1.20 (Orin) are proposed (TBC), with ports 52000 and 52001 (TBC); for the owners to confirm.
+2. ~~Addresses~~ **Set (2026-10-25, #72):** the sync MCU 192.168.70.2, the Orin 192.168.70.1, ports 52000 and 52001.
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. Command rate: 500 Hz, from the command-bus budget (`budgets/bus-load.csv`, TBC; SYS-06), to be confirmed. The safety-state rate has no value yet (TBD).
 5. Owners on both sides.

@@ -63,7 +63,7 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 
 ## Addresses
 
-`addresses_in_loop.sh` runs the sync link on the proposed 10.73.1.0/24 addresses across two containers. It does not check: the real switch, ARP conflicts, or the Orin's other interfaces (Wi-Fi, hotspot) overlapping the subnet. The firmware does not check who sent a datagram, so a message from the wrong address is accepted.
+`addresses_in_loop.sh` runs the sync link on the car's 192.168.70.0/24 addresses (ICD-network) across two containers. It does not check: the real switch, ARP conflicts, or the Orin's other interfaces (Wi-Fi, hotspot) overlapping the subnet. The firmware does not check who sent a datagram, so a message from the wrong address is accepted.
 
 ## Not verified
 

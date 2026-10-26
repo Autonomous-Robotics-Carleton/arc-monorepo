@@ -2,7 +2,7 @@
 """Fake nodes around the sync MCU firmware.
 
     sim.py --link FL=/dev/pts/3 --link FR=tcp:127.0.0.1:5001 ... \\
-           --orin udp:52001:10.73.1.10:52000 --scenario scenarios/one-corner-silent.json
+           --orin udp:52001:192.168.70.2:52000 --scenario scenarios/one-corner-silent.json
 
 Needs pymavlink (it is in the dev container). Not a safety function; the
 motor model is plausible, not calibrated. See README.md."""

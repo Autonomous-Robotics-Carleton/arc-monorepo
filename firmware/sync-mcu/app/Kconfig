@@ -152,10 +152,10 @@ config ARC_SYNC_LINK_PORT_TX
 
 config ARC_SYNC_LINK_PEER
 	string "Sync link: the Orin's IPv4 address"
-	default "10.73.1.20"
+	default "192.168.70.1"
 	help
 	  The Orin's wired address on the car's internal network
-	  (proposed, TBC; ICD-sync-link). boards/native_sim.conf sets 127.0.0.1 for the
+	  (ICD-network, set 2026-10-25, #72). boards/native_sim.conf sets 127.0.0.1 for the
 	  firmware and the bridge on one machine.
 
 source "Kconfig.zephyr"

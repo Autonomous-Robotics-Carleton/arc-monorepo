@@ -71,7 +71,7 @@ Options in `app/Kconfig`, set with `west build … -- -DCONFIG_<name>=<value>`:
 | `ARC_CONTROLLER_SILENCE_MS` | 5 | Silence from a motor controller that stops the car (SYS-25, TBC). The firmware-in-the-loop run builds with 100: a laptop can't hold 5 ms in real time |
 | `ARC_SYNC_LINK_PORT_RX` | 52000 | UDP port the sync MCU listens on (ICD-sync-link, TBC) |
 | `ARC_SYNC_LINK_PORT_TX` | 52001 | UDP port the Orin listens on (ICD-sync-link, TBC) |
-| `ARC_SYNC_LINK_PEER` | `10.73.1.20` | The Orin's address on the car's internal network (proposed, TBC; ICD-sync-link); `native_sim` sets `127.0.0.1` |
+| `ARC_SYNC_LINK_PEER` | `192.168.70.1` | The Orin's address on the car's internal network (ICD-network, set 2026-10-25); `native_sim` sets `127.0.0.1` |
 
 ## Flash (from your own computer, not the container)
 

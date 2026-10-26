@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# The sync link on the car's proposed addresses (ICD-sync-link, TBC), with no
+# The sync link on the car's addresses (ICD-network, set 2026-10-25), with no
 # shared loopback: the firmware (native_sim) and the fake Orin run in two
-# containers on a Docker network of 10.73.1.0/24 with no gateway and no
+# containers on a Docker network of 192.168.70.0/24 with no gateway and no
 # route out. If they talk, each used the other's address and port.
 # Run on the host (it starts containers), from the repo root:
 #   tools/sim/addresses_in_loop.sh
@@ -10,8 +10,8 @@ cd "$(git rev-parse --show-toplevel)"
 
 image=${ARC_DEV_IMAGE:-ghcr.io/autonomous-robotics-carleton/arc-dev:latest}
 net=arcnet-$$
-mcu=10.73.1.10
-orin=10.73.1.20
+mcu=192.168.70.2
+orin=192.168.70.1
 orin_actual=${ARC_TEST_ORIN_IP:-$orin} # set to another address to see the checks fail
 build=firmware/sync-mcu/build/native_sim_addr
 run=(docker run --rm --platform linux/amd64 -v "$PWD":/work -w /work)
@@ -24,11 +24,12 @@ check() { # NAME CONDITION-EXIT-STATUS DETAIL
   if [ "$2" -eq 0 ]; then echo "ok   $1"; else echo "FAIL $1: $3"; fails=$((fails + 1)); fi
 }
 
-# the firmware's peer is the Orin's proposed address; the ports are the defaults
+# the firmware's peer is the Orin's address; the ports are the defaults
 "${run[@]}" "$image" bash -lc "west build -p auto -b native_sim firmware/sync-mcu/app -d $build -- \
   -DCONFIG_ARC_SYNC_LINK_PEER=\\\"$orin\\\" > /dev/null"
 
-docker network create --internal --subnet 10.73.1.0/24 "$net" > /dev/null
+# Docker takes .1 for its bridge unless told otherwise, and .1 is the Orin (ICD-network)
+docker network create --internal --subnet 192.168.70.0/24 --gateway 192.168.70.254 "$net" > /dev/null
 
 # the sync MCU, 6 s
 docker run -d --name "$net-mcu" --network "$net" --ip $mcu --platform linux/amd64 \
@@ -45,11 +46,13 @@ sed -i 's/\x1b\[[0-9;]*m//g' "$logs/mcu.log"
 grep -q "sending to $orin:52001" "$logs/mcu.log" && r=0 || r=1; check "the firmware sends to $orin:52001" $r "$(grep -E 'listening' "$logs/mcu.log")"
 grep -q "sync link up" "$logs/mcu.log" && r=0 || r=1; check "the firmware hears the Orin ($orin) on $mcu:52000" $r "no 'sync link up'"
 grep -q "ARC_LINK_STATUS" "$logs/orin.log" && r=0 || r=1; check "the Orin hears the firmware on $orin:52001" $r "$(tail -2 "$logs/orin.log")"
-grep -q "safety: controllers not ready" "$logs/mcu.log" && r=0 || r=1; check "heartbeat and commands arrive (armed, waiting for controllers)" $r "$(grep safety "$logs/mcu.log" | tail -2)"
+# with no controllers attached the fault latch can't reset (ADR-0039), so the re-arm is refused
+grep -q "command rate: " "$logs/mcu.log" && r=0 || r=1; check "the Orin's commands arrive" $r "$(grep safety "$logs/mcu.log" | tail -2)"
+grep -q "re-arm refused: latched" "$logs/mcu.log" && r=0 || r=1; check "the Orin's re-arm arrives (refused: no reset without controllers)" $r "$(grep -E 're-arm|safety' "$logs/mcu.log" | tail -2)"
 grep -q "ARC_SAFETY_STATE" "$logs/orin.log" && r=0 || r=1; check "the Orin gets ARC_SAFETY_STATE" $r "$(tail -2 "$logs/orin.log")"
 
 # no default gateway: the car's internal network has none (ADR-0015 rule 5)
-out=$("${run[@]}" --network "$net" --ip 10.73.1.30 "$image" python3 -c '
+out=$("${run[@]}" --network "$net" --ip 192.168.70.30 "$image" python3 -c '
 import socket
 dest = [l.split()[1] for l in open("/proc/net/route").read().splitlines()[1:]]
 print("default" if "00000000" in dest else "none")') || true
