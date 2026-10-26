@@ -41,7 +41,7 @@ Open `ARC-Motherboard.PrjPcb` in Altium Designer. These files are source snapsho
 
 ## Template provenance and validation
 
-The empty native source files are Altium's locally cached released project template, `Sheet1.SchDoc` and `PCB1.PcbDoc`, from `C:\ProgramData\Altium\Altium Designer Develop {A518E852-04E1-4287-8B72-82D4EC020D61}\VaultsFileCache\7bb0a20e8f7ee0bc5a77f326f088d939\Released`. The underlying Altium titleblock/embedded-logo graphics remain template assets; their presence does not imply Altium endorsement. They are not ARC-designed circuitry.
+The empty native source files are `Sheet1.SchDoc` and `PCB1.PcbDoc` from Altium's released project template, as cached locally by Altium Designer. The underlying Altium titleblock/embedded-logo graphics remain template assets; their presence does not imply Altium endorsement. They are not ARC-designed circuitry.
 
 Initial scaffold creation assigned fresh schematic document/object IDs, ARC draft/title parameters and visible source/TBD notes, and cleared cached server-template associations. The imported managed project now retains its active ARC cloud identity. Embedded image data and other opaque streams are preserved. Each PCB receives a fresh document ID and file GUID, with its stored filename updated; its default board settings remain untouched apart from identity/filename.
 
