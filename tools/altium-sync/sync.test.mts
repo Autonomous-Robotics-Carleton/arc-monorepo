@@ -4,6 +4,8 @@ import * as fs from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, relative, isAbsolute, basename } from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { applySync, planSync, projects, type Config } from './sync.mts';
 
 async function fixture(t: test.TestContext) {
@@ -306,4 +308,19 @@ test('--require-clean rejects dirty Git checkouts and records clean source HEAD'
   assert.equal(plans[0].manifest.revision, git('rev-parse', 'HEAD'));
   await fs.writeFile(join(f.source, 'Sheet.SchDoc'), 'dirty checkout');
   await assert.rejects(applySync(f.root, plans), /uncommitted changes/);
+});
+
+test('committed board folders match their sync manifests byte for byte', async () => {
+  // A line-ending conversion on checkout makes the next sync refuse the file as
+  // a local edit. LFS pointers are skipped: CI checks out without LFS.
+  const root = resolve(fileURLToPath(import.meta.url), '../../..');
+  for (const project of Object.values(projects)) {
+    const directory = join(root, project.directory);
+    const manifest = JSON.parse(await fs.readFile(join(directory, 'altium-sync.json'), 'utf8'));
+    for (const [file, hash] of Object.entries(manifest.files)) {
+      const data = await fs.readFile(join(directory, file));
+      if (data.subarray(0, 100).toString('utf8').startsWith('version https://git-lfs.github.com/spec/v1')) continue;
+      assert.equal(createHash('sha256').update(data).digest('hex'), hash, `${project.directory}/${file}`);
+    }
+  }
 });
