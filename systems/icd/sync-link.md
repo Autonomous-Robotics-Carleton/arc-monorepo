@@ -14,7 +14,7 @@ Everything that passes between the sync MCU and the Orin, apart from time synchr
 | --- | --- |
 | Link | Ethernet, sync MCU ↔ switch (E-06) ↔ Orin (ADR-0023, Proposed) |
 | Protocol | UDP, both directions |
-| Addresses and ports | UDP 52000 into the sync MCU, 52001 into the Orin (set 2026-10-25). Addresses in [ICD-network](network.md): the sync MCU 192.168.70.2, the Orin 192.168.70.1 (TBC); the same in the twin; 127.0.0.1 for single-machine tests |
+| Addresses and ports | UDP 52000 into the sync MCU, 52001 into the Orin (set 2026-10-25). Addresses in [ICD-network](network.md): the sync MCU 192.168.70.2, the Orin 192.168.70.1 (set 2026-10-25); the same in the twin; 127.0.0.1 for single-machine tests |
 | Datagram size | ≤ one Ethernet frame (no IP fragmentation) |
 | Encoding | MAVLink 2 with our own message set (ADR-0031) |
 | MAVLink IDs | System 1; component 1 the sync MCU, 2 the Orin bridge (TBC; what the code uses) |
@@ -55,7 +55,7 @@ Commands are "latest wins": a dropped command is replaced by the next one, never
 ## Open issues
 
 1. ~~Message catalogue~~ **Drafted** in `sync-link.xml`: one message per family above, except vehicle-state samples (IMU, angle and ride-height messages). Field lists to review with both owners.
-2. ~~Addresses~~ **Set (2026-10-25):** ports 52000 and 52001; addresses in [ICD-network](network.md) (TBC there).
+2. ~~Addresses~~ **Set (2026-10-25):** ports 52000 and 52001; addresses in [ICD-network](network.md).
 3. ~~Heartbeat path~~ **Decided (2026-10-07):** via the Orin, never straight from the laptop. A hung Orin stops forwarding it, so the car stops (fail-safe).
 4. ~~Command rate and the safety-state rate~~ **Set (2026-10-25):** commands up to 500 Hz; safety state on change plus 50 Hz.
 5. ~~Owners on both sides~~ **Set (2026-10-25):** Shrikar Vempati on both sides until reassigned.
