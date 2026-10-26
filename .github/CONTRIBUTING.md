@@ -57,6 +57,19 @@ Firmware and ROS (`sync-mcu`, `vesc`, `ros`, `firmware-in-loop`) are built in th
 4. **Stay current by rebasing**, not merging: `git fetch origin && git rebase origin/main`, then `git push --force-with-lease`.
 5. **Open a PR** and fill in the template. Run `npx nx affected -t lint test check build` first. A change to `systems/` also affects the firmware and ROS projects, so run it in the dev container, or on the host with `--exclude='tag:env:dev-container'`; CI runs both.
 
+## Code style
+
+The formatter configs sit next to the code, so editors pick them up. CI doesn't check them yet (#158).
+
+| Code | Style | Config |
+| --- | --- | --- |
+| Firmware C (`firmware/sync-mcu/`, `firmware/vesc/arc/`) | Zephyr's: tabs, 100 columns | clang-format 18 or later, `firmware/.clang-format` |
+| ROS C++ | ROS 2, checked by `ament_uncrustify` (in the dev container) | clang-format is off in `ros/` |
+| ROS Python | ROS 2: single quotes, Google import order; not auto-formatted | `ruff check`, `ros/ruff.toml` |
+| Other Python (`tools/`, `experiments/`) | ruff's defaults, 99 columns | `ruff format` and `ruff check`, `ruff.toml` |
+
+Never format `firmware/vesc/bldc/` (upstream VESC, ADR-0033) or generated code; the configs already skip both.
+
 ## How PRs are accepted
 
 - CI passes.
