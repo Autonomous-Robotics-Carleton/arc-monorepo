@@ -8,27 +8,35 @@ All design tokens are defined in `app/globals.css` inside a `@theme` block. Tail
 
 ## Color Tokens
 
+The palette is the media team's, from their colour research (Drive: *BRAND IDENTITY / COLOUR RESEARCH*): **ARC Red** `#F42319`, black and white, with Barn Red and four greys as secondaries. The site is black with white text and red accents, matching the Instagram posts.
+
+At full strength ARC Red glares on a black page, so the site tones it down: `arc-red` (`#D62A20`) for text, buttons and accents, and the deeper `arc-red-fill` (`#B3231B`) for large filled areas like the tagline band and the Join block.
+
 ```css
 /* app/globals.css */
 @theme {
-  --color-bg:           #111111;   /* Page background */
-  --color-fg:           #f0f0f0;   /* Primary text */
-  --color-muted:        #737373;   /* Secondary/muted text */
-  --color-border:       #2e2e2e;   /* Generic borders */
-  --color-accent:       #d4d4d4;   /* Active states, CTAs, glows */
+  --color-arc-red:      #d62a20;   /* ARC RED (#f42319) toned down: text, buttons, accents */
+  --color-arc-red-fill: #b3231b;   /* large filled areas */
+  --color-arc-red-dark: #7a120d;   /* BARN RED */
+  --color-arc-black:    #000000;
+  --color-arc-white:    #ffffff;
+  --color-arc-gray-90:  #282831;   /* RAISIN BLACK */
+  --color-arc-gray-70:  #5b5b61;   /* DAVY'S GRAY */
+  --color-arc-gray-50:  #8a8a90;   /* TAUPE GRAY */
+  --color-arc-gray-30:  #b9b9bd;   /* FRENCH GRAY */
 
-  --color-bp-blue:      #111111;   /* Blueprint background alias */
-  --color-bp-blue-light:#1a1a1a;   /* Lifted surfaces (image placeholders) */
-  --color-bp-blue-dark: #0a0a0a;   /* Footer, header, near-black surfaces */
-  --color-bp-cyan:      #d4d4d4;   /* Blueprint accent alias */
-  --color-bp-cyan-dim:  #a0a0a0;   /* Dimmed accent */
-  --color-bp-muted:     #737373;   /* Blueprint muted alias */
+  --color-bg:     #000000;   /* Page background */
+  --color-fg:     #ffffff;   /* Primary text */
+  --color-muted:  #8a8a90;   /* Secondary/muted text */
+  --color-border: #282831;   /* Generic borders */
+  --color-accent: #d62a20;   /* Active states, CTAs, glows */
 
-  /* Grid line colours (used in background-image gradients) */
-  --color-bp-grid:       rgba(212, 212, 212, 0.10);
-  --color-bp-grid-major: rgba(212, 212, 212, 0.18);
-  --color-bp-glow:       rgba(212, 212, 212, 0.20);
-  --color-bp-line:       rgba(212, 212, 212, 0.22);
+  /* The blueprint theme's names, kept so older components still work */
+  --color-bp-blue-light: #121216;  /* Lifted surfaces (image placeholders) */
+  --color-bp-blue-dark:  #000000;  /* Footer, header */
+  --color-bp-cyan:       #d62a20;  /* Accent alias (CornerTicks use it) */
+  --color-bp-line:       rgba(255, 255, 255, 0.14);  /* Borders and rules */
+  /* ...grid and glow colours */
 }
 ```
 
@@ -52,7 +60,7 @@ Three fonts are loaded via `next/font/google` in `app/layout.tsx`:
 
 | Variable | Font | Usage |
 |---|---|---|
-| `--font-heading` | Chakra Petch | All headings — bold, italic, uppercase |
+| `--font-heading` | Archivo (variable width) | All headings: Black weight, 125% width, uppercase, like the Instagram posts |
 | `--font-body` | Inter | Body text, paragraphs |
 | `--font-mono` | JetBrains Mono | Labels, counters, HUD text, metadata |
 
@@ -61,14 +69,15 @@ Headings are styled globally in `globals.css`:
 ```css
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
-  font-weight: 700;
-  font-style: italic;
+  font-weight: 900;
+  font-stretch: 125%;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
 }
 ```
 
-This means any `<h1>`–`<h6>` automatically gets the Chakra Petch bold italic uppercase treatment. No extra classes needed.
+This means any `<h1>`–`<h6>` automatically gets the extended black uppercase treatment. No extra classes needed. The face is wide ("AUTONOMOUS" is about 9.75em), so size big headings to their container (`text-[min(10cqw,7rem)]` inside an `@container`) rather than the viewport.
 
 ### Common text patterns
 
