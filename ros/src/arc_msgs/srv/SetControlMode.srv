@@ -1,0 +1,6 @@
+# Switch arc_control between the operator and the experiment (#151).
+
+uint8 mode # ControlMode.MODE_*
+---
+bool accepted
+string reason # why not, when refused
