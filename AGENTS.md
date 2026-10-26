@@ -13,9 +13,9 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west, make, CMake |
 | `experiments/` | Team experiments and their template (scaffold) | |
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
-| `hardware/` | Board designs and mechanical exports (no boards started yet) | |
+| `hardware/` | Board designs and mechanical exports; Altium scaffolds (no circuitry yet) for the motherboard and sensor boards, imported by `tools/altium-sync/` | |
 | `platform/` | Jetson image and services; `dev-kit/` has notes for the Orin Nano dev kit (v1.0's computer) | |
-| `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, the firmware-in-the-loop test | Node, Bash |
+| `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, Altium source sync, the firmware-in-the-loop test | Node, Bash |
 | `libs/systems-model/` | Parser for `systems/`: IDs, definitions, references, ADRs, checks | TypeScript |
 | `apps/docs/` | Docs site (Fumadocs on Next.js), docs.arcarleton.ca | MDX |
 | `apps/web/` | Club website (Next.js); its docs are in `apps/web/docs/` | |
@@ -26,7 +26,7 @@ Node 22 (`.nvmrc`); pnpm via `corepack enable`. It's an Nx workspace: run things
 
 ```bash
 pnpm install
-npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop
+npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop, altium-sync
 npx nx affected -t lint test check build # what CI runs, for your changes
 npx nx check systems                     # validate systems/ (links, IDs, ADRs, verification)
 npx nx test systems-model
