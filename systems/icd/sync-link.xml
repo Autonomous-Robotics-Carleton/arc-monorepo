@@ -36,6 +36,7 @@
       <entry value="2" name="ARC_ANGLE_STATUS_MAGNET_HIGH"><description>Magnetic field too strong (MAGH).</description></entry>
       <entry value="4" name="ARC_ANGLE_STATUS_CORDIC_OVERFLOW"><description>The angle calculation overflowed (COF).</description></entry>
       <entry value="8" name="ARC_ANGLE_STATUS_READ_ERROR"><description>The SPI read failed: parity, framing or an invalid command (ERRFL), or no reply.</description></entry>
+      <entry value="16" name="ARC_ANGLE_STATUS_NOT_READY"><description>The sensor's offset compensation hasn't finished since power-up (LF clear).</description></entry>
     </enum>
     <enum name="ARC_CORNER">
       <description>Which corner.</description>
@@ -45,10 +46,10 @@
       <entry value="3" name="ARC_CORNER_RR"/>
     </enum>
     <enum name="ARC_WATCHDOG_STATE">
-      <description>Heartbeat watchdog (SYS-04, ADR-0052).</description>
-      <entry value="0" name="ARC_WATCHDOG_OK"><description>Armed, heartbeat arriving.</description></entry>
-      <entry value="1" name="ARC_WATCHDOG_NOT_ARMED"><description>Not armed: waiting for heartbeats and the operator's re-arm, at power-on or after a fault reset. Not braking.</description></entry>
-      <entry value="2" name="ARC_WATCHDOG_BRAKING"><description>Heartbeat lost: braking on the e-stop ramp, then held until heartbeats are back and the operator re-arms (ADR-0052).</description></entry>
+      <description>Heartbeat watchdog (SYS-04, ADR-0052): whether heartbeats are arriving, and whether the car is armed.</description>
+      <entry value="0" name="ARC_WATCHDOG_OK"><description>Heartbeats arriving and armed: the car may drive.</description></entry>
+      <entry value="1" name="ARC_WATCHDOG_NOT_ARMED"><description>Heartbeats arriving, not armed: waiting for the operator's re-arm (after power-on, a heartbeat stop or a fault reset).</description></entry>
+      <entry value="2" name="ARC_WATCHDOG_NO_HEARTBEAT"><description>No heartbeats: braking on the e-stop ramp, or held stopped (also from power-on until the first heartbeat). Re-arming needs heartbeats first (ADR-0052).</description></entry>
     </enum>
     <enum name="ARC_LATCH_STATE">
       <description>The fault latch and its reset (SYS-25, ADR-0039, ADR-0053).</description>
@@ -63,12 +64,15 @@
       <entry value="0" name="ARC_LATCH_CAUSE_NONE"/>
       <entry value="1" name="ARC_LATCH_CAUSE_POWER_ON"/>
       <entry value="2" name="ARC_LATCH_CAUSE_ESTOP"><description>The e-stop button was pressed.</description></entry>
-      <entry value="3" name="ARC_LATCH_CAUSE_CORNER"><description>A SYS-25 stop.</description></entry>
+      <entry value="3" name="ARC_LATCH_CAUSE_CORNER"><description>A corner went silent, braked on its own or faulted (SYS-25).</description></entry>
       <entry value="4" name="ARC_LATCH_CAUSE_CHECKS_FAILED"><description>The power-on checks didn't pass within the window.</description></entry>
       <entry value="5" name="ARC_LATCH_CAUSE_TOO_MANY_STOPS"><description>Too many stops since power-on.</description></entry>
       <entry value="6" name="ARC_LATCH_CAUSE_OVERCURRENT"><description>A motor controller reported over-current.</description></entry>
       <entry value="7" name="ARC_LATCH_CAUSE_OVERVOLTAGE"><description>A motor controller reported over-voltage.</description></entry>
       <entry value="8" name="ARC_LATCH_CAUSE_ESTOP_WIRING"><description>A corner reports the e-stop with the button released (ADR-0035).</description></entry>
+      <entry value="9" name="ARC_LATCH_CAUSE_COMMAND_BUS"><description>The command bus failed: no acknowledgements, or bus-off (SYS-25).</description></entry>
+      <entry value="10" name="ARC_LATCH_CAUSE_STEERING"><description>The steering failed: no valid reply, a controller fault, bus-off, or an angle that can't be trusted (SYS-25, ADR-0038).</description></entry>
+      <entry value="11" name="ARC_LATCH_CAUSE_STEERING_DISAGREEMENT"><description>The steering angles disagree; needs a restart (ADR-0039 item 5).</description></entry>
     </enum>
     <enum name="ARC_MOTOR_STATE" bitmask="true">
       <description>Why a motor controller is braking on its own (ADR-0035). Any bit set stops all four corners (SYS-25).</description>

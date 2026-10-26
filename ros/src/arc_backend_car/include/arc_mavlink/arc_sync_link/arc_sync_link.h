@@ -72,7 +72,8 @@ typedef enum ARC_ANGLE_STATUS
    ARC_ANGLE_STATUS_MAGNET_HIGH=2, /* Magnetic field too strong (MAGH). | */
    ARC_ANGLE_STATUS_CORDIC_OVERFLOW=4, /* The angle calculation overflowed (COF). | */
    ARC_ANGLE_STATUS_READ_ERROR=8, /* The SPI read failed: parity, framing or an invalid command (ERRFL), or no reply. | */
-   ARC_ANGLE_STATUS_ENUM_END=9, /*  | */
+   ARC_ANGLE_STATUS_NOT_READY=16, /* The sensor's offset compensation hasn't finished since power-up (LF clear). | */
+   ARC_ANGLE_STATUS_ENUM_END=17, /*  | */
 } ARC_ANGLE_STATUS;
 #endif
 
@@ -89,14 +90,14 @@ typedef enum ARC_CORNER
 } ARC_CORNER;
 #endif
 
-/** @brief Heartbeat watchdog (SYS-04, ADR-0052). */
+/** @brief Heartbeat watchdog (SYS-04, ADR-0052): whether heartbeats are arriving, and whether the car is armed. */
 #ifndef HAVE_ENUM_ARC_WATCHDOG_STATE
 #define HAVE_ENUM_ARC_WATCHDOG_STATE
 typedef enum ARC_WATCHDOG_STATE
 {
-   ARC_WATCHDOG_OK=0, /* Armed, heartbeat arriving. | */
-   ARC_WATCHDOG_NOT_ARMED=1, /* Not armed: waiting for heartbeats and the operator's re-arm, at power-on or after a fault reset. Not braking. | */
-   ARC_WATCHDOG_BRAKING=2, /* Heartbeat lost: braking on the e-stop ramp, then held until heartbeats are back and the operator re-arms (ADR-0052). | */
+   ARC_WATCHDOG_OK=0, /* Heartbeats arriving and armed: the car may drive. | */
+   ARC_WATCHDOG_NOT_ARMED=1, /* Heartbeats arriving, not armed: waiting for the operator's re-arm (after power-on, a heartbeat stop or a fault reset). | */
+   ARC_WATCHDOG_NO_HEARTBEAT=2, /* No heartbeats: braking on the e-stop ramp, or held stopped (also from power-on until the first heartbeat). Re-arming needs heartbeats first (ADR-0052). | */
    ARC_WATCHDOG_STATE_ENUM_END=3, /*  | */
 } ARC_WATCHDOG_STATE;
 #endif
@@ -123,13 +124,16 @@ typedef enum ARC_LATCH_CAUSE
    ARC_LATCH_CAUSE_NONE=0, /*  | */
    ARC_LATCH_CAUSE_POWER_ON=1, /*  | */
    ARC_LATCH_CAUSE_ESTOP=2, /* The e-stop button was pressed. | */
-   ARC_LATCH_CAUSE_CORNER=3, /* A SYS-25 stop. | */
+   ARC_LATCH_CAUSE_CORNER=3, /* A corner went silent, braked on its own or faulted (SYS-25). | */
    ARC_LATCH_CAUSE_CHECKS_FAILED=4, /* The power-on checks didn't pass within the window. | */
    ARC_LATCH_CAUSE_TOO_MANY_STOPS=5, /* Too many stops since power-on. | */
    ARC_LATCH_CAUSE_OVERCURRENT=6, /* A motor controller reported over-current. | */
    ARC_LATCH_CAUSE_OVERVOLTAGE=7, /* A motor controller reported over-voltage. | */
    ARC_LATCH_CAUSE_ESTOP_WIRING=8, /* A corner reports the e-stop with the button released (ADR-0035). | */
-   ARC_LATCH_CAUSE_ENUM_END=9, /*  | */
+   ARC_LATCH_CAUSE_COMMAND_BUS=9, /* The command bus failed: no acknowledgements, or bus-off (SYS-25). | */
+   ARC_LATCH_CAUSE_STEERING=10, /* The steering failed: no valid reply, a controller fault, bus-off, or an angle that can't be trusted (SYS-25, ADR-0038). | */
+   ARC_LATCH_CAUSE_STEERING_DISAGREEMENT=11, /* The steering angles disagree; needs a restart (ADR-0039 item 5). | */
+   ARC_LATCH_CAUSE_ENUM_END=12, /*  | */
 } ARC_LATCH_CAUSE;
 #endif
 
