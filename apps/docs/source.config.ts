@@ -70,6 +70,7 @@ export const toolsDocs = readmes('tools');
 export const libsDocs = readmes('libs', ['*/README.md']);
 export const platformDocs = readmes('platform');
 export const experimentsDocs = readmes('experiments');
+export const configDocs = readmes('config', ['cars/README.md']);
 
 // The page title is rendered by the layout, so a leading `# heading`
 // (which Markdown files keep for GitHub) would show twice. Its text is

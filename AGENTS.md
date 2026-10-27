@@ -15,6 +15,7 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
 | `hardware/` | Board designs and mechanical exports; Altium scaffolds (no circuitry yet) for the motherboard and sensor boards, imported by `tools/altium-sync/` | |
 | `platform/` | Jetson image and services; `dev-kit/` has notes for the Orin Nano dev kit (v1.0's computer) | |
+| `config/cars/` | One configuration file per car (ADR-0051): geometry, tyre, gearing, steering; read by ROS now, the sync MCU build later | YAML + JSON Schema |
 | `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, Altium source sync, the firmware-in-the-loop test | Node, Bash |
 | `libs/systems-model/` | Parser for `systems/`: IDs, definitions, references, ADRs, checks | TypeScript |
 | `apps/docs/` | Docs site (Fumadocs on Next.js), docs.arcarleton.ca | MDX |
@@ -26,7 +27,7 @@ Node 22 (`.nvmrc`); pnpm via `corepack enable`. It's an Nx workspace: run things
 
 ```bash
 pnpm install
-npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop, altium-sync
+npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop, altium-sync, car-config
 npx nx affected -t lint test check build # what CI runs, for your changes
 npx nx check systems                     # validate systems/ (links, IDs, ADRs, verification)
 npx nx test systems-model

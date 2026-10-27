@@ -1,0 +1,14 @@
+{
+  "name": "car-config",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "tags": ["env:dev-container"],
+  "targets": {
+    "check": {
+      "executor": "nx:run-commands",
+      "inputs": ["default", "{workspaceRoot}/ros/src/arc_car_config/arc_car_config/**/*"],
+      "options": {
+        "command": "PYTHONPATH=ros/src/arc_car_config python3 -m arc_car_config.cli check config/cars"
+      }
+    }
+  }
+}

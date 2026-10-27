@@ -29,6 +29,7 @@
         "{workspaceRoot}/libs/*/README.md",
         "{workspaceRoot}/platform/README.md",
         "{workspaceRoot}/experiments/README.md",
+        "{workspaceRoot}/config/cars/README.md",
         "{workspaceRoot}/**/project.json"
       ],
       "outputs": ["{projectRoot}/.next"]

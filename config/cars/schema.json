@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/config/cars/schema.json",
+  "title": "Car configuration",
+  "description": "One car's configuration, after its file is merged over the one it extends (config/cars/README.md). SI units: metres, radians.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "build",
+    "geometry",
+    "wheels",
+    "drivetrain",
+    "steering"
+  ],
+  "properties": {
+    "name": {
+      "description": "The car's name: its file is config/cars/<name>.yaml",
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "build": {
+      "description": "The hardware build these values describe (ADR-0046)",
+      "enum": [
+        "v1.0",
+        "v1.1"
+      ]
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "wheelbase",
+        "track_front",
+        "track_rear"
+      ],
+      "properties": {
+        "wheelbase": {
+          "description": "Front axle to rear axle, m",
+          "$ref": "#/$defs/length"
+        },
+        "track_front": {
+          "description": "Centre to centre of the front tyres, m",
+          "$ref": "#/$defs/length"
+        },
+        "track_rear": {
+          "description": "Centre to centre of the rear tyres, m",
+          "$ref": "#/$defs/length"
+        }
+      }
+    },
+    "wheels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rolling_diameter"
+      ],
+      "properties": {
+        "rolling_diameter": {
+          "description": "Measured rolling diameter, m; it shrinks as the tyre wears",
+          "$ref": "#/$defs/length"
+        }
+      }
+    },
+    "drivetrain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gear_ratio_front",
+        "gear_ratio_rear",
+        "motor_pole_pairs",
+        "erpm_max"
+      ],
+      "properties": {
+        "gear_ratio_front": {
+          "description": "Motor turns per wheel turn, front corners",
+          "type": "number",
+          "exclusiveMinimum": 1
+        },
+        "gear_ratio_rear": {
+          "description": "Motor turns per wheel turn, rear corners",
+          "type": "number",
+          "exclusiveMinimum": 1
+        },
+        "motor_pole_pairs": {
+          "description": "Electrical cycles per motor turn: eRPM = rpm x pole pairs",
+          "type": "integer",
+          "minimum": 1
+        },
+        "erpm_max": {
+          "description": "The motor controllers' eRPM limit",
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "steering": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_angle",
+        "centre_offset"
+      ],
+      "properties": {
+        "max_angle": {
+          "description": "Steering angle at the wheels, each way from centre, rad",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1.0
+        },
+        "centre_offset": {
+          "description": "Actuator angle that steers straight, rad; measured",
+          "type": "number",
+          "minimum": -0.2,
+          "maximum": 0.2
+        }
+      }
+    }
+  },
+  "$defs": {
+    "length": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 1.0
+    }
+  }
+}
