@@ -2,7 +2,7 @@
   "name": "ros",
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "tags": ["env:dev-container"],
-  "implicitDependencies": ["systems"],
+  "implicitDependencies": ["systems", "car-config"],
   "targets": {
     "build": {
       "executor": "nx:run-commands",

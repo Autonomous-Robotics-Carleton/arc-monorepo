@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>arc_car_config</name>
+  <version>0.0.0</version>
+  <description>The car configuration (config/cars/): loads a car's file merged over the one it extends, validates it, hashes it and works out the values that follow from it.</description>
+  <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-jsonschema</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
