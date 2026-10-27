@@ -179,4 +179,4 @@ The starting point for anyone writing the car's software. It collects, per compo
 | Question | Recommendation | Who decides | Blocks |
 | --- | --- | --- | --- |
 | **Who the sync MCU accepts commands from** | Deferred (2026-10-25) until before the car is assembled (ICD-sync-link, open issue 6): the Orin's address only, message signing, or a network the service port can't reach | Systems lead; a safety reviewer | The car's first drive |
-| ICD owners for the interfaces still to be written (operator link, steering bus, car interface, sim link); the existing software ICDs are owned by Shrikar Vempati until reassigned | — | Team | Their sign-off |
+| ICD owners for the interfaces still to be written (operator link, steering bus, sim link); the existing software ICDs are owned by Shrikar Vempati until reassigned | — | Team | Their sign-off |
