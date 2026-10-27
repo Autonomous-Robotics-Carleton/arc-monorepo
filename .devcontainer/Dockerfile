@@ -59,7 +59,8 @@ RUN cd /opt/zephyr-ws \
     && chown -R ubuntu:ubuntu /opt/zephyr-ws
 
 # ROS 2 Jazzy (ADR-0016): the base install, the build tools (colcon, rosdep),
-# MCAP bags for log replay, and launch_testing. The simulators come later
+# MCAP bags for log replay, launch_testing, and jsonschema for the car
+# configuration (config/cars/). The simulators come later
 # (ADR-0032, phase 5). Near the end so changing it doesn't rebuild Zephyr.
 ARG ROS_APT_SOURCE_VERSION=1.3.0
 RUN curl -fsSL -o /tmp/ros2-apt-source.deb \
@@ -68,6 +69,7 @@ RUN curl -fsSL -o /tmp/ros2-apt-source.deb \
     && apt-get update && apt-get install -y --no-install-recommends \
       ros-jazzy-ros-base ros-dev-tools \
       ros-jazzy-rosbag2-storage-mcap ros-jazzy-launch-testing-ament-cmake \
+      python3-jsonschema \
     && rm -rf /var/lib/apt/lists/*
 
 # Code generators for the machine-readable ICDs (tools/gen-interfaces.sh):
