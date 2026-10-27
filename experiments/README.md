@@ -33,7 +33,7 @@ Scaffolding only: nothing here runs yet. Still to decide, by the platform owners
 | GPU share per experiment | TBD | SYS-21 |
 | Memory limit per experiment | TBD | SYS-21 |
 | Disk quota per experiment | TBD | SYS-21 |
-| The vehicle command's topic and message (speed, acceleration limit, steering angle) | TBD (ICD ros2-msgs, not written yet) | SYS-22, ADR-0048 |
+| The vehicle command's topic and message (speed, acceleration limit, steering angle) | `/control/experiment`, `arc_msgs/DriveCommand` (draft, [ICD-ros2-msgs](../systems/icd/ros2-msgs.md)) | SYS-22, ADR-0048 |
 | Cores and real-time priorities for experiments, per build | TBD | SYS-21, ADR-0048 |
 | The baseline estimator (an example experiment, off the platform's critical path) | TBD | SYS-06, ADR-0048 |
 | The platform base image experiments build on | The platform build (ADR-0050); not built yet | |
