@@ -30,3 +30,7 @@ firmware/**/build/
 ros/build/
 ros/install/
 ros/log/
+
+# Python bytecode (colcon tests, scripts)
+__pycache__/
+*.pyc
