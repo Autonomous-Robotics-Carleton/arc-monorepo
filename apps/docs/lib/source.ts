@@ -1,4 +1,5 @@
 import {
+  configDocs,
   devKitDocs,
   docs,
   experimentsDocs,
@@ -116,6 +117,7 @@ const softwareReadmes: [Parameters<typeof createMDXSource>[0], Record<string, [s
   [experimentsDocs, { 'README.md': ['experiments', 'Experiments'] }],
   [platformDocs, { 'README.md': ['platform', 'Orin image'] }],
   [toolsDocs, { 'README.md': ['tools', 'Tools'] }],
+  [configDocs, { 'cars/README.md': ['car-config', 'Car configuration'] }],
   [libsDocs, { 'systems-model/README.md': ['systems-model', 'systems-model library'] }],
 ];
 
