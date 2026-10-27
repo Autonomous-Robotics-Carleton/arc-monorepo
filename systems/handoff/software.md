@@ -160,7 +160,6 @@ The starting point for anyone writing the car's software. It collects, per compo
 - **Requirements:** SYS-33, and the evidence for every requirement a simulation can show.
 - **Open:** see the open-questions table in [`software/simulation.md`](../software/simulation.md). The largest pieces of work:
   - the device models (sensors, motor controllers, steering, power, LiDAR, cameras)
-  - the parameter generator from `systems/`
   - the scenario runner
   - a simulator image
 
@@ -172,7 +171,6 @@ The starting point for anyone writing the car's software. It collects, per compo
   - Running the twin's scenarios in CI.
   - Building every component for every target in CI.
   - A check that code above the split never names a target (ADR-0047).
-  - Generating the twin's parameters and the car configuration from `systems/`.
 
 ## Cross-cutting open questions
 

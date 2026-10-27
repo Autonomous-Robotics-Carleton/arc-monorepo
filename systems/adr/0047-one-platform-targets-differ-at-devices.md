@@ -56,6 +56,9 @@ That puts the split between targets high up. Everything below the car interface 
 
 Plus one **target configuration** per target (addresses, which devices exist) and one **car configuration** per car (IDs, calibration).
 
+> [!NOTE]
+> ADR-0054 (2026-10-27) narrows the car configuration: the CAN IDs are the same on every car (`can-command.dbc`) and stay out of it.
+
 **Shortcuts.** Two modes may skip the stack below the car interface, for speed, and are always labelled as shortcuts:
 
 - **Replay** plays logged topics back at the car interface (ADR-0028's replay backend)

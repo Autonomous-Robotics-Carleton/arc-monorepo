@@ -20,7 +20,7 @@ Most of the work below depends on these. Each ends as an ADR or ICD change, writ
 | Real-time cores and priorities for experiments, per build | #88 |
 | The re-arm message (ADR-0039) | Decided: the operator re-arms; `ARC_REARM` on the sync link (#73), the operator link still to add it (#144) |
 | Who the sync MCU accepts commands from (ICD-sync-link, open issue 6) | Deferred until before the car is assembled |
-| The car configuration (ADR-0051) | Decided: a file per car, compiled into the sync MCU |
+| The car configuration (ADR-0051, ADR-0054) | Decided: a file per car, compiled into the sync MCU; the design values written by hand in `nominal.yaml` |
 | A simulator image beside the dev container (ADR-0050) | Decided: amd64 and arm64 |
 | The ground station: what it is and where it lives | #71, later |
 | Sync-link addresses and rates (ICD-network) | Decided: ports, rates and addresses |
@@ -99,7 +99,7 @@ Every device modelled, every driver real, every safety function tested.
 | Testing | Fuzzing the parsers that read bytes from a link (sync link, controller telemetry) on the host | #173 |
 | Logging | Run records: every log names the versions, car configuration, envelope, profile and driver | #152 |
 | CI | Automatic dependency updates (Renovate or Dependabot): Zephyr, ROS packages, actions, npm | #158 |
-| Configuration | The parameter generator from `systems/` | #174 |
+| Configuration | ~~The parameter generator from `systems/`~~ Dropped: the design values are written in `config/cars/nominal.yaml` (ADR-0054) | #174 (closed) |
 | Configuration | The car configuration | #143 |
 
 **Exit:** the scenarios for SYS-04, SYS-05, SYS-19, SYS-21, SYS-22, SYS-25 and SYS-30 pass in the twin, and the first experiment runs.

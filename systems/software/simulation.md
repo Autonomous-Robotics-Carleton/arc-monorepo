@@ -124,9 +124,9 @@ Loading a track, resetting the car, pausing and showing ground truth are things 
 
 ## Where the parameters come from
 
-The twin's parameters (mass and centre of gravity, gearing, wheel size, steering limits, sensor positions, rates, limits, timeouts) come from `systems/`. A generator reads the budgets, the BOM and the ICDs and writes the twin's configuration, and CI checks it's current, the same way `tools/gen-interfaces.sh` keeps generated code in step with the ICDs. When the design changes, the twin changes with it.
-
-Measured values replace the generated ones in each car's **car configuration** when the car is built.
+- **The car's numbers** (wheelbase and track, tyre, gearing, steering) come from the twin's car configuration, [`config/cars/twin.yaml`](../../config/cars/README.md). It extends `nominal.yaml`, the car as designed, unchanged. Each design value names its source in `systems/` or is marked a placeholder, and a design change is an edit to both (ADR-0054). A physical car's file overrides only what was measured on it.
+- **Rates, limits and timeouts** come from the ICDs, the same on every car.
+- **Sensor positions and mass properties** come from the car's URDF (#105) once the block layout (#103) places them.
 
 ## Fidelity: what the twin can and can't prove
 
