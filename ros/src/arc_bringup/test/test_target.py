@@ -1,4 +1,6 @@
 """The platform comes up on a target: the target's backend starts and stays up.
+It also checks the default car configuration (twin): if that fails to load,
+the launch stops before the backend starts.
 
 Run once per backend by CMakeLists.txt: target:=sim with each sim:=, then
 target:=replay and target:=car.

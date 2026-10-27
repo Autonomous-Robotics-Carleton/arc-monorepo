@@ -14,7 +14,7 @@ ros2 launch arc_bringup platform.launch.py target:=replay   # play back an MCAP 
 ros2 launch arc_bringup platform.launch.py target:=car      # the sync MCU over the sync link (ICD-sync-link)
 ```
 
-Defaults: `target:=sim sim:=gym sensors:=lidar`, so a bare `ros2 launch arc_bringup platform.launch.py` runs the gym. `sim:=` only matters with `target:=sim`; `sensors:=` picks what a simulator renders, and the replay and car backends ignore it.
+Defaults: `target:=sim sim:=gym sensors:=lidar car:=twin`, so a bare `ros2 launch arc_bringup platform.launch.py` runs the gym with the twin's car. `sim:=` only matters with `target:=sim`; `sensors:=` picks what a simulator renders, and the replay and car backends ignore it.
 
 ## What a backend provides
 
@@ -37,7 +37,8 @@ Scaffolding: every package builds and starts; apart from the car backend's sync-
 | Package | Job | State | Traces to |
 | --- | --- | --- | --- |
 | `arc_msgs` | The car interface: the messages and services in ICD-ros2-msgs that have no standard type | Messages defined (rev A, draft); nothing publishes them yet. A test in `arc_backend_car` checks their constants against the sync link's | ADR-0028, ADR-0047 |
-| `arc_bringup` | Launch files and parameters; `target:=`, `sim:=`, `sensors:=` | Picks the backend; a launch test per backend | ADR-0028, ADR-0032 |
+| `arc_bringup` | Launch files and parameters; `target:=`, `sim:=`, `sensors:=`, `car:=` | Picks the backend and the car configuration; a launch test per backend | ADR-0028, ADR-0032 |
+| `arc_car_config` | Loads a car's configuration ([`config/cars/`](../config/cars/README.md)), checks it, hashes it and works out the top speed | Loader and checks; nothing reads the values yet | ADR-0047, ADR-0051 |
 | `arc_backend_sim_gazebo` | Gazebo Harmonic: full sensor suite, event cameras; Linux with a GPU | Stub | ADR-0032 |
 | `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
 | `arc_backend_sim_gym` | F1TENTH gym: 2D and fast; planning, control, CI | Stub | ADR-0032 |
