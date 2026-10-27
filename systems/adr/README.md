@@ -56,6 +56,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0048](0048-experiments-own-estimation-and-control.md) | Experiments own estimation and control, command speed and steering, and may run in real time | Accepted |
 | [0049](0049-twin-runs-in-lockstep.md) | The twin runs in lockstep: the simulator's clock drives the firmware, the device models and the platform | Accepted |
 | [0050](0050-one-platform-build-and-images.md) | One platform build for the Orin and laptops; images for amd64 and arm64; experiments in Docker | Accepted |
-| [0051](0051-car-configuration.md) | Car configuration: one file per car in the repo, compiled into the sync MCU's build | Accepted |
+| [0051](0051-car-configuration.md) | Car configuration: one file per car in the repo, compiled into the sync MCU's build | Accepted, amended by 0054 |
 | [0052](0052-envelope-defaults-and-heartbeat-stop.md) | The envelope's defaults, reverse, and a heartbeat stop held until the operator re-arms | Accepted |
 | [0053](0053-fault-reset-details.md) | The fault reset's details: a 3 s check window, a stopped-wheel threshold, the steering check deferred | Accepted |
+| [0054](0054-car-configuration-values.md) | The car configuration's values: written by hand in nominal.yaml, and only what code needs now | Accepted |

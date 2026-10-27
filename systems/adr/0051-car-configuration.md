@@ -1,6 +1,6 @@
 # ADR-0051: Car configuration: one file per car in the repo, compiled into the sync MCU's build
 
-- **Status:** Accepted (2026-10-25)
+- **Status:** Accepted (2026-10-25), amended by ADR-0054 (the default values are written by hand in `config/cars/nominal.yaml`, not generated; the CAN IDs, rates and derived values stay out of car files; sensor positions and mass properties wait for the URDF)
 - **Date:** 2026-10-25
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-22, SYS-33, ADR-0047, ADR-0048
