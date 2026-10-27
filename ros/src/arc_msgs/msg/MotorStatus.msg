@@ -8,7 +8,8 @@ uint8 STATE_ESTOP=1
 uint8 STATE_COMMAND_TIMEOUT=2
 
 std_msgs/Header header
-int32 erpm         # electrical rpm: m/s needs the car configuration (#143)
+int32 erpm         # electrical rpm, the controller's own unit; wheel speed in
+                   # m/s comes as its own field with the car configuration (#143)
 int32 tachometer   # commutation steps since start
 float32 current_q  # A, motor q-axis (torque)
 float32 current_d  # A, motor d-axis

@@ -62,6 +62,8 @@ static_assert(Fault::SOURCE_POWER == ARC_FAULT_POWER);
 static_assert(Fault::SOURCE_SENSOR == ARC_FAULT_SENSOR);
 static_assert(Fault::SOURCE_LINK == ARC_FAULT_LINK);
 static_assert(Fault::SOURCE_LINK + 1 == ARC_FAULT_SOURCE_ENUM_END);
+// The car backend's own source stays clear of the sync link's
+static_assert(ARC_FAULT_SOURCE_ENUM_END <= Fault::SOURCE_CAR_BACKEND);
 }  // namespace
 
 // The checks above run when this file compiles; the test makes them show up

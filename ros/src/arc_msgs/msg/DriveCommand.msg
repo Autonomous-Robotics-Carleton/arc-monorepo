@@ -5,5 +5,6 @@
 
 std_msgs/Header header
 float32 speed # m/s, + forward; reverse is allowed (ADR-0052)
-float32 accel # m/s^2, the acceleration limit for reaching speed
+float32 accel # m/s^2, the acceleration limit for reaching speed: set by the
+              # sender, capped by the envelope's max_accel
 float32 steer # rad, + turns left
