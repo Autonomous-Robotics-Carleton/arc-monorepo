@@ -177,8 +177,8 @@ An experiment reads the measurements above and publishes one `DriveCommand` (ADR
 
 1. Sign-off of the topic names, types and QoS profiles by both sides (#84).
 2. High-rate streams: two IMUs, ten angle sensors and five controllers, one message per sample, could cost the Orin a lot of CPU (SYS-24's 50% margin). Measure on the dev kit (rig R5); if it's too much, the options are batching samples into one message per period, or best-effort delivery for subscribers that can skip samples.
-3. Every sensor frame's position relative to `base_link`: from the car description and the car configuration (#143).
-4. Wheel speed in m/s, as a field beside `erpm`, and wheel angles in the car's frame, once the car configuration supplies the gearing, pole pairs and calibration (#143).
+3. Every sensor frame's position relative to `base_link`: from the car's URDF (#105) once the block layout (#103) places the mounts, with per-car calibration in the car configuration (ADR-0054).
+4. Wheel speed in m/s, as a field beside `erpm`: the car configuration now has the gearing, pole pairs and tyre (`config/cars/`, ADR-0054), so what's left is the field itself (#85). Wheel angles in the car's frame wait for calibration (#143).
 5. Who sets the session's envelope, and how the ground station calls `/control/set_mode`: with the operator-link ICD (#144).
 6. What the dashboard shows beyond the estimate, such as a map or a planned path (#91). Those are experiment outputs (ADR-0048); a shared convention for them is for later.
 7. Node names aren't authenticated, and any laptop on the team network running ROS in the car's domain can see and publish the car's topics. Limiting discovery to the Orin (`ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST`) would close that, at the cost of running `ros2` tools from a laptop; SROS2 would be real access control.
