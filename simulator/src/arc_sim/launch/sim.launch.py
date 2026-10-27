@@ -59,6 +59,15 @@ def world_actions(context):
                          'wall_height': float(LaunchConfiguration('wall_height').perform(context))}],
             condition=IfCondition(bridge),
         ),
+        # The world's own stats (~10 Hz), for the real-time factor. Not in bridge.yaml: its topic
+        # carries the world name. The world-agnostic /stats is published every step, too often to bridge.
+        Node(
+            package='ros_gz_bridge',
+            executable='parameter_bridge',
+            arguments=['/world/%s/stats@ros_gz_interfaces/msg/WorldStatistics[gz.msgs.WorldStatistics' % world_name],
+            remappings=[('/world/%s/stats' % world_name, '/sim/stats')],
+            condition=IfCondition(bridge),
+        ),
     ]
 
 
@@ -107,6 +116,13 @@ def generate_launch_description():
         Node(
             package='arc_sim',
             executable='lidar_noise.py',
+            parameters=[{'use_sim_time': True}],
+        ),
+
+        # /sim/imu/<name> -> /imu/<name> for every IMU, each subscribing only while it has subscribers.
+        Node(
+            package='arc_sim',
+            executable='imu_noise.py',
             parameters=[{'use_sim_time': True}],
         ),
     ])

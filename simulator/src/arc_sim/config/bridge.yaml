@@ -33,3 +33,14 @@
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
   lazy: true
+
+# One entry per IMU in the URDF (/model/racecar/imu/<name> -> /sim/imu/<name>); imu_noise.py finds
+# them by name. Lazy like the LiDAR; deeper queues so a 1 kHz stream isn't dropped in bursts.
+- ros_topic_name: "/sim/imu/cg"
+  gz_topic_name: "/model/racecar/imu/cg"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+  lazy: true
+  publisher_queue: 100
+  subscriber_queue: 100

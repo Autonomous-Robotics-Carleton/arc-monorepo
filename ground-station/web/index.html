@@ -119,7 +119,7 @@
   .chain__arrow { align-self: center; color: var(--ink-faint); font-size: 11px; }
   .tile { flex: 1; min-width: 64px; padding: var(--space-3) 6px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
   .tile__k { font-size: 10px; line-height: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
-  .tile__v { color: var(--ok); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile__v { color: var(--ok); overflow-wrap: anywhere; } /* wraps: a link problem must be readable in full */
   .tile__d { font-size: 10px; line-height: 12px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tile.is-warn .tile__v { color: var(--warn); }
   .tile.is-broken { background: var(--bad-bg); border-color: var(--bad); }
@@ -169,6 +169,16 @@
   .legend i { display: inline-block; width: 10px; height: 2px; vertical-align: 3px; margin-right: 4px; }
   .legend i.dashed { background: none !important; border-top: 2px dashed; height: 0; }
   .empty { color: var(--ink-muted); }
+
+  /* ---------- imu ---------- */
+  .mods summary { cursor: pointer; color: var(--ink-muted); font-size: 11px; list-style: none; }
+  .mods summary::-webkit-details-marker { display: none; }
+  .mods summary::before { content: "▸ "; }
+  .mods[open] summary::before { content: "▾ "; }
+  .mods__list { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-3); }
+  .mod { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--line); }
+  .mod canvas { display: block; width: 100%; height: 80px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .mod .sub { margin: 0; }
 
   /* ---------- menu ---------- */
   .menu { min-width: 240px; padding: var(--space-2) 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-panel); }
@@ -228,6 +238,7 @@
 // Car outline in base_link (rear axle, x forward), metres. Placeholder racecar.xacro size.
 const CAR = { back: -0.06, front: 0.40, half: 0.12 };
 const MAX_STEER = 0.4189;       // rad, car_link clamps to this too
+const WHEELBASE = 0.3302;       // m, placeholder racecar.xacro; car_link converts steering with it too
 const DEADZONE = 0.1;
 const HB_MS = 50;               // page -> helper heartbeat; helper stops after 0.15 s without one
 const TELEOP_MS = 20;           // 50 Hz
@@ -548,7 +559,7 @@ function chainTiles() {
   tiles.push({ k: 'target', v: l ? (sim ? 'sim' : 'car') : '—', d: l ? (sim ? trackNote : (l.udp ? l.udp.host : 'address TBD')) : '', st: l ? 'ok' : 'warn' });
   tiles.push({ k: 'server', v: serverUp ? 'live' : 'down', d: serverUp ? `ws :${location.port || 80}` : 'reconnecting', st: serverUp ? 'ok' : 'bad' });
   tiles.push({ k: 'helper', v: helperUp ? 'live' : 'down', d: helperUp ? 'ws :8081' : 'reconnecting', st: helperUp ? 'ok' : 'bad' });
-  tiles.push({ k: 'link', v: l && l.connected ? 'connected' : 'not connected', d: l && l.udp ? `udp :${l.udp.port}` : '', st: l && l.connected ? 'ok' : 'bad' });
+  tiles.push(linkTile(l));
   if (sim) {
     // While the sim runs, a track load in progress or failed is what the operator needs to see.
     const ts = l.sim === 'running' ? trackStatus : null;
@@ -563,6 +574,16 @@ function chainTiles() {
     else if (t.st === 'bad') broken = true;
   }
   return tiles;
+}
+// The bridge being connected isn't enough: car_link must also accept this helper's session (protocol.md).
+function linkTile(l) {
+  if (!l || !l.connected) return { k: 'link', v: 'not connected', d: '', st: 'bad' };
+  const port = l.udp ? `udp :${l.udp.port}` : '';
+  const h = helperUp ? sent : null;
+  if (h && h.link === 'replaced') return { k: 'link', v: 'Different session detected', d: 'another ground station took over', st: 'bad' };
+  if (h && h.rejected) return { k: 'link', v: 'Rejecting packets sent', d: `car_link: ${h.rejected}`, st: 'bad' };
+  if (h && h.link === 'handshaking') return { k: 'link', v: 'handshaking', d: port, st: 'warn' };
+  return { k: 'link', v: 'connected', d: h ? `${port} · session ${h.session}` : port, st: 'ok' };
 }
 function updateStatus(b) {
   const html = chainTiles().map((t) => `<div class="tile ${{ ok: '', warn: 'is-warn', bad: 'is-broken', stale: 'is-stale' }[t.st]}">
@@ -748,8 +769,7 @@ function drawPlot(c, s) {
 // ---------- Settings ----------
 function buildSettings(b) {
   b.innerHTML = `
-    <div><div class="sub">driving</div><dl class="kv">
-      <dt>max speed m/s</dt><dd><input class="input" type="number" data-f="maxSpeed" min="0" max="10" step="0.1" style="width:64px"></dd></dl>
+    <div><div class="sub">driving</div>
       <div class="sub" style="margin:var(--space-2) 0 0">W/S or up/down, steer A/D or left/right; gamepad left stick and triggers</div></div>
     <div><div class="sub">view</div><dl class="kv">
       <dt>camera</dt><dd><div class="seg"><button data-cam="follow">follow</button><button data-cam="free">free</button></div></dd>
@@ -760,8 +780,6 @@ function buildSettings(b) {
     <div><div class="sub">connection</div><dl class="kv">
       <dt>source</dt><dd><div class="seg"><button data-mode="sim">sim</button><button data-mode="real">real</button></div></dd></dl></div>`;
   const f = (n) => q(b, `[data-f=${n}]`);
-  f('maxSpeed').value = opts.maxSpeed;
-  f('maxSpeed').oninput = (e) => { const v = parseFloat(e.target.value); opts.maxSpeed = Number.isFinite(v) && v >= 0 ? v : 1.0; };
   f('ghost').onchange = (e) => { opts.ghost = e.target.checked; refreshSettings(); };
   f('trail').oninput = (e) => { opts.trail = +e.target.value; refreshSettings(); };
   f('recenter').onclick = () => setCam(null);
@@ -787,14 +805,25 @@ function refreshSettings() {
 
 // ---------- Sim settings ----------
 function buildSim(b) {
-  b.innerHTML = `<div><dl class="kv"><dt>track</dt><dd><select class="select" id="trackIn"></select></dd></dl>
+  b.innerHTML = `<div><dl class="kv"><dt>real time</dt><dd id="rtfVal"></dd></dl>
+    <div class="sub" style="margin:var(--space-2) 0 0">sim speed vs the wall clock; below 1.00× when this computer can't keep up</div></div>
+    <div><dl class="kv"><dt>max speed m/s</dt><dd><input class="input" type="number" id="maxSpeedIn" min="0" max="10" step="0.1" style="width:64px"></dd></dl></div>
+    <div><dl class="kv"><dt>track</dt><dd><select class="select" id="trackIn"></select></dd></dl>
     <div class="sub" style="margin:var(--space-2) 0 0">loads into the running sim; the car moves to its start</div></div>
     <div><label class="check"><input type="checkbox" id="trackShow"> show track</label>
     <div class="sub" style="margin:var(--space-2) 0 0">this view only; the walls stay in the sim</div></div>`;
+  $('maxSpeedIn').value = opts.maxSpeed;
+  $('maxSpeedIn').oninput = (e) => { const v = parseFloat(e.target.value); opts.maxSpeed = Number.isFinite(v) && v >= 0 ? v : 1.0; };
   fillTrackSelect($('trackIn'));
+  refreshRtf();
   $('trackShow').checked = !layout.hideTrack;
   $('trackShow').onchange = () => { layout.hideTrack = !$('trackShow').checked; saveLayout(); };
   $('trackIn').onchange = () => { tracks.selected = $('trackIn').value; $('trackIn2').value = tracks.selected; sendServer({ type: 'sim', track: tracks.selected }); };
+}
+function refreshRtf() {
+  const el = $('rtfVal'); if (!el) return;
+  const rtf = state && Number.isFinite(state.rtf) ? state.rtf : null;
+  setText(el, rtf === null ? '—' : rtf.toFixed(2) + '×');
 }
 function fillTrackSelect(sel) {
   if (!sel) return;
@@ -903,6 +932,221 @@ function drawScan(car) {
   ctx.restore();
 }
 
+// ---------- IMU ----------
+// One panel per IMU the bridge announces (`sensors`), so a second IMU in the URDF gets its own. While a
+// panel is open the page holds that IMU's socket; the server filters every raw sample and sends a summary
+// per step (0.1 s unless the panel picks a finer one). Plots show the last second, a smooth line through
+// the summaries. What the panel shows is the operator's pick from IMU_MODS.
+const IMU_STEPS = [0.1, 0.05, 0.02, 0.01];
+const IMU_MODS = {
+  attitude: 'roll · pitch · yaw',
+  yawrate: 'yaw rate vs commanded',
+  g: 'lateral · longitudinal g',
+  peak: 'peak g · saturation',
+  rate: 'rate · staleness',
+  bias: 'gyro bias',
+};
+const IMU_DEFAULT_MODS = ['attitude', 'rate'];
+const IMU_WINDOW = 1;   // s shown in the plots
+const IMU_STALE = 0.5;  // s without a sample before the panel calls it stale
+const G = 9.80665;
+const DEG = 180 / Math.PI;
+let imuNames = [];
+const imus = new Map(); // name -> {ws, retryAt, pts: [{t, msg, cmd}], last}
+let lastCmd = null;     // latest teleop sent: {speed, steer, t}
+
+const imuCfg = (name) => {
+  layout.imu ||= {};
+  const c = layout.imu[name] ||= {};
+  if (!Array.isArray(c.mods)) c.mods = [...IMU_DEFAULT_MODS];
+  if (!IMU_STEPS.includes(c.step)) c.step = IMU_STEPS[0];
+  return c;
+};
+const imuState = (name) => {
+  if (!imus.has(name)) imus.set(name, { ws: null, retryAt: 0, pts: [], last: null });
+  return imus.get(name);
+};
+// Yaw rate the teleop asks for: speed * tan(steer) / wheelbase, the same conversion car_link uses.
+function commandedYawRate() {
+  if (!lastCmd || nowS() - lastCmd.t > 0.2) return null; // no teleop: the car isn't under our command
+  return lastCmd.speed * Math.tan(lastCmd.steer) / WHEELBASE;
+}
+
+function setImus(names) {
+  imuNames = Array.isArray(names) ? names : [];
+  for (const name of imuNames) {
+    const id = `imu:${name}`;
+    if (PANELS[id]) continue;
+    PANELS[id] = {
+      title: `IMU ${name}`, group: 'sensors', w: 320, available: () => imuNames.includes(name), note: 'not found',
+      meta: () => imuMeta(name), build: (b) => buildImu(b, name), update: (b) => updateImu(b, name),
+    };
+  }
+  mountPanels();
+}
+function syncImus() {
+  for (const name of new Set([...imus.keys(), ...imuNames])) {
+    const st = imuState(name);
+    const want = !!els[`imu:${name}`] && serverUp && imuNames.includes(name);
+    if (want && !st.ws && performance.now() >= st.retryAt) {
+      const ws = new WebSocket(`ws://${location.host}/imu/${encodeURIComponent(name)}`);
+      ws.onopen = () => ws.send(JSON.stringify({ type: 'step', s: imuCfg(name).step }));
+      ws.onmessage = (e) => {
+        const m = JSON.parse(e.data);
+        if (m.type !== 'imu') return;
+        const t = nowS();
+        st.last = m;
+        st.pts.push({ t, m, cmd: commandedYawRate() });
+        while (st.pts.length && st.pts[0].t < t - IMU_WINDOW - 0.5) st.pts.shift();
+        if (m.roll !== null) ingest(`/imu/${name}`, 'Imu', { roll: m.roll * DEG, pitch: m.pitch * DEG, yaw: m.yaw * DEG, rate: m.rate });
+      };
+      ws.onclose = () => { if (st.ws === ws) { st.ws = null; st.last = null; st.pts = []; st.retryAt = performance.now() + 1000; } };
+      st.ws = ws;
+    } else if (!want && st.ws) {
+      const ws = st.ws; st.ws = null; st.last = null; st.pts = []; ws.close();
+    }
+  }
+}
+function sendImu(name, msg) {
+  const ws = imuState(name).ws;
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+}
+const imuStale = (m) => !m || m.age === null || m.age > IMU_STALE;
+function imuMeta(name) {
+  const m = imuState(name).last;
+  return !serverUp ? 'no server' : !m ? 'waiting' : imuStale(m) ? 'stale' : `${m.rate} Hz`;
+}
+
+function buildImu(b, name) {
+  const c = imuCfg(name);
+  b.innerHTML = `<dl class="kv">
+      <dt>step</dt><dd><div class="seg">${IMU_STEPS.map((s) => `<button data-step="${s}">${s}</button>`).join('')}</div></dd></dl>
+    <details class="mods"><summary data-f="modsum"></summary><div class="mods__list">${Object.entries(IMU_MODS).map(([k, label]) =>
+      `<label class="check"><input type="checkbox" data-mod="${k}" ${c.mods.includes(k) ? 'checked' : ''}> ${esc(label)}</label>`).join('')}</div></details>
+    <div class="stack" data-f="mods"></div>`;
+  b.addEventListener('click', (e) => {
+    const s = e.target.closest('button[data-step]');
+    if (s) { c.step = +s.dataset.step; saveLayout(); sendImu(name, { type: 'step', s: c.step }); }
+    if (e.target.closest('button[data-f=resetyaw]')) sendImu(name, { type: 'reset_yaw' });
+  });
+  b.addEventListener('change', (e) => {
+    const k = e.target.dataset && e.target.dataset.mod;
+    if (!k) return;
+    c.mods = Object.keys(IMU_MODS).filter((m) => m === k ? e.target.checked : c.mods.includes(m));
+    saveLayout(); buildImuMods(b, name);
+  });
+  buildImuMods(b, name);
+}
+const imuPlot = (k) => `<canvas data-plot="${k}"></canvas>`;
+const imuLegend = (items) => `<div class="legend">${items.map(([label, i, dashed]) =>
+  `<span><i class="${dashed ? 'dashed' : ''}" style="background:var(--series-${i});border-color:var(--series-${i})"></i>${label}</span>`).join('')}</div>`;
+function buildImuMods(b, name) {
+  const c = imuCfg(name);
+  setText(q(b, '[data-f=modsum]'), `modules · ${c.mods.length} of ${Object.keys(IMU_MODS).length} shown`);
+  const html = {
+    attitude: `<dl class="kv"><dt>roll</dt><dd data-v="roll"></dd><dt>pitch</dt><dd data-v="pitch"></dd>
+        <dt>yaw <span class="unit">relative</span></dt><dd data-v="yaw"></dd></dl>
+      ${imuPlot('attitude')}${imuLegend([['roll', 1], ['pitch', 2], ['yaw', 3]])}
+      <button class="btn btn--small" data-f="resetyaw">reset yaw</button>`,
+    yawrate: `<dl class="kv"><dt>measured</dt><dd data-v="yr"></dd><dt>commanded</dt><dd data-v="yrcmd"></dd></dl>
+      ${imuPlot('yawrate')}${imuLegend([['measured', 1], ['commanded', 2, true]])}`,
+    g: `<dl class="kv"><dt>lateral <span class="unit">+ left</span></dt><dd data-v="lat"></dd>
+        <dt>longitudinal <span class="unit">+ forward</span></dt><dd data-v="lon"></dd></dl>
+      ${imuPlot('g')}${imuLegend([['lateral', 1], ['longitudinal', 2]])}`,
+    peak: `<dl class="kv"><dt>peak |a| <span class="unit">last 1 s</span></dt><dd data-v="peak"></dd><dt>saturation</dt><dd data-v="sat"></dd></dl>`,
+    rate: `<dl class="kv"><dt>received</dt><dd data-v="hz"></dd><dt>last sample</dt><dd data-v="age"></dd><dt>summaries</dt><dd data-v="pps"></dd></dl>`,
+    bias: `<dl class="kv"><dt>x</dt><dd data-v="bx"></dd><dt>y</dt><dd data-v="by"></dd><dt>z</dt><dd data-v="bz"></dd></dl>
+      <div class="sub" data-v="bnote"></div>`,
+  };
+  q(b, '[data-f=mods]').innerHTML = c.mods.length ? c.mods.map((k) =>
+    `<div class="mod" data-mod-box="${k}"><div class="sub">${esc(IMU_MODS[k])}</div>${html[k]}</div>`).join('')
+    : '<div class="empty">pick modules above</div>';
+}
+const fmt = (v, d, unit) => v === null || v === undefined ? '—' : `${v.toFixed(d)}<span class="unit"> ${unit}</span>`;
+function updateImu(b, name) {
+  const c = imuCfg(name), st = imuState(name), m = st.last, t = nowS();
+  for (const el of b.querySelectorAll('button[data-step]')) el.setAttribute('aria-pressed', String(+el.dataset.step === c.step));
+  const v = (k, html, cls) => { const el = q(b, `[data-v=${k}]`); if (el) { el.innerHTML = html; el.className = cls || ''; } };
+  const recent = st.pts.filter((p) => p.t >= t - IMU_WINDOW);
+  const has = (p) => p.m.n > 0;
+  if (c.mods.includes('attitude')) {
+    v('roll', fmt(m && m.roll !== null ? m.roll * DEG : null, 1, '°'));
+    v('pitch', fmt(m && m.pitch !== null ? m.pitch * DEG : null, 1, '°'));
+    v('yaw', fmt(m && m.yaw !== null ? m.yaw * DEG : null, 1, '°'));
+    drawImuPlot(q(b, 'canvas[data-plot=attitude]'), st.pts, [
+      (p) => p.m.roll === null ? null : p.m.roll * DEG, (p) => p.m.pitch === null ? null : p.m.pitch * DEG,
+      (p) => p.m.yaw === null ? null : p.m.yaw * DEG]);
+  }
+  if (c.mods.includes('yawrate')) {
+    const cmd = commandedYawRate();
+    v('yr', fmt(m && m.gyro ? m.gyro[2] * DEG : null, 1, '°/s'));
+    v('yrcmd', cmd === null ? 'no command' : fmt(cmd * DEG, 1, '°/s'), cmd === null ? 'is-muted' : '');
+    drawImuPlot(q(b, 'canvas[data-plot=yawrate]'), st.pts, [
+      (p) => has(p) ? p.m.gyro[2] * DEG : null, (p) => p.cmd === null ? null : p.cmd * DEG], [false, true]);
+  }
+  if (c.mods.includes('g')) {
+    v('lat', fmt(m && m.accel ? m.accel[1] / G : null, 2, 'g'));
+    v('lon', fmt(m && m.accel ? m.accel[0] / G : null, 2, 'g'));
+    drawImuPlot(q(b, 'canvas[data-plot=g]'), st.pts, [(p) => has(p) ? p.m.accel[1] / G : null, (p) => has(p) ? p.m.accel[0] / G : null]);
+  }
+  if (c.mods.includes('peak')) {
+    const peaks = recent.filter(has).map((p) => p.m.peak_g);
+    v('peak', fmt(peaks.length ? Math.max(...peaks) : null, 2, 'g'));
+    const sat = recent.some((p) => p.m.sat);
+    v('sat', m ? (sat ? 'CLIPPED' : 'ok') : '—', m ? (sat ? 'is-bad' : 'is-ok') : '');
+  }
+  if (c.mods.includes('rate')) {
+    const stale = imuStale(m);
+    v('hz', m ? `${m.rate}<span class="unit"> Hz</span>` : '—', m && stale ? 'is-warn' : '');
+    v('age', m ? fmtAge(m.age) : '—', m && stale ? 'is-warn' : '');
+    v('pps', `${recent.length}<span class="unit"> /s · step ${c.step} s</span>`);
+  }
+  if (c.mods.includes('bias')) {
+    const bias = m && m.bias;
+    ['bx', 'by', 'bz'].forEach((k, i) => v(k, fmt(bias ? bias[i] * DEG : null, 3, '°/s')));
+    setText(q(b, '[data-v=bnote]'), !m ? '' : m.stopped ? 'car still: learning' : bias ? 'car moving: holding the last value' : 'learned once the car is still', 'sub');
+  }
+}
+// The last IMU_WINDOW seconds as smooth lines (quadratic curves through the midpoints between summaries).
+function drawImuPlot(c, pts, series, dashed = []) {
+  if (!c) return;
+  const dpr = devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
+  if (!W || !H) return;
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const t = nowS(), t0 = t - IMU_WINDOW, x = (ts) => (ts - t0) / IMU_WINDOW * W;
+  const shown = pts.filter((p) => p.t >= t0 - 0.2);
+  let lo = Infinity, hi = -Infinity;
+  for (const p of shown) for (const f of series) { const val = f(p); if (val !== null) { lo = Math.min(lo, val); hi = Math.max(hi, val); } }
+  if (!Number.isFinite(lo)) return;
+  if (hi - lo < 1e-6) { hi += 1; lo -= 1; }
+  const pad = (hi - lo) * 0.1; hi += pad; lo -= pad;
+  const y = (val) => H - (val - lo) / (hi - lo) * H;
+  g.strokeStyle = css('--line'); g.lineWidth = 1;
+  if (lo < 0 && hi > 0) { const zy = Math.round(y(0)) + 0.5; g.beginPath(); g.moveTo(0, zy); g.lineTo(W, zy); g.stroke(); }
+  series.forEach((f, i) => {
+    g.strokeStyle = css(`--series-${i % 4 + 1}`); g.lineWidth = 1.5; g.lineJoin = 'round';
+    g.setLineDash(dashed[i] ? [4, 3] : []);
+    let run = [];
+    const flush = () => {
+      if (run.length > 1) {
+        g.beginPath(); g.moveTo(run[0][0], run[0][1]);
+        for (let k = 1; k < run.length - 1; k++) {
+          g.quadraticCurveTo(run[k][0], run[k][1], (run[k][0] + run[k + 1][0]) / 2, (run[k][1] + run[k + 1][1]) / 2);
+        }
+        g.lineTo(run[run.length - 1][0], run[run.length - 1][1]);
+        g.stroke();
+      }
+      run = [];
+    };
+    for (const p of shown) { const val = f(p); if (val === null) flush(); else run.push([x(p.t), y(val)]); }
+    flush();
+  });
+  g.setLineDash([]);
+  g.fillStyle = css('--ink-muted'); g.font = `10px ${css('--font-mono')}`;
+  g.fillText(hi.toFixed(2), 4, 11); g.fillText(lo.toFixed(2), 4, H - 4);
+}
+
 // ---------- server websocket ----------
 let serverWs = null;
 function sendServer(msg) {
@@ -915,7 +1159,7 @@ function connectServer() {
   ws.onclose = () => {
     serverUp = false;
     // Without the server we know nothing about the car: drop stale pose and stop the helper's UDP.
-    state = null; link = null; trackStatus = null; onLink();
+    state = null; link = null; trackStatus = null; onLink(); setImus([]);
     setTimeout(connectServer, 1000);
   };
   ws.onmessage = (e) => {
@@ -925,6 +1169,7 @@ function connectServer() {
     else if (msg.type === 'track') loadTrack(msg.meta, msg.png);
     else if (msg.type === 'tracks') setTracks(msg.names, msg.selected);
     else if (msg.type === 'track_status') onTrackStatus(msg);
+    else if (msg.type === 'sensors') setImus(msg.imu);
   };
 }
 
@@ -939,6 +1184,7 @@ function onTrackStatus(msg) {
 
 function onState(msg) {
   state = msg;
+  refreshRtf();
   const names = TOPICS[msg.source === 'sim' ? 'sim' : 'car'];
   for (const k of ['estimate', 'truth', 'link']) if (names[k]) ingest(names[k][0], names[k][1], msg[k]);
   const p = drawnPose();
@@ -969,7 +1215,10 @@ function onLink() {
   lastCarFound = found;
   // Sim settings exists only while connected to the sim.
   if (simMode() !== lastSimMode) { lastSimMode = simMode(); mountPanels(); }
+  // Max speed is set in Sim settings only; the real car always drives at the default.
+  if (l && l.mode === 'real') opts.maxSpeed = 1.0;
   refreshSettings();
+  refreshRtf();
   // Tell the helper where to send UDP, but only when it changes.
   const udp = l ? l.udp : null;
   const key = JSON.stringify(udp || null);
@@ -1027,12 +1276,19 @@ function connectHelper() {
   };
 }
 
+const SENT_REASON = {
+  handshaking: 'handshaking with car_link',
+  replaced: 'different session detected: another ground station took over',
+};
+let lastRejected = null;
 function onSent(m) {
   sent = m;
   cutoffOn = !!m.cutoff; // the helper's view is the truth for the button
   const now = `${m.sending}/${m.reason}`;
-  if (now !== lastSent) logLine(m.sending ? 'sending' : `stopped: ${m.reason}`);
+  if (now !== lastSent) logLine(m.sending ? `sending (session ${m.session})` : `stopped: ${SENT_REASON[m.reason] || m.reason}`);
   lastSent = now;
+  if (m.rejected && m.rejected !== lastRejected) logLine(`car_link rejecting packets sent: ${m.rejected}`);
+  lastRejected = m.rejected;
 }
 
 function toggleCutoff() {
@@ -1091,6 +1347,7 @@ setInterval(() => {
   const speed = active ? throttle * opts.maxSpeed : 0;
   const steerRad = active ? Math.max(-1, Math.min(1, steer)) * MAX_STEER : 0;
   sendHelper({ type: 'teleop', speed, steer: steerRad });
+  lastCmd = { speed, steer: steerRad, t: nowS() };
   driving = active;
 }, TELEOP_MS);
 
@@ -1197,6 +1454,7 @@ function frame() {
 
   updateTopbar();
   syncLidar();
+  syncImus();
   for (const [id, el] of Object.entries(els)) {
     const def = PANELS[id];
     if (def.meta) setText(q(el, '.panel__meta'), def.meta());

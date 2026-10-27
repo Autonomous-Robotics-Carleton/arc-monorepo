@@ -6,6 +6,7 @@ http://<host>:<port>/track.png   the track's walls: opaque where occupied, faint
 ws://<host>:<port>/ws            JSON at 30 Hz, the `state` message in ground-station/protocol.md;
                                  `track_status` on connect and on change; takes `load_track`
 ws://<host>:<port>/scan          /scan as binary frames (protocol.md), newest only per client
+ws://<host>:<port>/imu/<name>    /imu/<name> as binary batches of raw samples (protocol.md), every sample
 
 The sim starts with no track. `load_track` (from the ground station) loads a bundled track
 while the sim runs: the old walls are removed and the new ones spawned through Gazebo's
@@ -16,12 +17,18 @@ estimate is the car's own odometry (/sim/odom), which starts at zero at the spaw
 doesn't notice a teleport. So it is taken relative to its value when the car was last placed,
 then moved into the world frame by that placement. truth is Gazebo's actual pose
 (/sim/ground_truth), which only the sim has. link is car_link's latest /sim/link/status.
+rtf is Gazebo's real-time factor (/sim/stats), null while paused or before the first.
 The page itself is served by the ground station, not here.
 
 Sensor sockets are the off switch: the bridge subscribes to /scan only while a /scan client is
 connected, and lidar_noise and ros_gz_bridge pass that on, so Gazebo renders the LiDAR only then.
 Each scan frame carries the LiDAR's mount on the car, looked up in /tf_static (robot_state_publisher,
 from the URDF); scans are held back until that lookup succeeds.
+
+IMUs are found by name: every /imu/<name> topic of type sensor_msgs/Imu, announced to /ws clients as a
+`sensors` message on connect and whenever the list changes. Unlike scans, IMU samples are never skipped
+(the ground station integrates the gyro, so a lost batch is a lasting yaw error): each client gets every
+batch in order, and one that falls too far behind is disconnected so it can reconnect fresh.
 """
 
 import asyncio
@@ -43,7 +50,8 @@ from nav_msgs.msg import Odometry
 from PIL import Image
 from rclpy.node import Node
 from rclpy.time import Time
-from sensor_msgs.msg import LaserScan
+from ros_gz_interfaces.msg import WorldStatistics
+from sensor_msgs.msg import Imu, LaserScan
 from std_msgs.msg import String
 from tf2_ros import Buffer, TransformException, TransformListener
 
@@ -56,6 +64,11 @@ GZ_TRIES = 60  # attempts, 0.5 s apart, while Gazebo or the car are still starti
 # stamp, angle_min, angle_increment, range_min, range_max, count, mount x, mount y, mount yaw
 SCAN_HEADER = struct.Struct('<dffffIfff')
 CAR_FRAME = 'base_link'
+IMU_SAMPLE = struct.Struct('<dffffff')  # stamp, gyro x y z (rad/s), accel x y z (m/s^2)
+IMU_BATCH = 50  # samples per frame; also sent every IMU_FLUSH_S if fewer have arrived
+IMU_FLUSH_S = 0.05
+IMU_QUEUE = 200  # frames a client may fall behind (10 s at 1 kHz) before it is disconnected
+G = 9.80665
 
 
 def yaw_of(q):
@@ -79,10 +92,12 @@ class Bridge(Node):
         self.start = (0.0, 0.0, 0.0)  # where the car was last placed, world frame
         self.odom0 = None  # raw odometry at that moment; None: take the next message
         self.raw_odom = None
-        self.state = {'type': 'state', 'source': 'sim', 'estimate': None, 'truth': None, 'link': None}
+        self.state = {'type': 'state', 'source': 'sim', 'estimate': None, 'truth': None, 'link': None,
+                      'rtf': None}
         self.create_subscription(Odometry, '/sim/ground_truth', self.on_truth, 10)
         self.create_subscription(Odometry, '/sim/odom', self.on_odom, 10)
         self.create_subscription(String, '/sim/link/status', self.on_link, 10)
+        self.create_subscription(WorldStatistics, '/sim/stats', self.on_stats, 10)
         # /scan is subscribed only while a /scan client is connected. Subscriptions are created and
         # destroyed here, on the ROS thread; the websocket side only sets `scan_wanted`.
         self.scan_wanted = False
@@ -92,6 +107,58 @@ class Bridge(Node):
         self.tf_listener = TransformListener(self.tf, self)
         self.mounts = {}  # scan frame_id -> (x, y, yaw) in base_link
         self.create_timer(0.1, self.sync_scan)
+        # IMUs: found by topic name; subscribed only while a client wants each, like /scan.
+        # Ranges are the part's configured full scale, for the ground station's saturation flag.
+        self.imu_ranges = {'accel_range': float(os.environ.get('IMU_ACCEL_RANGE_G', 16)) * G,
+                           'gyro_range': math.radians(float(os.environ.get('IMU_GYRO_RANGE_DPS', 2000)))}
+        self.imus = []  # names, sorted
+        self.on_sensors = None  # set by serve(): hands the new `sensors` message to the asyncio loop
+        self.imu_wanted = frozenset()  # names with clients; replaced (never mutated) by the websocket side
+        self.imu_subs = {}
+        self.imu_buf = {}  # name -> packed samples not yet sent; ROS thread only
+        self.on_imu_frame = None  # set by serve()
+        self.create_timer(1.0, self.discover_imus)
+        self.create_timer(IMU_FLUSH_S, self.sync_imus)
+
+    def sensors_msg(self):
+        return {'type': 'sensors', 'imu': [{'name': n, **self.imu_ranges} for n in self.imus]}
+
+    def discover_imus(self):
+        names = sorted(t[len('/imu/'):] for t, types in self.get_topic_names_and_types()
+                       if t.startswith('/imu/') and '/' not in t[len('/imu/'):] and 'sensor_msgs/msg/Imu' in types)
+        if names != self.imus:
+            self.imus = names
+            self.get_logger().info(f'IMUs: {names}')
+            if self.on_sensors:
+                self.on_sensors(json.dumps(self.sensors_msg()))
+
+    def sync_imus(self):
+        wanted = self.imu_wanted
+        for name in wanted - self.imu_subs.keys():
+            self.imu_buf[name] = []
+            self.imu_subs[name] = self.create_subscription(
+                Imu, '/imu/' + name, lambda msg, name=name: self.on_imu(name, msg), 100)
+            self.get_logger().info(f'imu client connected: subscribing to /imu/{name}')
+        for name in self.imu_subs.keys() - wanted:
+            self.destroy_subscription(self.imu_subs.pop(name))
+            self.imu_buf.pop(name, None)
+            self.get_logger().info(f'no imu clients: unsubscribed from /imu/{name}')
+        for name in self.imu_subs:
+            self.flush_imu(name)
+
+    def on_imu(self, name, msg):
+        w, a = msg.angular_velocity, msg.linear_acceleration
+        buf = self.imu_buf.setdefault(name, [])
+        buf.append(IMU_SAMPLE.pack(msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9,
+                                   w.x, w.y, w.z, a.x, a.y, a.z))
+        if len(buf) >= IMU_BATCH:
+            self.flush_imu(name)
+
+    def flush_imu(self, name):
+        buf = self.imu_buf.get(name)
+        if buf and self.on_imu_frame:
+            self.on_imu_frame(name, struct.pack('<I', len(buf)) + b''.join(buf))
+            buf.clear()
 
     def sync_scan(self):
         if self.scan_wanted and self.scan_sub is None:
@@ -146,6 +213,9 @@ class Bridge(Node):
         """The car was just moved to `start`: restart the estimate there."""
         self.start = start
         self.odom0 = self.raw_odom
+
+    def on_stats(self, msg):
+        self.state['rtf'] = None if msg.paused else round(msg.real_time_factor, 3)
 
     def on_link(self, msg):
         try:
@@ -241,6 +311,21 @@ async def serve(node):
 
     node.on_scan_frame = lambda frame: loop.call_soon_threadsafe(new_scan, frame)
 
+    imu_clients = {}  # name -> {ws: Queue of frames}
+
+    def new_imu(name, frame):  # on the asyncio loop
+        for q in imu_clients.get(name, {}).values():
+            try:
+                q.put_nowait(frame)
+            except asyncio.QueueFull:  # too far behind: drop what's queued and tell it to go
+                while not q.empty():
+                    q.get_nowait()
+                q.put_nowait(None)
+
+    node.on_imu_frame = lambda name, frame: loop.call_soon_threadsafe(new_imu, name, frame)
+    node.on_sensors = lambda msg: loop.call_soon_threadsafe(
+        lambda: websockets.broadcast(clients, msg) if clients else None)
+
     def set_status(**kw):
         status.update(kw)
         if clients:
@@ -275,7 +360,7 @@ async def serve(node):
                 set_status(status='ready' if name else 'none')
 
     async def process_request(path, headers):
-        if path in ('/ws', '/scan'):
+        if path in ('/ws', '/scan') or path.startswith('/imu/'):
             return None  # continue the websocket handshake
         if path == '/track.json':
             return HTTPStatus.OK, [('Content-Type', 'application/json')], files['json']
@@ -311,12 +396,54 @@ async def serve(node):
             del scan_clients[ws]
             node.scan_wanted = bool(scan_clients)
 
+    async def imu_handler(ws, name):
+        """Send every batch of /imu/<name>, in order. A client that falls IMU_QUEUE frames behind is closed."""
+        if name not in node.imus:
+            await ws.close(1008, 'no such imu')
+            return
+        q = asyncio.Queue(IMU_QUEUE)
+        imu_clients.setdefault(name, {})[ws] = q
+        node.imu_wanted = frozenset(imu_clients)
+
+        async def drain():  # notices the client closing
+            try:
+                async for _ in ws:
+                    pass
+            except websockets.ConnectionClosed:
+                pass
+        closed = asyncio.ensure_future(drain())
+        try:
+            while not closed.done():
+                getter = asyncio.ensure_future(q.get())
+                await asyncio.wait({getter, closed}, return_when=asyncio.FIRST_COMPLETED)
+                if not getter.done():
+                    getter.cancel()
+                    break
+                frame = getter.result()
+                if frame is None:
+                    node.get_logger().warn(f'/imu/{name} client fell behind: disconnecting it')
+                    await ws.close(1013, 'too far behind')
+                    break
+                await ws.send(frame)
+        except websockets.ConnectionClosed:
+            pass
+        finally:
+            closed.cancel()
+            del imu_clients[name][ws]
+            if not imu_clients[name]:
+                del imu_clients[name]
+            node.imu_wanted = frozenset(imu_clients)
+
     async def handler(ws, path=None):
-        if (path or getattr(ws, 'path', '/ws')) == '/scan':
+        path = path or getattr(ws, 'path', '/ws')
+        if path == '/scan':
             return await scan_handler(ws)
+        if path.startswith('/imu/'):
+            return await imu_handler(ws, path[len('/imu/'):])
         clients.add(ws)
         try:
             await ws.send(json.dumps(status))
+            await ws.send(json.dumps(node.sensors_msg()))
             async for raw in ws:
                 try:
                     msg = json.loads(raw)

@@ -39,6 +39,11 @@
   <xacro:property name="lidar_x" value="0.265"/>
   <xacro:property name="lidar_z" value="${ground_offset + height + 0.03}"/>
 
+  <!-- IMU, E-20 (ST ISM330DHCX, at the CG). Samples every physics step (1 ms, worlds/empty.sdf); the
+       part's >= 4 kHz isn't simulated, since Gazebo can't produce new data faster than it steps.
+       Its ranges (IMU_ACCEL_RANGE_G, IMU_GYRO_RANGE_DPS in simulator/.env) are read by the bridge. -->
+  <xacro:property name="imu_rate" value="$(optenv IMU_RATE 1000)"/>
+
   <!-- base_link sits on the ground under the rear axle, as in racecar.xacro. -->
   <link name="base_link"/>
 
@@ -167,6 +172,25 @@
           <resolution>0.001</resolution>
         </range>
       </lidar>
+    </sensor>
+  </gazebo>
+
+  <!-- IMU at the chassis centre of mass (E-20 sits at the CG), axes aligned with base_link. Each IMU
+       publishes /model/racecar/imu/<name>; config/bridge.yaml carries it to /sim/imu/<name> and
+       imu_noise.py to /imu/<name>, which the ground station finds by name. TBC until the ARC CAD
+       places it. -->
+  <link name="imu_cg"/>
+  <joint name="base_to_imu_cg" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_cg"/>
+    <origin xyz="${wheelbase/2} 0 ${ground_offset + height/2}"/>
+  </joint>
+  <gazebo reference="imu_cg">
+    <sensor name="imu_cg" type="imu">
+      <topic>/model/racecar/imu/cg</topic>
+      <gz_frame_id>imu_cg</gz_frame_id>
+      <update_rate>${imu_rate}</update_rate>
+      <always_on>true</always_on>
     </sensor>
   </gazebo>
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the ground station: server.py (page + bridge relay, :8080) and helper.py (UDP to the car, :8081).
+# Start the ground station: server.py (page + bridge relay, :47380) and helper.py (UDP to the car, :8081).
 #   ./run.sh                    real mode; the car's address comes from config.json (car.host)
 #   ./run.sh --car 192.168.1.50 override car.host
 # Ctrl+C stops both, and the simulator if the server started it.
@@ -46,7 +46,7 @@ helper=$!
 .venv/bin/python server.py ${server_args[@]+"${server_args[@]}"} &
 server=$!
 
-url="http://localhost:8080/"
+url="http://localhost:47380/"
 for _ in $(seq 50); do
   curl -s -o /dev/null "$url" && break
   kill -0 "$server" 2>/dev/null || { echo "server.py exited" >&2; exit 1; }

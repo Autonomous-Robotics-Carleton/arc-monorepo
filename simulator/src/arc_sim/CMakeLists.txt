@@ -9,7 +9,7 @@ ament_python_install_package(${PROJECT_NAME})
 install(DIRECTORY config launch meshes tracks urdf worlds
   DESTINATION share/${PROJECT_NAME})
 
-install(PROGRAMS scripts/bridge.py scripts/car_link.py scripts/lidar_noise.py
+install(PROGRAMS scripts/bridge.py scripts/car_link.py scripts/lidar_noise.py scripts/imu_noise.py
   DESTINATION lib/${PROJECT_NAME})
 
 ament_package()

@@ -9,7 +9,7 @@ The operator's app for driving the car, or the simulator standing in for it. It 
 ./run.sh --car 192.168.1.50    # override car.host
 ```
 
-`run.sh` creates `.venv` and installs `requirements.txt` the first time (and again only when it changes), starts `server.py` and `helper.py`, and opens `http://localhost:8080/`. Ctrl+C stops both, and the simulator if the ground station started it. Both listen on this machine only and have no password.
+`run.sh` creates `.venv` and installs `requirements.txt` the first time (and again only when it changes), starts `server.py` and `helper.py`, and opens `http://localhost:47380/`. Ctrl+C stops both, and the simulator if the ground station started it. Both listen on this machine only and have no password.
 
 Switching to the simulator needs Docker Desktop running, as for [`simulator/`](../simulator/README.md).
 
@@ -19,11 +19,11 @@ Two processes, two paths to the car. The full contract is [`protocol.md`](protoc
 
 ```
 page ──ws :8081──▶ helper.py ──UDP :9870──▶ car_link   heartbeat + teleop, 50 Hz
-page ──ws :8080──▶ server.py ──ws :8765──▶ bridge     state, track, link status
+page ──ws :47380──▶ server.py ──ws :8765──▶ bridge     state, track, link status
 ```
 
-- **`server.py`** (`:8080`) serves the page and relays the bridge's state to it, unchanged, along with which mode it's in and whether it's connected. It proxies the track image at `/track.png`.
-- **`helper.py`** (`:8081`) sends UDP to car_link: heartbeats, and the page's teleop. The page tells it where (the server's `udp` address). Packets are marked DSCP EF.
+- **`server.py`** (`:47380`) serves the page and relays the bridge's state to it, unchanged, along with which mode it's in and whether it's connected. It proxies the track image at `/track.png`. For each IMU it takes every raw sample from the bridge, estimates roll, pitch and relative yaw (`imu.py`, a complementary filter: the car's IMU has no orientation output) and sends the page one summary per step.
+- **`helper.py`** (`:8081`) sends UDP to car_link: heartbeats, and the page's teleop. The page tells it where (the server's `udp` address). Packets are marked DSCP EF. Each run has its own session: it handshakes with car_link first, so restarting the ground station against a running sim (or car) works at once. If car_link rejects its packets, the Status panel's link tile says `Rejecting packets sent`; if another ground station took over, `Different session detected`, and this one stops sending.
 
 `config.json` holds the car's address and the ports: `car.host` (the car's bridge and car_link), `sim.host` (the simulator, `127.0.0.1`), and `sim.track` (the track picked when the page opens). `--car` overrides `car.host`.
 
@@ -55,6 +55,7 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 - **Panels today:** Status (the chain target → server → helper → link → sim: the first failure is red, every tile after it greyed), Heartbeat (what the helper sends, the heartbeat and teleop ages the car reports against the 150 ms timeout, the ARMED / STOPPING strip, Test cutoff, event log), Car (pose, odom, odom error), Topics, Plots, Settings, and Sim settings (shown only in sim mode; it picks the track and can hide the track from the view, which leaves the walls in the sim).
 - **LiDAR:** off by default. Its panel switches `/scan` on and off, picks the scan colour and the FOV drawing (fill, outline or none); the scan itself is drawn on the main view (see the viewport rule below). Closing the panel also switches it off.
 - **Not wired yet:** Camera and Computer (CPU, memory, GPU free) are in the menu but greyed out, because nothing sends their data.
+- **IMU:** one panel per IMU the bridge announces (`IMU cg` in the sim), so a second IMU in the car model gets its own panel. While it is open the IMU streams. The panel picks the step between points (0.1 s by default, down to 0.01 s) and, under `modules`, what it shows: roll · pitch · relative yaw (with `reset yaw`), yaw rate vs the yaw rate the teleop commands, lateral and longitudinal g, peak g and saturation, received rate and the age of the last sample, and the gyro bias learned while the car is still. Plots cover the last second, a smooth line through the points.
 - **Adding a panel:** add an entry to `PANELS` in the script (`title`, `group`, `build(body)` once on open, optional `update(body)` every frame, optional `available()` for when it can be opened). The menu lists it automatically.
 - **Topics and Plots** show every numeric field the page receives, grouped by topic. Today that is only what the bridge's `state` message carries: in sim, `/sim/odom`, `/sim/ground_truth` and `/sim/link/status`. The page plots anything passed to `ingest(topic, type, object)`, so forwarding more topics needs only bridge and server changes plus one `ingest` call. How the bridge discovers and forwards topics, and how heavy ones (camera, scan) stay off the teleop path, is not decided yet.
 
@@ -74,6 +75,7 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 - Take control, a driver-lost broadcast, and ownership of the car between several ground stations.
 - The car side: the real car has no bridge or car_link yet, so real mode shows no car. `car.host` is TBD (`null`).
 - The UDP packet format and ports are provisional (TBC) until the car's teleop receiver is recorded in [`systems/`](../systems/README.md).
+- IMU: the complementary filter's time constant (1 s) and gates are TBC; each page socket runs its own filter, so two open pages keep separate yaw zeros; the sim's accelerometer spikes show in peak g and saturation (see the simulator's known issues).
 
 ## Layout
 
@@ -82,6 +84,7 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 | `run.sh` | Starts both processes; `--car` |
 | `server.py` | Page, `/track.png` proxy, bridge relay, sim start/stop |
 | `helper.py` | Page heartbeat and teleop → UDP to car_link |
+| `imu.py` | IMU samples → complementary-filter attitude and the panel's derived values, one summary per step |
 | `config.json` | Car address (TBD), sim address, ports, default track |
 | `web/index.html` | The page: viewport, top bar, panels, teleop and page heartbeat |
 | `protocol.md` | Messages and packets between all of the above |

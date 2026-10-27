@@ -2,8 +2,16 @@
 """The sim's stand-in for the car's receiving end: heartbeat watchdog and teleop receiver.
 
 Implements car_link in ground-station/protocol.md. The ground station's helper sends
-25-byte UDP packets (`<4sBIdff`: magic, type, seq, t, speed, steer) to port 9870:
+29-byte UDP packets (`<4sBIIdff`: magic, type, session, seq, t, speed, steer) to port 9870:
 heartbeats and teleop, each at 50 Hz. Algorithms drive through /sim/auto/cmd_vel.
+
+Sessions: each helper run picks a random session ID and sends `hello` until car_link acks it.
+car_link accepts heartbeats and teleop only from the session it last acked. A hello with a new
+ID replaces the session (the newest ground station wins): sequence numbers start over and the
+old session's teleop is forgotten, so the car stays stopped until the new one heartbeats. Packets
+from any other session are rejected, and the sender is told why (`no-session` when car_link has
+none, e.g. after a restart, so the helper says hello again; `replaced` when another session took
+over, so it stops), at most REJECT_EVERY apart per sender.
 
 - No heartbeat for heartbeat_timeout: every source is overridden and the car stops.
 - No teleop for teleop_timeout (heartbeat alive): teleop counts as zero speed.
@@ -26,9 +34,13 @@ from geometry_msgs.msg import Twist
 from rclpy.node import Node
 from std_msgs.msg import String
 
-PACKET = struct.Struct('<4sBIdff')
+PACKET = struct.Struct('<4sBIIdff')
 MAGIC = b'ARC0'
-HEARTBEAT, TELEOP = 1, 2
+HEARTBEAT, TELEOP, HELLO, ACK, REJECT = 1, 2, 3, 4, 5
+# REJECT's reason, carried in its seq field
+NO_SESSION, REPLACED = 1, 2
+REASONS = {NO_SESSION: 'no-session', REPLACED: 'replaced'}
+REJECT_EVERY = 0.2  # s between rejects to one sender
 
 
 def newer(seq, last):
@@ -52,7 +64,11 @@ class CarLink(Node):
         self.sock.bind(('0.0.0.0', self.port))
         self.sock.setblocking(False)
 
+        self.session = None  # the acked session's ID; None until the first hello
         self.seq = {HEARTBEAT: None, TELEOP: None}
+        self.rejected = 0  # packets rejected since start
+        self.rejected_reason = None  # the latest rejection's reason
+        self.last_reject = {}  # sender address -> monotonic time of the last reject sent to it
         self.hb_time = None      # monotonic receipt time of the last accepted packet
         self.teleop_time = None
         self.teleop = (0.0, 0.0)  # speed, steer
@@ -75,17 +91,57 @@ class CarLink(Node):
         self.auto_time = time.monotonic()
         self.auto = msg
 
+    def reply(self, kind, session, code, addr):
+        try:
+            self.sock.sendto(PACKET.pack(MAGIC, kind, session, code, time.monotonic(), 0.0, 0.0), addr)
+        except OSError as e:
+            self.get_logger().warn('reply to %s:%d failed: %s' % (addr[0], addr[1], e), throttle_duration_sec=5.0)
+
+    def reject(self, session, code, addr, now):
+        self.rejected += 1
+        self.rejected_reason = REASONS[code]
+        if now - self.last_reject.get(addr, -math.inf) >= REJECT_EVERY:
+            self.last_reject[addr] = now
+            self.reply(REJECT, session, code, addr)
+            self.get_logger().warn('Rejecting packets from %s:%d (session %08x): %s'
+                                   % (addr[0], addr[1], session, REASONS[code]), throttle_duration_sec=2.0)
+
+    def hello(self, session, addr):
+        if session != self.session:
+            if self.session is not None:
+                self.get_logger().warn('Session %08x replaced by %08x from %s:%d' % (self.session, session, *addr))
+            else:
+                self.get_logger().info('Session %08x from %s:%d' % (session, *addr))
+            self.session = session
+            self.seq = {HEARTBEAT: None, TELEOP: None}
+            # Forget the old session's commands: the car stays stopped until this one heartbeats.
+            self.hb_time = self.teleop_time = None
+            self.teleop = (0.0, 0.0)
+            self.last_reject.clear()
+        # A repeated hello for the current session only gets another ack: its seqs carry on.
+        self.reply(ACK, session, 0, addr)
+
     def receive(self, now):
-        """Drain every pending packet; keep only valid, newer ones."""
+        """Drain every pending packet; keep only valid, newer ones from the current session."""
         while True:
             try:
-                data = self.sock.recv(64)
+                data, addr = self.sock.recvfrom(64)
             except BlockingIOError:
                 return
             if len(data) != PACKET.size:
                 continue
-            magic, kind, seq, _t, speed, steer = PACKET.unpack(data)
-            if magic != MAGIC or kind not in self.seq or not newer(seq, self.seq[kind]):
+            magic, kind, session, seq, _t, speed, steer = PACKET.unpack(data)
+            if magic != MAGIC:
+                continue
+            if kind == HELLO:
+                self.hello(session, addr)
+                continue
+            if kind not in self.seq:
+                continue
+            if session != self.session:
+                self.reject(session, NO_SESSION if self.session is None else REPLACED, addr, now)
+                continue
+            if not newer(seq, self.seq[kind]):
                 continue
             if not (math.isfinite(speed) and math.isfinite(steer)):
                 continue
@@ -152,6 +208,9 @@ class CarLink(Node):
             'teleop_age': age(self.teleop_time),
             'stopping': self.reason != 'ok',
             'reason': self.reason,
+            'session': None if self.session is None else '%08x' % self.session,
+            'rejected': self.rejected,
+            'rejected_reason': self.rejected_reason,
         })))
 
 

@@ -29,6 +29,7 @@ Sensors are off until something subscribes to them, normally the ground station'
 
 ```
 page panel on ─▶ bridge /scan socket ─▶ /scan ─▶ lidar_noise (lazy) ─▶ /sim/scan ─▶ ros_gz_bridge (lazy) ─▶ Gazebo renders
+page panel open ─▶ bridge /imu/cg socket ─▶ /imu/cg ─▶ imu_noise (lazy) ─▶ /sim/imu/cg ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
 ```
 
 So a sensor nobody watches costs nothing, and `ros2 topic echo /scan` (or a bag) switches it on as well. Turning one on takes a moment while each link subscribes.
@@ -38,8 +39,13 @@ Settings are in [`.env`](.env), passed to the container by `run.sh` and read by 
 | Sensor | `systems/` | Model | Topic | Settings |
 | --- | --- | --- | --- | --- |
 | 2D LiDAR | E-10, Hokuyo UST-10LX (ADR-0001) | `gpu_lidar` on link `lidar` | `/scan` (`/sim/scan` before noise) | `LIDAR_RATE`, `LIDAR_SAMPLES`, `LIDAR_FOV_DEG`, `LIDAR_RANGE_MIN`, `LIDAR_RANGE_MAX` |
+| IMU | E-20, ST ISM330DHCX at the CG | `imu` on link `imu_cg` (`gz-sim-imu-system`) | `/imu/cg` (`/sim/imu/cg` before noise) | `IMU_RATE`, `IMU_ACCEL_RANGE_G`, `IMU_GYRO_RANGE_DPS` |
 
 Sensors render on the CPU (Mesa llvmpipe through EGL, `--headless-rendering`), since Docker on macOS has no GPU. The LiDAR's mount pose (front of the chassis, above the body) is TBC until the ARC CAD places it. The bridge reads it from `/tf_static` (the URDF, through `robot_state_publisher`) and sends it with every scan, so the ground station follows the URDF. No noise is added yet: `lidar_noise.py` passes scans through unchanged.
+
+**IMU.** Sampled every 1 ms (`IMU_RATE=1000`): once per physics step (`max_step_size` 0.001 in `worlds/empty.sdf`), the fastest Gazebo can produce new data. The real part is specified at ≥ 4 kHz (E-20); simulating that would mean a 0.25 ms physics step and a sim about 4× slower, so it isn't. Its rate is sim time: with the sim below real time, fewer samples arrive per wall-clock second. The IMU sits at the chassis centre of mass with base_link's axes (TBC until the CAD places it). `imu_noise.py` drops Gazebo's orientation, which is ground truth no real 6-axis IMU gives (quaternion zeroed, `orientation_covariance[0] = -1`), and otherwise passes samples through: no noise or bias yet, and no clipping at the part's range. The ranges in `.env` go to the ground station, which flags saturation and estimates attitude itself.
+
+To add an IMU: a link and `<sensor type="imu">` publishing `/model/racecar/imu/<name>` in the xacro, and its `/sim/imu/<name>` entry in `config/bridge.yaml`. `imu_noise.py`, the bridge and the ground station find it by name.
 
 ## Tracks
 
@@ -69,18 +75,26 @@ To see the walls a map produces: `docker exec arc-sim /entrypoint.sh python3 -m 
 
 Drive from the ground station. The car only moves while it receives heartbeats: `car_link` (the sim's stand-in for the car's receiving end) stops the car on a 5 m/s² ramp if heartbeats stop for 0.15 s, and treats teleop as zero speed if teleop stops for 0.15 s.
 
-For scripted testing without the ground station, send the same UDP packets yourself (`./run.sh --bridge` publishes the port). This drives at 1 m/s, steering 0.2 rad left, for 2 s:
+For scripted testing without the ground station, send the same UDP packets yourself (`./run.sh --bridge` publishes the port). This says hello with a new session, waits for the ack, then drives at 1 m/s, steering 0.2 rad left, for 2 s:
 
 ```python
-import socket, struct, time
-s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-for seq in range(100):  # 50 Hz; seq must keep rising for as long as the sim runs
+import random, socket, struct, time
+P, car = struct.Struct('<4sBIIdff'), ('127.0.0.1', 9870)
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.settimeout(0.1)
+session = random.getrandbits(32)
+while True:  # hello until car_link acks this session
+    s.sendto(P.pack(b'ARC0', 3, session, 0, time.monotonic(), 0, 0), car)
+    try:
+        if P.unpack(s.recv(64))[1:3] == (4, session): break
+    except socket.timeout:
+        pass
+for seq in range(100):  # 50 Hz
     for kind, speed, steer in ((1, 0, 0), (2, 1.0, 0.2)):  # heartbeat, teleop
-        s.sendto(struct.pack('<4sBIdff', b'ARC0', kind, seq, time.monotonic(), speed, steer), ('127.0.0.1', 9870))
+        s.sendto(P.pack(b'ARC0', kind, session, seq, time.monotonic(), speed, steer), car)
     time.sleep(0.02)
 ```
 
-car_link ignores a packet whose seq isn't newer than the last it accepted of that type, so a second run must start above the first's last seq, or restart the sim. Algorithms in the container publish `geometry_msgs/Twist` on `/sim/auto/cmd_vel` instead; teleop wins while fresh, and both stop without heartbeats.
+The hello replaces whatever session car_link had, so a running ground station is told `replaced` and stops sending (its Link tile shows `Different session detected`). Algorithms in the container publish `geometry_msgs/Twist` on `/sim/auto/cmd_vel` instead; teleop wins while fresh, and both stop without heartbeats.
 
 Watch the link and the position from another shell (`/sim/odom` is the car's estimate; swap in `/sim/ground_truth` for the actual pose):
 
@@ -104,14 +118,15 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 | `arc_sim/track.py` | Map yaml + image → occupied pixels → merged wall boxes → walls model SDF. Used by the bridge |
 | `config/bridge.yaml` | Gazebo ↔ ROS 2 topics. Add one entry per new topic; sensors are `lazy: true` |
 | `scripts/lidar_noise.py` | `/sim/scan` → `/scan`, subscribing upstream only while `/scan` has subscribers. Pass-through until noise is designed |
+| `scripts/imu_noise.py` | `/sim/imu/<name>` → `/imu/<name>` for every IMU, lazy like `lidar_noise.py`. Drops orientation; otherwise pass-through |
 | `config/gui.config` | Gazebo 3D GUI layout for `--gui3d`: window size, starting camera |
 | `launch/sim.launch.py` | Server, spawn, topic bridge, car_link. `bridge:=true` adds the ground-station bridge; `gui:=true` the 3D GUI (needs a display) |
-| `scripts/car_link.py` | The car's receiving end: UDP heartbeat + teleop on port 9870 and `/sim/auto/cmd_vel` in, heartbeat gate and speed ramp, `/sim/cmd_vel` and `/sim/link/status` out |
-| `scripts/bridge.py` | Loads tracks into the running sim on request, serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), for the ground station |
+| `scripts/car_link.py` | The car's receiving end: session handshake, UDP heartbeat + teleop on port 9870 and `/sim/auto/cmd_vel` in, heartbeat gate and speed ramp, `/sim/cmd_vel` and `/sim/link/status` out |
+| `scripts/bridge.py` | Loads tracks into the running sim on request, serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), plus one websocket per sensor (`/scan`, `/imu/<name>`), for the ground station |
 
 ## Topics
 
-Internal names, except `/scan`. Noise nodes own the public names such as `/drive` and `/odom`; the LiDAR's, `lidar_noise.py`, runs in the sim for now so the ground station can read `/scan` as an algorithm would.
+Internal names, except `/scan` and `/imu/<name>`. Noise nodes own the public names such as `/drive` and `/odom`; the LiDAR's, `lidar_noise.py`, runs in the sim for now so the ground station can read `/scan` as an algorithm would.
 
 The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays separate from the car's (default domain 0) even if the container shares the host network. A node outside the container must set the same ID to see these topics.
 
@@ -124,6 +139,8 @@ The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays
 | `/sim/ground_truth` | out | `nav_msgs/Odometry`, Gazebo's actual pose. For viewers and scoring; algorithms must never use it |
 | `/sim/scan` | out (Gazebo → lidar_noise) | `sensor_msgs/LaserScan`, perfect ranges, frame `lidar`. Lazy |
 | `/scan` | out (lidar_noise) | `sensor_msgs/LaserScan`, what algorithms and the ground station read. Lazy |
+| `/sim/imu/cg` | out (Gazebo → imu_noise) | `sensor_msgs/Imu`, 1 kHz sim time, frame `imu_cg`, with Gazebo's true orientation. Lazy |
+| `/imu/cg` | out (imu_noise) | `sensor_msgs/Imu` without orientation, what algorithms and the ground station read. Lazy |
 | `/clock` | out | sim time |
 
 ## Placeholders and assumptions
@@ -140,3 +157,4 @@ The car is the F1TENTH (Traxxas) geometry from `f1tenth_simulator`'s `racecar.xa
 
 - The car turns less than commanded: about 0.66 rad/s for 1.0 rad/s requested at 1 m/s. Not yet investigated (steering lag, tire slip or plugin limits).
 - `/sim/odom` drifts from `/sim/ground_truth` during turns (about 0.3 m after a 4 s turn), likely the same cause: the plugin's odometry assumes the commanded turn. No noise is added anywhere yet.
+- The IMU's accelerometer spikes while the car drives: in a 4 s drive at 1 m/s, about 1.4 % of samples read over 2 g and single samples up to 47 g, against a median of 1.00 g. They look like the rigid wheel–ground contacts being resolved each 1 ms step (the model has no suspension or tyre compliance). The ground station's attitude ignores them (it trusts the accelerometer only near 1 g), but its peak g and saturation readouts show them. Where to handle them (physics, `imu_noise.py`, or the display) is not decided.
