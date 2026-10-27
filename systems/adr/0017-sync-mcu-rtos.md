@@ -5,6 +5,9 @@
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-04, SYS-07, SYS-19, SYS-22, SYS-24, SYS-25, ADR-0011, ADR-0016
 
+> [!NOTE]
+> The Context below is from 2026-10-03. ADR-0034 later removed the two CAN-FD telemetry buses: telemetry comes over a UART per motor controller (ICD-controller-telemetry), and the only CAN-FD bus left is the steering's (ADR-0019). The decision, Zephyr, stands.
+
 ## Context
 
 The STM32H723 sync MCU does the car's hard real-time work:
