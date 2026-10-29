@@ -67,7 +67,7 @@ Also: `map` (`oval`, or a map_server YAML file), the oval's `oval_straight`, `ov
 
 ## The gym
 
-Installed in the dev container from git at a fixed commit of its `v1.0.0` branch, with its dependencies pinned in [`.devcontainer/requirements-gym.txt`](../../../.devcontainer/requirements-gym.txt), all with wheels for amd64 and arm64 (ADR-0050). This package uses the gym's `Simulator` rather than its gymnasium environment, which adds lap counting, raceline-based start poses and a renderer. The first start compiles the gym's numba functions, which takes about 10 s without a cache.
+Installed in the dev container from git at a fixed commit of its `v1.0.0` branch. What it needs beyond the image's own Python packages is pinned in [`.devcontainer/requirements-gym.txt`](../../../.devcontainer/requirements-gym.txt), all with wheels for amd64 and arm64 (ADR-0050). numpy, OpenCV and the rest come from the image and are never changed by the gym's install. This package uses the gym's `Simulator` rather than its gymnasium environment, which adds lap counting, raceline-based start poses and a renderer. The renderer is the only part that imports OpenCV, so the environment doesn't start in the dev container while the image's OpenCV can't load (`libGL.so.1` is missing); this backend doesn't need it. The first start compiles the gym's numba functions, which takes about 10 s without a cache.
 
 ## Tests
 

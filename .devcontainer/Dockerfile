@@ -81,14 +81,21 @@ RUN pip install --no-cache-dir "pymavlink==${PYMAVLINK_VERSION}" "cantools==${CA
 # The F1TENTH gym (ADR-0032), for the gym backend (ros/src/arc_backend_sim_gym/).
 # It isn't on PyPI: installed from git at a fixed commit on its v1.0.0 branch
 # (gymnasium; its main branch needs gym 0.19 and numpy <= 1.22, which don't
-# install on Python 3.12). Its dependencies are pinned in requirements-gym.txt,
-# all with wheels for amd64 and arm64 (ADR-0050).
+# install on Python 3.12). What it needs beyond the venv above is pinned in
+# requirements-gym.txt, all with wheels for amd64 and arm64 (ADR-0050).
+# --no-deps everywhere, so the venv's own packages (numpy, cv2, ...) are never
+# changed; `pip check` then fails the build if they don't satisfy the gym.
+# One known line passes: the gym asks for opencv-python < 5 and the venv has
+# Zephyr's 5.x. Only the gym's renderer imports cv2; the backend doesn't.
 ARG F1TENTH_GYM_COMMIT=5a301bd0ae1ceaf7dec653e7549c8d099db58a6b
 COPY .devcontainer/requirements-gym.txt /tmp/requirements-gym.txt
-RUN pip install --no-cache-dir -r /tmp/requirements-gym.txt \
-    && pip install --no-cache-dir --no-deps \
+RUN pip install --no-cache-dir --no-deps -r /tmp/requirements-gym.txt \
+    && pip install --no-cache-dir --no-deps --no-build-isolation \
          "git+https://github.com/f1tenth/f1tenth_gym@${F1TENTH_GYM_COMMIT}" \
     && rm /tmp/requirements-gym.txt \
+    && ! pip check | grep -v \
+         -e '^f1tenth-gym [^ ]* has requirement opencv-python<5' \
+         -e '^No broken requirements found' \
     && python3 -c "import f1tenth_gym.envs.base_classes"
 
 # The motor controllers' VESC firmware (firmware/vesc/, ADR-0033, ADR-0034) builds

@@ -1,40 +1,37 @@
-# The F1TENTH gym's dependencies (ADR-0032), pinned so every image gets the
-# same ones. The gym itself is installed from git at a fixed commit with
-# --no-deps (Dockerfile): it isn't on PyPI.
+# What the F1TENTH gym (ADR-0032) needs that the image doesn't already have,
+# pinned so every image gets the same. The Dockerfile installs these and the
+# gym itself (from git at a fixed commit: it isn't on PyPI) with --no-deps,
+# so pip never changes a package already in /opt/venv, then runs `pip check`:
+# a gym dependency the image doesn't satisfy fails the build (except the gym's
+# opencv-python < 5, which the venv's Zephyr-installed 5.x doesn't meet).
 #
-# The gym's v1.0.0 branch asks for these, with two changes:
-# - opencv-python-headless instead of opencv-python: the same cv2 without
-#   the X and OpenGL libraries the container doesn't have
-# - numpy and PyYAML pinned to Ubuntu 24.04's own (python3-numpy,
-#   python3-yaml), which ROS uses, so pip never replaces them
+# Left to the image, which installs them earlier into the same venv (Zephyr's
+# requirements, the ICD generators; Ubuntu's for PyYAML): numpy (2.x; numba
+# 0.68 needs < 2.6), PyYAML, requests and what it needs, typing_extensions,
+# mypy_extensions, and opencv-python (cv2). Pinning them here would fight
+# those installs. Nothing the gym backend runs imports cv2: only the gym's
+# renderer does.
 #
-# Every package here has wheels for linux amd64 and arm64 (ADR-0050).
-# No release less than 14 days old when pinned: a fresh upload has had no
+# Every package here has wheels for linux amd64 and arm64 (ADR-0050), and no
+# release was less than 14 days old when pinned: a fresh upload has had no
 # time to be yanked or flagged.
 # To update: change a pin, rebuild the image, run `npx nx test ros`.
 
-numpy==1.26.4
-PyYAML==6.0.1
 gymnasium==0.29.1
 pillow==12.3.0
 scipy==1.17.1
 numba==0.68.0
-pygame==2.6.1
-opencv-python-headless==4.11.0.86
+llvmlite==0.50.0      # numba 0.68's: >= 0.50, < 0.51
+pygame==2.6.1         # the gym's renderer only
 yamldataclassconfig==1.5.0
-requests==2.34.2
-shapely==2.2.0  # asked for, though nothing in the gym imports it
+shapely==2.2.0        # asked for, though nothing in the gym imports it
 
 # their dependencies
-certifi==2026.7.22
-charset-normalizer==3.5.2
 cloudpickle==3.1.2
 dataclasses-json==0.6.7
 Farama-Notifications==0.0.6
-idna==3.20
-llvmlite==0.50.0
 marshmallow==3.26.2
-mypy_extensions==1.1.0
-typing_extensions==4.16.0
 typing-inspect==0.9.0
-urllib3==2.8.0
+
+# builds the gym from git (pip's --no-build-isolation)
+poetry-core==2.5.0
