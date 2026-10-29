@@ -32,12 +32,13 @@ A new simulator also needs its name in `SIMS` in `platform.launch.py` and in the
 
 ## Packages
 
-Scaffolding: every package builds and starts; apart from the car backend's sync-link handshake, nothing is implemented yet.
+Scaffolding: every package builds and starts; apart from the car backend's sync-link handshake and `arc_control`, nothing is implemented yet.
 
 | Package | Job | State | Traces to |
 | --- | --- | --- | --- |
 | `arc_msgs` | The car interface: the messages and services in ICD-ros2-msgs that have no standard type | Messages defined (rev A, draft); nothing publishes them yet. A test in `arc_backend_car` checks their constants against the sync link's | ADR-0028, ADR-0047 |
 | `arc_bringup` | Launch files and parameters; `target:=`, `sim:=`, `sensors:=`, `car:=` | Picks the backend and the car configuration; a launch test per backend | ADR-0028, ADR-0032 |
+| `arc_control` | Chooses who drives: the operator's teleop or the experiment's vehicle command, by its mode (`/control/mode`, switched with `/control/set_mode`); a silent source is replaced by the zero command. The envelope itself is on the sync MCU | The rules in ICD-ros2-msgs ("Choosing who drives"), with their TBC values as parameters; started by the platform launch; unit tests on made-up times (with the sanitizers) and a test on a ROS graph | SYS-21, SYS-22, ADR-0048 |
 | `arc_car_config` | Loads a car's configuration ([`config/cars/`](../config/cars/README.md)), checks it, hashes it and works out the top speed | Loader and checks; nothing reads the values yet | ADR-0047, ADR-0051 |
 | `arc_backend_sim_gazebo` | Gazebo Harmonic: full sensor suite, event cameras; Linux with a GPU | Stub | ADR-0032 |
 | `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
@@ -50,7 +51,6 @@ Still to come:
 | Package | Job | Traces to |
 | --- | --- | --- |
 | `arc_drivers` | LiDAR and camera drivers (the Orin has no CAN: motor-controller and steering data come through `arc_backend_car`) | ADR-0001, ADR-0021 |
-| `arc_control` | Chooses between the operator's teleop and the experiment's vehicle command (speed, acceleration limit, steering angle); the envelope itself is on the sync MCU | SYS-22, ADR-0048 |
 | `arc_safety` | Forwards the operator's heartbeat to the sync MCU; the watchdog and the safety envelope run on the sync MCU, not here | SYS-04, SYS-22 |
 | `arc_logging` | Time-aligned logs of every sensor, command and operator input | SYS-09, SYS-23, SYS-24 |
 | Teleop (package TBD) | Operator driving from the laptop | ADR-0015 |
@@ -62,7 +62,7 @@ In the dev container (ROS 2 Jazzy is in the image):
 
 ```bash
 npx nx build ros     # colcon build, into ros/build and ros/install
-npx nx test ros      # colcon test: a launch test per backend, and the car backend's sync-link round trip (gtest)
+npx nx test ros      # colcon test: a launch test per backend, the car backend's sync-link round trip and arc_control's rules (gtest)
 npx nx check ros     # the generated sync-link code matches systems/icd/sync-link.xml
 npx nx test firmware-in-loop   # the native_sim sync MCU firmware and this car backend link up over UDP
 source ros/install/setup.bash

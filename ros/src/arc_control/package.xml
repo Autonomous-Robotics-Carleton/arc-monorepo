@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>arc_control</name>
+  <version>0.0.0</version>
+  <description>Chooses who drives the car: the operator's teleop or the experiment's command, with a timeout on each that replaces a silent source with the zero command (#151, ICD ros2-msgs). The safety envelope is on the sync MCU, not here (SYS-22).</description>
+  <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>arc_msgs</depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
