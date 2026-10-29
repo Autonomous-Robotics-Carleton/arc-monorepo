@@ -11,7 +11,7 @@ The workflows are in [`.github/workflows/`](../../../../../../.github/workflows/
 
 | Job | Runs on | What |
 | --- | --- | --- |
-| `test-and-build` | GitHub's Ubuntu runner | `npx nx affected -t lint test check build --exclude='tag:env:dev-container'`: the docs site, the website, `systems/` and its library. When `systems/` changed, it also checks the HTML pages in `systems/` |
+| `test-and-build` | GitHub's Ubuntu runner | `npx nx affected -t lint test check build --exclude='tag:env:dev-container'`: the docs site, the website, `systems/` and its library. When `systems/` changed, it also checks the HTML pages in `systems/`. On every run, whatever changed, the split check (ADR-0047): code above the split never branches on the target ([Tools](../../../../../../tools/README.md#split-check)) |
 | `dev-image` | GitHub's Ubuntu runner | Picks the dev container image for this branch: it's tagged by a hash of `.devcontainer/` and `firmware/sync-mcu/west.yml`, and built and smoke-tested only if that tag doesn't exist yet. A pull request that changes the image is tested in its own image. Pull requests from forks can't push images, so they use `:latest` |
 | `dev-container` | Inside that image | `npx nx affected -t check build test` for the projects tagged `env:dev-container`: the sync MCU firmware, the VESC firmware, ROS and the firmware-in-the-loop test |
 
