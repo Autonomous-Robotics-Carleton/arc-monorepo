@@ -25,7 +25,7 @@ if(BUILD_TESTING)
     string(REPLACE "." "_" name ${rate})
     add_launch_test(test/test_replay.py
       TARGET test_replay_rate_${name}
-      ARGS "log:=${CMAKE_CURRENT_SOURCE_DIR}/test/data/sample.mcap" "rate:=${rate}"
+      ARGS "bag:=${CMAKE_CURRENT_SOURCE_DIR}/test/data/sample.mcap" "rate:=${rate}"
       TIMEOUT 60)
   endforeach()
 endif()

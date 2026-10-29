@@ -10,7 +10,7 @@ The platform nodes are the same on every target; a **backend** implements the ca
 
 ```bash
 ros2 launch arc_bringup platform.launch.py target:=sim sim:=gym   # or gazebo, webots (ADR-0032); sensors:=lidar|stereo|all
-ros2 launch arc_bringup platform.launch.py target:=replay log:=<log> rate:=1.0   # play back an MCAP log (below)
+ros2 launch arc_bringup platform.launch.py target:=replay bag:=<log> rate:=1.0   # play back an MCAP log (below)
 ros2 launch arc_bringup platform.launch.py target:=car      # the sync MCU over the sync link (ICD-sync-link)
 ```
 
@@ -35,11 +35,11 @@ A new simulator also needs its name in `SIMS` in `platform.launch.py` and in the
 `target:=replay` plays a log through the car interface in place of the car (`arc_backend_replay`, #86). The platform nodes run live on top of it.
 
 ```bash
-ros2 launch arc_bringup platform.launch.py target:=replay log:=run.mcap             # as recorded
-ros2 launch arc_bringup platform.launch.py target:=replay log:=run.mcap rate:=0.5   # half speed
+ros2 launch arc_bringup platform.launch.py target:=replay bag:=run.mcap             # as recorded
+ros2 launch arc_bringup platform.launch.py target:=replay bag:=run.mcap rate:=0.5   # half speed
 ```
 
-- **Logs** are plain rosbag2 MCAP, a `.mcap` file or a bag directory, with the topic names of ICD-ros2-msgs as recorded with no namespace. Nothing else is needed: no run record, no `arc_logging` code.
+- **Logs** (`bag:=`) are plain rosbag2 MCAP, a `.mcap` file or a bag directory, with the topic names of ICD-ros2-msgs as recorded with no namespace. Nothing else is needed: no run record, no `arc_logging` code.
 - **What's played:** only what the car publishes (ICD-ros2-msgs, "Measurements" and "The car's state"): `/sensors/…`, `/car/motor/…`, `/car/steering`, `/car/power`, `/car/safety_state`, `/car/faults`, `/car/link` and `/diagnostics`, with the log's stamps and timing. The platform's own topics in the log (`/car/cmd/…`, `/control/…`, `/estimate/…`, `/tf`) aren't: the live nodes publish them.
 - **`/clock`** comes from the player, on the log's time (40 Hz, rosbag2's default for `ros2 bag play --clock`), and stops at the end of the log. The platform nodes don't run with `use_sim_time` yet, so they still read the system clock.
 - **Commands to the car are ignored:** the backend subscribes to `/car/cmd/…` as the car backend does, logs the first command on each topic and the totals when it stops, and drops them. A log can't be steered.

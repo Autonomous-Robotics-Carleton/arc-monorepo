@@ -80,16 +80,16 @@ private:
 
 // The player for a log, paused or playing; throws if it can't be read
 std::shared_ptr<rosbag2_transport::Player> open_log(
-  const std::string & log, double rate, bool start_paused, double clock_frequency)
+  const std::string & bag, double rate, bool start_paused, double clock_frequency)
 {
   if (!(rate > 0) || !(clock_frequency > 0)) {
     throw std::invalid_argument("rate and clock_frequency must be positive");
   }
-  if (!std::filesystem::exists(log)) {
-    throw std::invalid_argument("no log at " + log);
+  if (!std::filesystem::exists(bag)) {
+    throw std::invalid_argument("no log at " + bag);
   }
   rosbag2_storage::StorageOptions storage;
-  storage.uri = log;
+  storage.uri = bag;
   storage.storage_id = "mcap";
   rosbag2_transport::PlayOptions play;
   play.rate = static_cast<float>(rate);
@@ -106,7 +106,9 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
   auto backend = std::make_shared<CommandSink>();
-  const auto log = backend->declare_parameter<std::string>("log", "");  // .mcap file or bag directory
+  // The log to play, a .mcap file or a bag directory; not `log`, which is
+  // arc_logging's switch for recording the run (#152)
+  const auto bag = backend->declare_parameter<std::string>("bag", "");
   const double rate = backend->declare_parameter("rate", 1.0);  // 2.0: twice as fast
   // Waits for /replay_player/resume, so subscribers can join before the first message
   const bool start_paused = backend->declare_parameter("start_paused", false);
@@ -119,14 +121,14 @@ int main(int argc, char ** argv)
   std::shared_ptr<rosbag2_transport::Player> player;
   rclcpp::TimerBase::SharedPtr end_timer;
 
-  if (log.empty()) {
-    RCLCPP_WARN(logger, "replay backend: no log given (log:=<.mcap file or bag directory>), "
+  if (bag.empty()) {
+    RCLCPP_WARN(logger, "replay backend: no log given (bag:=<.mcap file or bag directory>), "
       "publishing nothing");
   } else {
     try {
-      player = open_log(log, rate, start_paused, clock_frequency);
+      player = open_log(bag, rate, start_paused, clock_frequency);
     } catch (const std::exception & e) {
-      RCLCPP_FATAL(logger, "replay backend: can't play %s: %s", log.c_str(), e.what());
+      RCLCPP_FATAL(logger, "replay backend: can't play %s: %s", bag.c_str(), e.what());
       rclcpp::shutdown();
       return 1;
     }
@@ -140,7 +142,7 @@ int main(int argc, char ** argv)
         end_timer->cancel();
       }
     });
-    RCLCPP_INFO(logger, "replay backend: playing %s at %.2gx%s", log.c_str(), rate,
+    RCLCPP_INFO(logger, "replay backend: playing %s at %.2gx%s", bag.c_str(), rate,
       start_paused ? ", paused" : "");
   }
 
