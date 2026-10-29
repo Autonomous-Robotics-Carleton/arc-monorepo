@@ -1,4 +1,6 @@
-# Switch arc_control between the operator and the experiment (#151).
+# Switch arc_control between the operator and the experiment (#151). Operator
+# mode is always accepted; experiment mode only while the experiment is
+# publishing (ICD ros2-msgs, "Choosing who drives").
 
 uint8 mode # ControlMode.MODE_*
 ---
