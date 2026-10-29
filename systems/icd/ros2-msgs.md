@@ -1,7 +1,7 @@
 # ICD-ros2-msgs
 
 - **Revision:** B (2026-10-29): adds how `arc_control` chooses who drives. Messages in [`ros/src/arc_msgs/`](../../ros/src/arc_msgs/).
-- **Status:** Draft. Topic names, message types and QoS are proposals (TBC) until both sides sign off (#84). Owners: Shrikar Vempati on both sides until reassigned.
+- **Status:** Topic names, message types and QoS profiles reviewed 2026-10-29 by the owner of both sides (#84). Values still to be measured stay TBC: the QoS history depths and the `/diagnostics` rate. Open: the open issues below. Owners: Shrikar Vempati on both sides until reassigned.
 - **Side A:** what publishes the car's measurements and state: the car backend (`arc_backend_car`, the Orin's end of the sync link) and the LiDAR and camera drivers (`arc_drivers`) (owner: Shrikar Vempati, until reassigned)
 - **Side B:** what uses them and commands the car: the platform nodes (`arc_safety`, `arc_control`, `arc_logging`, car state and health), experiments, and the ground station through its bridge (owner: Shrikar Vempati, until reassigned)
 - **Traces to:** SYS-04, SYS-06, SYS-07, SYS-09, SYS-10, SYS-19, SYS-22, SYS-23, SYS-24, SYS-29, ADR-0021, ADR-0028, ADR-0047, ADR-0048, ADR-0049, ADR-0052
@@ -211,7 +211,7 @@ What else stops the car: `arc_control` handles a source that goes silent. `arc_c
 
 ## Open issues
 
-1. Sign-off of the topic names, types and QoS profiles by both sides (#84).
+1. ~~Sign-off~~ **Reviewed (2026-10-29, #84):** the topic names, types and QoS profiles, by the owner of both sides; `arc_control` (#151) is the first node to use them. The values to be measured stay TBC.
 2. High-rate streams: two IMUs, ten angle sensors and five controllers, one message per sample, could cost the Orin a lot of CPU (SYS-24's 50% margin). Measure on the dev kit (rig R5); if it's too much, the options are batching samples into one message per period, or best-effort delivery for subscribers that can skip samples.
 3. Every sensor frame's position relative to `base_link`: from the car's URDF (#105) once the block layout (#103) places the mounts, with per-car calibration in the car configuration (ADR-0054).
 4. Wheel speed in m/s, as a field beside `erpm`: the car configuration now has the gearing, pole pairs and tyre (`config/cars/`, ADR-0054), so what's left is the field itself (#85). Wheel angles in the car's frame wait for calibration (#143).
