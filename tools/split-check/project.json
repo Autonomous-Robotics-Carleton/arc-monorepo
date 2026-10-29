@@ -7,7 +7,7 @@
       "cache": false
     },
     "test": {
-      "command": "node --test tools/split-check/split-check.test.mts"
+      "command": "node --test tools/split-check/split-check.test.mts tools/split-check/split-check.adversarial.test.mts"
     }
   }
 }
