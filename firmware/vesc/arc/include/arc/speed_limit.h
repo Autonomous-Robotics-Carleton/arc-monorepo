@@ -2,9 +2,13 @@
 /*
  * Speed limit (ADR-0034): the maximum eRPM, ~75k (TBC), keeps the motor
  * where the controller's control loop has >= 10 samples per electrical
- * cycle (RSK-18). It holds whatever is commanded: the firmware clamps the
- * configured eRPM limits to it, and upstream enforces those limits in every
- * control mode (current, duty, speed).
+ * cycle (RSK-18). The firmware clamps the configured eRPM limits
+ * (l_min_erpm, l_max_erpm) to it, whatever VESC Tool or a configuration
+ * message sets. Upstream's limit is a soft one: it cuts back the motor
+ * current from l_erpm_start x the limit to zero at the limit, and truncates
+ * speed-mode setpoints. It doesn't brake, so it can't stop overspeed driven
+ * from outside (rolling downhill, being pushed). How the motor behaves at the
+ * limit is confirmed by the sweep on rig R2.
  */
 
 #ifndef ARC_SPEED_LIMIT_H
