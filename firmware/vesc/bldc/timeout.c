@@ -22,6 +22,7 @@
 #include "stm32f4xx_conf.h"
 #include "shutdown.h"
 #include "utils.h"
+#include "arc/estop_port.h"
 
 // Private variables
 static volatile bool init_done = false;
@@ -91,6 +92,9 @@ void timeout_configure(systime_t timeout, float brake_current, KILL_SW_MODE kill
 
 void timeout_reset(void) {
 	last_update_time = chVTGetSystemTimeX();
+	// ARC (ADR-0012): every motor command calls this; a fresh one after an
+	// e-stop release hands control back
+	arc_estop_note_command();
 }
 
 bool timeout_has_timeout(void) {

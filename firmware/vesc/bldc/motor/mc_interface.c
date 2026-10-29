@@ -21,6 +21,7 @@
 #pragma GCC optimize ("Os")
 
 #include "mc_interface.h"
+#include "arc/estop_port.h"
 #include "mcpwm.h"
 #include "mcpwm_foc.h"
 #include "ledpwm.h"
@@ -1850,6 +1851,11 @@ int mc_interface_try_input(void) {
 
 	default:
 		break;
+	}
+
+	// ARC (ADR-0012): no motor command while the e-stop routine brakes
+	if (arc_estop_input_blocked()) {
+		retval = 1;
 	}
 
 	return retval;
