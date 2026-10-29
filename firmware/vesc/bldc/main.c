@@ -53,6 +53,7 @@
 #include "crc.h"
 #include "qmlui.h"
 #include "confgenerator.h"
+#include "arc/estop_port.h"
 
 #if HAS_BLACKMAGIC
 #include "bm_if.h"
@@ -340,6 +341,8 @@ int main(void) {
 
 	ledpwm_init();
 	mc_interface_init(cfg_reset);
+	// ARC (ADR-0012): the e-stop routine, before anything can send commands
+	arc_estop_start();
 
 	commands_init();
 
