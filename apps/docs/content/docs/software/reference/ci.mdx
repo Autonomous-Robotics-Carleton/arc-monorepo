@@ -7,13 +7,14 @@ The workflows are in [`.github/workflows/`](../../../../../../.github/workflows/
 
 ## Pull requests and pushes to main
 
-`ci-and-publish.yml` runs three jobs. Each runs only what your branch affects: Nx compares a pull request with `main`, and a push to `main` with the last commit that passed CI. A newer push to the same pull request cancels the older run.
+`ci-and-publish.yml` runs four jobs. Each runs only what your branch affects: Nx compares a pull request with `main`, and a push to `main` with the last commit that passed CI. A newer push to the same pull request cancels the older run.
 
 | Job | Runs on | What |
 | --- | --- | --- |
 | `test-and-build` | GitHub's Ubuntu runner | `npx nx affected -t lint test check build --exclude='tag:env:dev-container'`: the docs site, the website, `systems/` and its library. When `systems/` changed, it also checks the HTML pages in `systems/`. On every run, whatever changed, the split check (ADR-0047): code above the split never branches on the target ([Tools](../../../../../../tools/README.md#split-check)) |
 | `dev-image` | GitHub's Ubuntu runner | Picks the dev container image for this branch: it's tagged by a hash of `.devcontainer/` and `firmware/sync-mcu/west.yml`, and built and smoke-tested only if that tag doesn't exist yet. A pull request that changes the image is tested in its own image. Pull requests from forks can't push images, so they use `:latest` |
-| `dev-container` | Inside that image | `npx nx affected -t check build test` for the projects tagged `env:dev-container`: the sync MCU firmware, the VESC firmware, ROS and the firmware-in-the-loop test |
+| `dev-container` | Inside that image | `npx nx affected -t check build test` for the projects tagged `env:dev-container`: the sync MCU firmware for all three boards (`native_sim`, `nucleo_h723zg`, `arc_sync`), the VESC firmware, ROS on amd64 and the firmware-in-the-loop test |
+| `ros-arm64` | GitHub's arm64 Ubuntu runner | When ROS is affected: installs the dev container's ROS 2 Jazzy packages and runs `npx nx run-many -t build test -p ros`, so the platform builds and passes its tests on the Orin's architecture too (ADR-0050) |
 
 On pushes to `main`, it also publishes the dev container image as `:latest`, which `devcontainer.json` uses as its build cache, and, when the docs site is affected, builds its image and updates [docs.arcarleton.ca](https://docs.arcarleton.ca).
 
