@@ -1,0 +1,13 @@
+{
+  "name": "split-check",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "check": {
+      "command": "node tools/split-check/split-check.mts",
+      "cache": false
+    },
+    "test": {
+      "command": "node --test tools/split-check/split-check.test.mts"
+    }
+  }
+}
