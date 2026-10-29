@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from arc_logging.recorder import (
+    check_exclude,
     free_gb,
     log_root,
     lost_messages,
@@ -77,8 +78,16 @@ def test_free_gb_measures_where_the_directory_would_be(tmp_path):
 
 def test_run_record_passes_its_fields_through():
     assert run_record('car', '', 'all', 'v1.0', 'abc') == {
-        'target': 'car', 'sim': '', 'sensors': 'all', 'car': 'v1.0', 'car_config': 'abc'}
+        'target': 'car', 'sim': '', 'sensors': 'all', 'car': 'v1.0', 'car_config': 'abc',
+        'log_exclude': ''}
     assert run_record('sim', 'gym', 'lidar', 'twin', 'abc')['sim'] == 'gym'
+
+
+def test_run_record_says_what_the_log_left_out():
+    record = run_record('car', '', 'all', 'v1.0', 'abc', '/sensors/camera/.*')
+    assert record['log_exclude'] == '/sensors/camera/.*'
+    cmd = record_command('/logs/run', record, 60, '/sensors/camera/.*')
+    assert 'log_exclude=/sensors/camera/.*' in cmd[cmd.index('--custom-data') + 1:]
 
 
 def test_record_command_logs_every_topic_to_mcap_in_chunks():
@@ -92,6 +101,21 @@ def test_record_command_logs_every_topic_to_mcap_in_chunks():
     assert not {'--topics', '--regex', '-e', '--exclude-regex', '--exclude-topics'} & set(cmd)
     # the record goes last (--custom-data takes every argument after it); empty fields left out
     assert cmd[cmd.index('--custom-data') + 1:] == ['target=car', 'car=v1.0']
+
+
+def test_record_command_excludes_topics_only_when_asked():
+    record = {'target': 'car'}
+    assert '--exclude-regex' not in record_command('/logs/run', record, 60, '')
+    cmd = record_command('/logs/run', record, 60, '/sensors/camera/.*')
+    assert cmd[cmd.index('--exclude-regex') + 1] == '/sensors/camera/.*'
+    assert cmd.index('--exclude-regex') < cmd.index('--custom-data')
+
+
+def test_check_exclude_refuses_what_rosbag2_cant_use_or_record():
+    assert check_exclude('') is None
+    assert check_exclude('/sensors/camera/.*|/sensors/ground_camera') is None
+    assert '=' in check_exclude('/a(?=b)')
+    assert 'regex' in check_exclude('/sensors/camera/[')
 
 
 def test_lost_messages_reads_rosbag2s_reports():

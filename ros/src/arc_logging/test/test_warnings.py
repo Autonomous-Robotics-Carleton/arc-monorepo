@@ -5,6 +5,7 @@
     no_log_dir     must_log, and neither log_dir:= nor $ARC_LOG_DIR is set
     low_space      less free space than min_free_gb: nothing is recorded or deleted
     recorder_dies  the recorder is killed mid-run
+    bad_exclude    log_exclude can't be used: the whole run is recorded instead
 """
 
 import os
@@ -37,6 +38,8 @@ CASES = {
     'low_space': ({'log': 'true', 'log_dir': str(LOG_DIR), 'min_free_gb': '1e12'},
                   'Free space on the log drive'),
     'recorder_dies': ({'log': 'true', 'log_dir': str(LOG_DIR)}, 'RECORDER STOPPED'),
+    'bad_exclude': ({'log': 'true', 'log_dir': str(LOG_DIR), 'log_exclude': '/a(?=b)'},
+                    'every topic is recorded'),
 }
 
 
@@ -76,7 +79,7 @@ class TestShutdown(unittest.TestCase):
 
     def test_nothing_recorded_or_deleted(self):
         runs = list(LOG_DIR.iterdir())
-        if CASE == 'recorder_dies':
-            self.assertEqual(len(runs), 1)  # the run up to where the recorder died
+        if CASE in ('recorder_dies', 'bad_exclude'):
+            self.assertEqual(len(runs), 1)  # the run up to where the recorder died, or all of it
         else:
             self.assertEqual(runs, [])

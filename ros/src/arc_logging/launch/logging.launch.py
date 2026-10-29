@@ -25,6 +25,8 @@ ARGS = {
     'min_free_gb': ('20.0', 'TBC: free space needed to start logging, GB: '
                             'log rate x the longest run (SYS-03) x a margin'),
     'chunk_s': ('60', 'TBC: length of each log chunk, s: the most a crash or power loss loses'),
+    'log_exclude': ('', 'Regex of topics not to record (rosbag2 --exclude-regex); '
+                        'empty records every topic'),
     'target': ('', 'Run record: the target'),
     'sim': ('', 'Run record: the simulator, if any'),
     'sensors': ('', 'Run record: the sensor profile'),

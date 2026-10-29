@@ -33,6 +33,7 @@ LOG_DIR = Path(tempfile.mkdtemp(prefix='arc_logging_test_'))
 TALKER = os.path.join(os.path.dirname(__file__), 'talker.py')
 PLATFORM = 'test/platform'
 EXPERIMENT = 'test/experiment'
+LEFT_OUT = 'test/left_out'  # matches log_exclude: never recorded
 CRASH_AFTER = 10  # messages, half a second at 20 Hz
 CHUNK_S = 2  # so a few seconds' run is split
 
@@ -52,9 +53,10 @@ def generate_test_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(logging),
             launch_arguments={'log': 'true', 'log_dir': str(LOG_DIR),
-                              'chunk_s': str(CHUNK_S),
+                              'chunk_s': str(CHUNK_S), 'log_exclude': f'/{LEFT_OUT}$',
                               'target': 'sim', 'sim': 'gym', 'car': 'twin'}.items()),
         talker(PLATFORM),
+        talker(LEFT_OUT),
         experiment,
         launch_testing.actions.ReadyToTest(),
     ]), {'experiment': experiment}
@@ -124,3 +126,11 @@ class TestLog(unittest.TestCase):
         self.assertEqual(record['sim'], 'gym')
         self.assertEqual(record['car'], 'twin')
         self.assertRegex(record['car_config'], r'^[0-9a-f]{64}$')
+        self.assertEqual(record['log_exclude'], f'/{LEFT_OUT}$')
+
+    def test_excluded_topic_is_left_out(self):
+        run, _ = read_log()
+        info = rosbag2_py.Info().read_metadata(str(run), 'mcap')
+        topics = {t.topic_metadata.name for t in info.topics_with_message_count}
+        self.assertIn(f'/{PLATFORM}', topics)
+        self.assertNotIn(f'/{LEFT_OUT}', topics)
