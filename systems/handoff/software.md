@@ -92,7 +92,7 @@ The starting point for anyone writing the car's software. It collects, per compo
   - Stub backends for Gazebo, Webots, the gym and replay.
 - **Requirements:** SYS-06, -08, -09, -21, -22, -23, -24, -29, -30.
 - **Open:**
-  - **The car interface (ICD-ros2-msgs, #84):** drafted (rev A); its topic names, types and QoS await sign-off, and its open issues list what waits on the car configuration (#143) and the operator link (#144).
+  - **The car interface (ICD-ros2-msgs):** topic names, types and QoS reviewed (2026-10-29, #84); its open issues list what waits on the car configuration (#143) and the operator link (#144).
   - **The car backend (#85):** every sync-link message to and from topics, with time mapped onto the Orin's clock.
   - **Nodes not started:**
 
