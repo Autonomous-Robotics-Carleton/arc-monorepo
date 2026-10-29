@@ -8,6 +8,7 @@ Run once per backend by CMakeLists.txt: target:=sim with each sim:=, then
 target:=replay and target:=car.
 """
 
+import re
 import sys
 import tempfile
 import unittest
@@ -57,9 +58,12 @@ class TestBackendStarts(unittest.TestCase):
 
     def test_arc_logging_follows_the_targets_default(self, proc_output):
         on_car = dict(a.split(':=', 1) for a in sys.argv if ':=' in a).get('target') == 'car'
-        expected = ('[arc_logging_recorder]: Recording...' if on_car
-                    else 'arc_logging: not logging (log:=false)')
-        proc_output.assertWaitFor(expected, timeout=30)
+        # the car logs by default: it records, or (on a test machine with less free
+        # space than min_free_gb, a full run's log) says it can't
+        expected = (re.compile(r'\[arc_logging_recorder\]: Recording\.\.\.'
+                               r'|arc_logging: NOT LOGGING: .* below min_free_gb')
+                    if on_car else 'arc_logging: not logging (log:=false)')
+        proc_output.assertWaitFor(expected_output=expected, timeout=30)
 
 
 @launch_testing.post_shutdown_test()

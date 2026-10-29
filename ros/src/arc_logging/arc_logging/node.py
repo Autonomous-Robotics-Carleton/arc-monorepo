@@ -3,7 +3,10 @@ tells the operator whether the run is being logged.
 
 The recorder is a child process in its own session, so it outlives anything
 an experiment does (SYS-21) and only this node signals it. If this node dies,
-the kernel sends the recorder SIGINT and it still closes its file. At
+the kernel sends the recorder SIGINT and it still closes its file: it's
+started through setpriv --pdeathsig, so nothing runs in the forked child
+before exec (Python code there can deadlock on a lock one of the node's DDS
+threads held at the fork). At
 shutdown the node forwards SIGINT and waits for the recorder to write out its
 cache.
 
@@ -16,12 +19,11 @@ recording (or when not logging was asked for), WARN when the run isn't being
 logged and should be (including while the recorder starts), when the recorder
 fails to start or hasn't started within start_timeout_s, when it stops
 mid-run, when rosbag2 reports
-lost messages, when free space drops below min_free_gb, or when log_exclude
+lost messages, when free space drops below warn_free_gb, or when log_exclude
 can't be used (the run is then recorded whole). The platform never stops for
 any of these.
 """
 
-import ctypes
 import os
 import signal
 import subprocess
@@ -48,12 +50,8 @@ from arc_logging.recorder import (
     started,
 )
 
-PR_SET_PDEATHSIG = 1
-
-
-def _die_with_parent():
-    """In the recorder, before exec: SIGINT it if this node dies, so it closes its file."""
-    ctypes.CDLL('libc.so.6', use_errno=True).prctl(PR_SET_PDEATHSIG, signal.SIGINT)
+# SIGINT the recorder if this node dies, so it still closes its file
+DIE_WITH_PARENT = ['setpriv', '--pdeathsig', 'INT', '--']
 
 
 class Logger(Node):
@@ -63,12 +61,16 @@ class Logger(Node):
         log = self.declare_parameter('log', False).value
         must_log = self.declare_parameter('must_log', False).value
         log_dir = self.declare_parameter('log_dir', '').value
-        # TBC: the log rate (TBD, E-04) x the longest run (SYS-03) x a margin
-        self.min_free_gb = self.declare_parameter('min_free_gb', 20.0).value
+        # TBC: a full run's log, ~178 GB (v1.0's ~296 MB/s, total-electrical-cost.md, x
+        # SYS-03's 10 min), x 1.5
+        self.min_free_gb = self.declare_parameter('min_free_gb', 270.0).value
+        # TBC: free space below which a run already recording warns: ~3 min of v1.0 logging
+        self.warn_free_gb = self.declare_parameter('warn_free_gb', 60.0).value
         # TBC: the most a crash or power loss may lose
-        self.chunk_s = self.declare_parameter('chunk_s', 60).value
+        self.chunk_s = self.declare_parameter('chunk_s', 15).value
         # TBC: how long rosbag2 may take to start recording before the operator is warned
-        self.start_timeout_s = self.declare_parameter('start_timeout_s', 10.0).value
+        # (~1 s on a desktop)
+        self.start_timeout_s = self.declare_parameter('start_timeout_s', 5.0).value
         # topics not to record (rosbag2's --exclude-regex); empty records everything
         self.exclude = self.declare_parameter('log_exclude', '').value
         self.exclude_problem = check_exclude(self.exclude)
@@ -105,9 +107,10 @@ class Logger(Node):
         self.started_at = time.monotonic()
         env = dict(os.environ, RCUTILS_LOGGING_BUFFERED_STREAM='1')
         self.proc = subprocess.Popen(
-            record_command(self.plan.output, record, self.chunk_s, self.exclude),
+            [*DIE_WITH_PARENT,
+             *record_command(self.plan.output, record, self.chunk_s, self.exclude)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=env,
-            start_new_session=True, preexec_fn=_die_with_parent)
+            start_new_session=True)
         self.reader = threading.Thread(target=self.read_recorder, daemon=True)
         self.reader.start()
 
@@ -127,7 +130,9 @@ class Logger(Node):
             return self.plan.warn, self.plan.message
         code = self.proc.poll()
         if code is not None:
-            self.reader.join()  # it has exited: read all it said before deciding
+            # it has exited: read what it said before deciding, but never hang the
+            # node on a pipe something else still holds open
+            self.reader.join(timeout=1.0)
         if not self.recording.is_set():
             return start_status(code, time.monotonic() - self.started_at,
                                 self.start_timeout_s, self.must_log)
@@ -140,10 +145,10 @@ class Logger(Node):
         if self.lost:
             warn, message = True, f'{message}; rosbag2 reports {self.lost} messages lost'
         space = free_gb(self.root)
-        if space < self.min_free_gb:
+        if space < self.warn_free_gb:
             warn, message = True, (
-                f'{message}; LOW SPACE: {space:.1f} GB free, below min_free_gb '
-                f'({self.min_free_gb:g} GB). Free space on the log drive (logs are never '
+                f'{message}; LOW SPACE: {space:.1f} GB free, below warn_free_gb '
+                f'({self.warn_free_gb:g} GB). Free space on the log drive (logs are never '
                 'deleted automatically)')
         return warn, message
 
@@ -161,6 +166,7 @@ class Logger(Node):
         values = {
             'log_dir': str(self.plan.output or self.root or ''),
             'min_free_gb': f'{self.min_free_gb:g}',
+            'warn_free_gb': f'{self.warn_free_gb:g}',
             'chunk_s': str(self.chunk_s),
             'log_exclude': self.exclude,
             'messages_lost': str(self.lost),
