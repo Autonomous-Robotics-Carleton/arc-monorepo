@@ -1,5 +1,5 @@
-# Our additions to the VESC firmware, built and tested on the host. They
-# join the firmware build (firmware/vesc/bldc) as they're implemented.
+# Our additions to the VESC firmware, built and tested on the host. arc.mk
+# joins them to the firmware build (firmware/vesc/bldc).
 cmake_minimum_required(VERSION 3.20)
 project(arc_vesc C)
 

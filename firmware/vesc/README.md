@@ -13,7 +13,7 @@ It's stock VESC firmware plus four additions:
 
 ## Upstream and updates (ADR-0033)
 
-Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. `bldc/` is unmodified so far: our additions are developed as modules in `arc/`, and the edits that join them to the build will be ordinary commits in `bldc/` (ADR-0037).
+Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. Our additions are modules in `arc/`; `bldc/` carries only the ordinary commits that join them to the build (ADR-0037): one line in `make/fw.mk` that includes `arc/arc.mk`, and the call sites, each marked with an `ARC` comment.
 
 ```bash
 tools/vesc-upstream.sh import <ref>   # first import: done, at release_7_00 (SQ-3)
@@ -28,8 +28,8 @@ The script stages its result but doesn't commit it; on conflicts it lists the fi
 
 | Path | What |
 | --- | --- |
-| `bldc/` | Upstream VESC firmware (unmodified so far; our edits will be ordinary commits) |
-| `arc/` | Our additions (e-stop, UART telemetry, speed limit; the command timeout to come) as modules with host tests. Stubs so far, fail-safe; each joins the firmware build in `bldc/` as it's implemented |
+| `bldc/` | Upstream VESC firmware, plus the hooks that join `arc/` to the build (marked `ARC`) |
+| `arc/` | Our additions (e-stop, UART telemetry, speed limit; the command timeout to come) as modules with host tests; `arc.mk` joins them to the firmware build. A module not implemented yet is a fail-safe stub |
 | `UPSTREAM` | The upstream commit `bldc/` is based on |
 
 ## Build and test
