@@ -4,7 +4,9 @@
     log_off        must_log, but log:=false was passed
     no_log_dir     must_log, and neither log_dir:= nor $ARC_LOG_DIR is set
     low_space      less free space than min_free_gb: nothing is recorded or deleted
-    recorder_dies  the recorder is killed mid-run
+    recorder_dies  the recorder is killed once it is recording
+    fails_to_start rosbag2 can't create the log directory, so the recorder exits
+                   before it records anything
     bad_exclude    log_exclude can't be used: the whole run is recorded instead
 """
 
@@ -38,6 +40,10 @@ CASES = {
     'low_space': ({'log': 'true', 'log_dir': str(LOG_DIR), 'min_free_gb': '1e12'},
                   'Free space on the log drive'),
     'recorder_dies': ({'log': 'true', 'log_dir': str(LOG_DIR)}, 'RECORDER STOPPED'),
+    # /proc can't hold directories, even for root; it reports no free space, hence min_free_gb 0
+    'fails_to_start': ({'log': 'true', 'must_log': 'true', 'min_free_gb': '0',
+                        'log_dir': f'/proc/arc_logging_test_{os.getpid()}'},
+                       'the recorder failed to start (exit code 1)'),
     'bad_exclude': ({'log': 'true', 'log_dir': str(LOG_DIR), 'log_exclude': '/a(?=b)'},
                     'every topic is recorded'),
 }
@@ -63,7 +69,9 @@ class TestWarning(unittest.TestCase):
     def test_operator_is_warned(self, proc_info):
         _, text = CASES[CASE]
         if CASE == 'recorder_dies':
+            # "recording to" only once rosbag2 is recording into the run's directory
             self.assertIsNotNone(wait_for_status(DiagnosticStatus.OK, 'recording to'))
+            self.assertEqual(len(list(LOG_DIR.iterdir())), 1)
             subprocess.run(['pkill', '-KILL', '-f', f'ros2 bag record .*{LOG_DIR}'], check=True)
         status = wait_for_status(DiagnosticStatus.WARN, text)
         self.assertIsNotNone(status, f'no WARN on /diagnostics saying "{text}"')

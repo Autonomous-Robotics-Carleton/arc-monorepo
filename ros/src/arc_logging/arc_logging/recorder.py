@@ -155,6 +155,30 @@ def record_command(output, record, chunk_s, exclude='', node_name='arc_logging_r
     ]
 
 
+def started(line, output):
+    """Whether this recorder output line shows rosbag2 recording into `output`.
+
+    rosbag2 (Jazzy) logs "Recording..." once it has opened its writer, which
+    creates the output directory; until then nothing is being recorded.
+    """
+    return 'Recording...' in line and Path(output).is_dir()
+
+
+def start_status(code, waited_s, start_timeout_s, must_log):
+    """(warn, message) while the recorder hasn't started recording.
+
+    `code` is its exit code if it has exited. Never "recording": that's said
+    only once rosbag2 shows it is (`started`).
+    """
+    if code is not None:
+        return True, (f'NOT LOGGING: the recorder failed to start (exit code {code}): '
+                      'this run is not recorded')
+    if waited_s > start_timeout_s:
+        return True, (f'NOT LOGGING: the recorder has not started after {waited_s:.0f} s '
+                      f'(start_timeout_s {start_timeout_s:g} s): this run is not being recorded')
+    return must_log, 'starting the recorder: not recording yet'
+
+
 _LOST = re.compile(r'Total lost: (\d+)')
 
 
