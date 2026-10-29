@@ -2242,9 +2242,11 @@ void mc_interface_adc_inj_int_handler(void) {
  * The configaration to update.
  */
 static void update_override_limits(volatile motor_if_state_t *motor, volatile mc_configuration *conf) {
-	// ARC (ADR-0034): cap |eRPM| whatever the configuration says. Runs on
-	// every configuration change and every timer tick, so it also catches
-	// COMM_SET_MCCONF_TEMP, which writes the live configuration directly.
+	// ARC (ADR-0034): cap the configured eRPM limits, whatever the
+	// configuration says. Runs on every configuration change and every timer
+	// tick, so it also catches COMM_SET_MCCONF_TEMP, which writes the live
+	// configuration directly. The limits below are a soft current cut-back
+	// near the limit, not a brake: overspeed driven from outside isn't stopped.
 	{
 		float min_erpm = conf->l_min_erpm;
 		float max_erpm = conf->l_max_erpm;
