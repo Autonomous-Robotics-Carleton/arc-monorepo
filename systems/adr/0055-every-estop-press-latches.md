@@ -72,7 +72,9 @@ The hardware stop doesn't change: the controllers still brake on the ramp, and t
 
 ## Open questions
 
-These came up while recording the decisions above. They're not decided here.
+These came up while recording the decisions above. They're not decided here. Each has the owner's proposed answer, chosen on the strict side, for Ashwin's review with the rest of this ADR.
 
 1. **Telling a missed press from a wiring fault.** Item 1 latches on a corner's e-stop report that the input missed, and item 4 calls a corner's report with the input showing released a wiring fault. A press too short for the input's debounce looks like the second case. The input and the corners' telemetry also change at slightly different moments on every press and release. How long they may disagree before it counts as a wiring fault (TBD), and whether a missed press is reported as the e-stop or as a wiring fault, are open.
+   - *Proposed:* report it as a wiring fault, so it needs the restart of ADR-0039 item 5 and someone looks at the wiring, rather than the lighter re-arm. The car is latched either way. They may disagree for at most TBC 20 ms, several 1 ms corner reports and short of any stop, before it counts. If this makes ordinary presses restart the car, the input's debounce or the window is wrong; don't relax the reporting.
 2. **A button held at power-on and the power-on latch.** Item 7 makes the release the cycle. The power-on latch (`ARC_LATCH_CAUSE_POWER_ON`) is reset like a fault stop, with the press held past T (ADR-0039, ADR-0053). Open: must the button have been held at least T from power-on for its release to reset the power-on latch too, or does any release count?
+   - *Proposed:* held at least T from power-on, the same rule as resetting a fault stop (ADR-0039, ADR-0053). A shorter hold clears the e-stop latch only; the power-on latch then still needs its own reset.
