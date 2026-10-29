@@ -198,6 +198,7 @@ include comm/comm.mk
 include motor/motor.mk
 include util/util.mk
 include driver/driver.mk
+include ../arc/arc.mk
 
 ifeq ($(USE_LISPBM),1)
   INCDIR += $(LISPBMINC)
