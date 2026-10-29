@@ -2,13 +2,25 @@
 <package format="3">
   <name>arc_backend_replay</name>
   <version>0.0.0</version>
-  <description>Log-replay backend of the car interface: plays MCAP logs back as if they were the car (ADR-0028). Stub.</description>
+  <description>Log-replay backend of the car interface: plays a rosbag2 MCAP log back as if it were the car, as recorded or faster or slower (ADR-0028, #86). Commands are received and ignored.</description>
   <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>arc_msgs</depend>
+  <depend>rosbag2_storage</depend>
+  <depend>rosbag2_transport</depend>
+  <exec_depend>rosbag2_storage_mcap</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>launch_testing_ros</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>rosbag2_interfaces</test_depend>
+  <test_depend>rosgraph_msgs</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>rosbag2_py</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

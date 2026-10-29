@@ -51,7 +51,8 @@ def expected_backend():
 class TestBackendStarts(unittest.TestCase):
 
     def test_chosen_backend_reports_in(self, proc_output):
-        proc_output.assertWaitFor(f'{expected_backend()}: not implemented yet', timeout=30)
+        # its startup line; what follows the name depends on the backend
+        proc_output.assertWaitFor(f'{expected_backend()}: ', timeout=30)
 
     def test_arc_control_reports_in(self, proc_output):
         proc_output.assertWaitFor('arc_control: operator mode, waiting for teleop', timeout=30)
