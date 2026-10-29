@@ -94,6 +94,14 @@ The full rules are in [`systems/README.md`](../systems/README.md). The short ver
 - Generated code (`firmware/sync-mcu/app/generated/`, `ros/src/arc_backend_car/include/arc_mavlink/`) is never edited by hand: change the schema in `systems/icd/` and run `tools/gen-interfaces.sh`.
 - `firmware/vesc/` is GPL-3.0 (upstream's licence; ADR-0033); the rest of the repo is MIT. Don't copy code from it into other parts of the repo. Upstream updates go through `tools/vesc-upstream.sh update <ref>` in a PR of their own.
 
+## Engineering practices
+
+- **Flaky tests are fixed or quarantined, never re-run until they pass.** A test that sometimes fails is a bug, in the test or in the code. Fix it, or take it out of the CI run with an issue that tracks the fix.
+- **Every incident ends in a test.** A hardware or firmware failure during a run gets a *Failure report* ([`ISSUE_TEMPLATE/failure-report.yml`](ISSUE_TEMPLATE/failure-report.yml), SYS-18), and the report isn't closed until a scenario or replay test reproduces the failure and passes with the fix. Link the test under *Fix*. The scenario runner (#157) and replay (#86) are still being built.
+- **Releases:** not decided yet (#180). Today, tags name only `systems/` baselines and gated builds (`sys-v1-srr`, `power-board-r1`; see [`systems/README.md`](../systems/README.md)).
+- **Hardware runners:** not set up yet (#183). Because the repo is public, hardware jobs will run only on `main` or on PRs a member has approved, never automatically on a fork's code. The car itself is never a CI runner: a CI job runs unattended, and nothing drives a real car with nobody at the e-stop ([platform plan](../systems/software/platform-plan.md)).
+- **Coverage on safety code:** the minimum isn't decided yet (#159). Until then, a reviewer checks that every safety function has its own tests.
+
 ## Security
 
 Don't open a public issue for a vulnerability. See [`SECURITY.md`](../SECURITY.md).
