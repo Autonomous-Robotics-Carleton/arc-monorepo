@@ -87,9 +87,10 @@ The starting point for anyone writing the car's software. It collects, per compo
   - Launch with `ros2 launch arc_bringup platform.launch.py target:=… sim:=… sensors:=…`.
 - **What exists:**
   - `arc_msgs` with the car interface's messages (ICD-ros2-msgs, rev A, draft); nothing publishes them yet.
-  - `arc_bringup` (launch, a launch test per backend). Each test waits for the literal log line "not implemented yet", so it breaks as soon as its backend is implemented.
+  - `arc_bringup` (launch, a launch test per backend). Each test waits for its backend's startup line (`<target> backend: `).
   - The car backend, which only does the link handshake.
-  - Stub backends for Gazebo, Webots, the gym and replay.
+  - Stub backends for Gazebo, Webots and the gym.
+  - The replay backend: plays a rosbag2 MCAP log's car topics back with their timing, faster or slower; commands are ignored (#86).
 - **Requirements:** SYS-06, -08, -09, -21, -22, -23, -24, -29, -30.
 - **Open:**
   - **The car interface (ICD-ros2-msgs):** topic names, types and QoS reviewed (2026-10-29, #84); its open issues list what waits on the car configuration (#143) and the operator link (#144).
