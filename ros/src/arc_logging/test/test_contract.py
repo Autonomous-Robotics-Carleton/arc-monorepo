@@ -1,6 +1,7 @@
 """What the logger promises, checked against what it depends on: the
-decisions on logging (ros/README.md), rosbag2's command line, bringup's
-defaults, and the log rate in systems/. Written apart from test_recorder.py's
+decisions on logging (ros/README.md, ADR-0056), rosbag2's command line,
+bringup's defaults, the image types in ICD-ros2-msgs and the log rate in
+systems/. Written apart from test_recorder.py's
 worked cases; these fail when either side drifts.
 """
 
@@ -17,8 +18,11 @@ import pytest
 
 from arc_logging.recorder import (
     check_exclude,
+    FALLBACK_PROFILE,
+    IMAGE_TYPES,
     log_root,
     plan,
+    PROFILES,
     record_command,
     run_dir,
     run_name,
@@ -38,19 +42,29 @@ def _module(path, name):
 
 # --- whether a run is recorded, and what the operator is told ---------------
 
-@pytest.mark.parametrize('log,must_log,has_root,space', itertools.product(
-    (False, True), (False, True), (False, True), (0.0, 99.9, 100.0, 1e6)))
-def test_plan_over_every_case(tmp_path, log, must_log, has_root, space):
+FALLBACK_MIN = PROFILES[FALLBACK_PROFILE].min_free_gb
+
+
+@pytest.mark.parametrize('log,must_log,has_root,profile,space', itertools.product(
+    (False, True), (False, True), (False, True), tuple(PROFILES),
+    (0.0, FALLBACK_MIN - 0.1, FALLBACK_MIN, 99.9, 100.0, 1e6)))
+def test_plan_over_every_case(tmp_path, log, must_log, has_root, profile, space):
     root = tmp_path if has_root else None
     before = sorted(tmp_path.rglob('*'))
-    p = plan(log, must_log, root, 'run', 100.0, free=lambda _: space)
+    p = plan(log, must_log, root, 'run', profile, 100.0, free=lambda _: space)
 
-    recording = log and has_root and space >= 100.0
+    fits = space >= 100.0
+    falls_back = not fits and profile != FALLBACK_PROFILE and space >= FALLBACK_MIN
+    recording = log and has_root and (fits or falls_back)
     assert (p.output is not None) == recording
     if recording:
         assert p.output.parent == tmp_path and not p.output.exists()
-        assert not p.warn and 'recording to' in p.message
+        assert 'recording to' in p.message
+        # the profile asked for, unless it didn't fit: then the fallback, with a warning
+        assert p.profile == (profile if fits else FALLBACK_PROFILE)
+        assert p.warn == (not fits)
     else:
+        assert p.profile == profile
         assert 'recording to' not in p.message
         # a car run that isn't recorded is always a warning, never silent
         if must_log:
@@ -125,12 +139,15 @@ def test_exclude_patterns_that_cant_be_recorded_are_refused():
 
 def test_record_command_is_an_argument_list():
     nasty = "/x'; rm -rf / #  $(touch y)"
-    cmd = record_command(Path('/logs/run one'), {'target': 'car'}, 15.9, nasty)
+    cmd = record_command(Path('/logs/run one'), {'target': 'car'}, 15.9, nasty,
+                         ('a/msg/B', nasty))
     assert cmd[:3] == ['ros2', 'bag', 'record']
     assert all(isinstance(a, str) for a in cmd)
     # each value is one argument, passed as is: no shell ever sees it
     assert cmd[cmd.index('--output') + 1] == '/logs/run one'
     assert cmd[cmd.index('--exclude-regex') + 1] == nasty
+    types = cmd.index('--exclude-topic-types')
+    assert cmd[types + 1:cmd.index('--custom-data')] == ['a/msg/B', nasty]
     assert cmd[cmd.index('--max-bag-duration') + 1] == '15'
     assert cmd[cmd.index('--storage') + 1] == 'mcap'
     assert '--all-topics' in cmd and '--disable-keyboard-controls' in cmd
@@ -141,7 +158,8 @@ def test_rosbag2_still_has_every_flag_used():
     """A rosbag2 update that renames or drops a flag fails here, not on the car."""
     help_text = subprocess.run(['ros2', 'bag', 'record', '--help'], capture_output=True,
                                text=True, check=True).stdout
-    flags = {a for a in record_command('/x', {'k': 'v'}, 15, 'e') if a.startswith('--')}
+    flags = {a for a in record_command('/x', {'k': 'v'}, 15, 'e', IMAGE_TYPES)
+             if a.startswith('--')}
     for flag in flags:
         assert re.search(rf'(^|\s|\[){re.escape(flag)}\b', help_text), flag
 
@@ -195,19 +213,75 @@ def test_launch_and_node_agree_on_every_default():
         assert value == node[name], f'{name}: launch {default!r}, node {node[name]!r}'
 
 
-def test_free_space_holds_a_full_run():
-    """min_free_gb covers a whole run at systems/'s log rate (SYS-09, SYS-03),
-    and the running warning comes before the drive fills."""
+def _adr_0056():
+    return (REPO / 'systems/adr/0056-logging-profiles.md').read_text()
+
+
+def test_profiles_are_the_adrs():
+    """ADR-0056's table: each profile's free space to start and to warn."""
+    rows = {name: (float(start), float(warn)) for name, start, warn in re.findall(
+        r'^\s*\| `(\w+)` \| [^|]+ \| ([\d.]+) GB[^|]*\| ([\d.]+) GB[^|]*\|$', _adr_0056(), re.M)}
+    assert set(rows) == set(PROFILES), rows
+    for name, profile in PROFILES.items():
+        assert rows[name] == (profile.min_free_gb, profile.warn_free_gb), name
+    assert FALLBACK_PROFILE == 'minimal'
+
+
+def test_node_and_launch_default_to_the_profiles_own_space():
+    """min_free_gb and warn_free_gb are overrides: by default each profile's own."""
+    node = _node_defaults()
+    assert node['log_profile'] == FALLBACK_PROFILE == 'minimal'
+    assert node['min_free_gb'] < 0 and node['warn_free_gb'] < 0
+
+
+def _space(profile, rate_mb_s, run_s):
+    """min_free_gb holds a run at the rate, x 1.5; warn_free_gb gives >= 2 min."""
+    run_gb = rate_mb_s * run_s / 1000
+    assert profile.min_free_gb >= run_gb * 1.5, (profile, run_gb)
+    assert 0 < profile.warn_free_gb < profile.min_free_gb
+    assert profile.warn_free_gb * 1000 / rate_mb_s >= 120, \
+        f'warn_free_gb gives the operator under 2 minutes at {rate_mb_s} MB/s'
+
+
+def test_full_space_holds_a_full_run():
+    """full covers a whole run at systems/'s log rate (SYS-09, SYS-03)."""
     cost = (REPO / 'systems/bom/total-electrical-cost.md').read_text()
     m = re.search(r'\*\*(\d+) GB per 10-minute run\*\*', cost)
     assert m, 'the v1.0 log size moved: update this test'
-    run_gb = float(m.group(1))
-    defaults = _node_defaults()
-    assert defaults['min_free_gb'] >= run_gb * 1.5, (defaults['min_free_gb'], run_gb)
-    assert 0 < defaults['warn_free_gb'] < defaults['min_free_gb']
     rate = re.search(r'write about \*\*(\d+) MB/s\*\*', cost)
-    assert rate and defaults['warn_free_gb'] * 1000 / float(rate.group(1)) >= 120, \
-        'warn_free_gb gives the operator under 2 minutes'
+    assert rate, 'the v1.0 log rate moved: update this test'
+    assert abs(float(rate.group(1)) * 600 / 1000 - float(m.group(1))) < 1
+    _space(PROFILES['full'], float(rate.group(1)), 600)
+    assert PROFILES['full'].exclude_types == ()
+
+
+def test_minimal_space_holds_a_full_run():
+    """minimal covers a whole run at ADR-0056's upper estimate of its rate."""
+    m = re.search(r'\| `minimal` \| ≤ (\d+) MB/s', _adr_0056())
+    assert m, "ADR-0056's minimal rate moved: update this test"
+    _space(PROFILES['minimal'], float(m.group(1)), 600)
+
+
+def _icd_types():
+    icd = (REPO / 'systems/icd/ros2-msgs.md').read_text()
+    return {f'{pkg}/msg/{name}' for pkg, name in re.findall(r'`(\w+_msgs)/(\w+)`', icd)}
+
+
+def test_minimal_leaves_out_every_image_in_the_icd_and_nothing_else():
+    types = _icd_types()
+    assert 'sensor_msgs/msg/Image' in types and 'sensor_msgs/msg/LaserScan' in types
+    left_out = set(PROFILES['minimal'].exclude_types)
+    for t in types:
+        assert (t in left_out) == t.endswith('Image'), t
+    # only images: the measurements, commands and state stay in every profile
+    assert all('Image' in t or 'image_transport' in t or 'Packet' in t for t in left_out)
+    assert set(IMAGE_TYPES) == left_out
+
+
+def test_rosbag2_takes_the_image_types():
+    """Each is a package/msg/Type name, as --exclude-topic-types matches them."""
+    for t in IMAGE_TYPES:
+        assert re.fullmatch(r'[a-z][a-z0-9_]*/msg/[A-Z][A-Za-z0-9]*', t), t
 
 
 def test_bringup_logs_the_car_and_only_the_car_by_default():
@@ -219,3 +293,19 @@ def test_bringup_logs_the_car_and_only_the_car_by_default():
             assert args['must_log'] == str(on_car).lower()
             assert args['log'] == (log or str(on_car).lower())
             assert args['sim'] == ('gym' if target == 'sim' else '')
+
+
+def test_bringup_passes_the_profile_on_with_the_same_choices():
+    from launch import LaunchContext
+    from launch.actions import DeclareLaunchArgument
+    from launch.utilities import perform_substitutions
+    bringup = _module(REPO / 'ros/src/arc_bringup/launch/platform.launch.py', 'platform_launch')
+    logging = _module(PACKAGE / 'launch/logging.launch.py', 'logging_launch')
+    for launch in (bringup, logging):
+        args = {e.name: e for e in launch.generate_launch_description().entities
+                if isinstance(e, DeclareLaunchArgument)}
+        arg = args['log_profile']
+        assert tuple(arg.choices) == tuple(PROFILES)
+        assert perform_substitutions(LaunchContext(), arg.default_value) == FALLBACK_PROFILE
+    source = (REPO / 'ros/src/arc_bringup/launch/platform.launch.py').read_text()
+    assert re.search(r"for name in \([^)]*'log_profile'", source)

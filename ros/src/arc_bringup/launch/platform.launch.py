@@ -12,6 +12,8 @@ sensor profile a simulator renders (ADR-0032); real targets ignore it.
 checked before anything starts. `log:=` records the run to MCAP
 (arc_logging): on by default on the car, where an unlogged run is a warning
 and $ARC_LOG_DIR (or `log_dir:=`) must be set; off elsewhere.
+`log_profile:=` picks what's recorded (ADR-0056): every topic but camera
+images by default, every topic with `full`.
 Platform nodes are added here as they're written.
 """
 
@@ -57,7 +59,8 @@ def include_logging(context):
         return LaunchConfiguration(name).perform(context)
 
     share = FindPackageShare('arc_logging').perform(context)
-    args = {name: arg(name) for name in ('target', 'sensors', 'car', 'log_dir', 'log_exclude')}
+    args = {name: arg(name)
+            for name in ('target', 'sensors', 'car', 'log_profile', 'log_dir', 'log_exclude')}
     args.update(logging_args(arg('target'), arg('sim'), arg('log')))
     return [IncludeLaunchDescription(
         PythonLaunchDescriptionSource(f'{share}/launch/logging.launch.py'),
@@ -88,6 +91,10 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'log', default_value='', choices=('', 'true', 'false'),
             description='Record the run to MCAP (default: true on target:=car, else false)'),
+        DeclareLaunchArgument(
+            'log_profile', default_value='minimal', choices=('minimal', 'full'),
+            description='What a logged run records (ADR-0056): minimal, every topic but '
+                        'camera images; full, every topic'),
         DeclareLaunchArgument(
             'log_dir', default_value='',
             description='Where runs are logged (default: $ARC_LOG_DIR, which the car '

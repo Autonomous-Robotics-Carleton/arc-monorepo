@@ -5,10 +5,12 @@ from pathlib import Path
 
 from arc_logging.recorder import (
     check_exclude,
+    choose_profile,
     free_gb,
     log_root,
     lost_messages,
     plan,
+    PROFILES,
     record_command,
     run_dir,
     run_name,
@@ -48,30 +50,63 @@ def test_log_root_is_explicit_when_the_run_must_be_logged():
 
 
 def test_plan_records_with_a_directory_and_space(tmp_path):
-    p = plan(True, True, tmp_path, 'run', 20.0, plenty)
+    p = plan(True, True, tmp_path, 'run', 'minimal', 20.0, plenty)
     assert p.output == tmp_path / 'run'
     assert not p.warn
 
 
 def test_plan_warns_when_a_run_that_must_be_logged_is_not():
-    off = plan(False, True, Path('/logs'), 'run', 20.0, plenty)
+    off = plan(False, True, Path('/logs'), 'run', 'minimal', 20.0, plenty)
     assert off.output is None and off.warn and 'log:=false' in off.message
-    no_dir = plan(True, True, None, 'run', 20.0, plenty)
+    no_dir = plan(True, True, None, 'run', 'minimal', 20.0, plenty)
     assert no_dir.output is None and no_dir.warn and '$ARC_LOG_DIR' in no_dir.message
 
 
 def test_plan_is_quiet_when_not_logging_was_asked_for():
-    off = plan(False, False, Path('/logs'), 'run', 20.0, plenty)
+    off = plan(False, False, Path('/logs'), 'run', 'minimal', 20.0, plenty)
     assert off.output is None and not off.warn
 
 
 def test_plan_does_not_record_on_low_space_and_never_deletes(tmp_path):
     old = tmp_path / 'old_run'
     old.mkdir()
-    low = plan(True, False, tmp_path, 'run', 20.0, lambda _: 5.0)
+    low = plan(True, False, tmp_path, 'run', 'minimal', 20.0, lambda _: 5.0)
     assert low.output is None and low.warn
     assert 'Free space' in low.message and 'never deleted' in low.message
     assert old.exists()
+
+
+def test_plan_falls_back_to_minimal_when_full_does_not_fit(tmp_path):
+    p = plan(True, True, tmp_path, 'run', 'full', 270.0, lambda _: 100.0)
+    assert p.output == tmp_path / 'run' and p.profile == 'minimal'
+    assert p.warn and 'NOT LOGGING full' in p.message and 'recording to' in p.message
+    assert 'except camera images' in p.message
+    # without room for minimal either, nothing
+    none = plan(True, True, tmp_path, 'run', 'full', 270.0, lambda _: 5.0)
+    assert none.output is None and none.warn and 'not recorded' in none.message
+    # minimal has nothing to fall back to
+    low = plan(True, True, tmp_path, 'run', 'minimal', 20.0, lambda _: 5.0)
+    assert low.output is None and low.profile == 'minimal'
+
+
+def test_plan_records_the_profile_asked_for_when_it_fits(tmp_path):
+    for profile in PROFILES:
+        p = plan(True, True, tmp_path, 'run', profile, 270.0, plenty)
+        assert p.profile == profile and not p.warn
+
+
+def test_choose_profile_records_everything_for_a_name_it_does_not_know():
+    assert choose_profile('minimal') == ('minimal', None)
+    assert choose_profile('full') == ('full', None)
+    profile, problem = choose_profile('fulll')
+    assert profile == 'full' and 'every topic is recorded' in problem
+
+
+def test_record_command_leaves_out_the_profiles_types():
+    cmd = record_command('/logs/run', {'target': 'car'}, 60, '', PROFILES['minimal'].exclude_types)
+    i = cmd.index('--exclude-topic-types')
+    assert cmd[i + 1:cmd.index('--custom-data')] == list(PROFILES['minimal'].exclude_types)
+    assert '--exclude-topic-types' not in record_command('/logs/run', {}, 60, '', ())
 
 
 def test_free_gb_measures_where_the_directory_would_be(tmp_path):
@@ -81,7 +116,7 @@ def test_free_gb_measures_where_the_directory_would_be(tmp_path):
 def test_run_record_passes_its_fields_through():
     assert run_record('car', '', 'all', 'v1.0', 'abc') == {
         'target': 'car', 'sim': '', 'sensors': 'all', 'car': 'v1.0', 'car_config': 'abc',
-        'log_exclude': ''}
+        'log_profile': '', 'log_exclude': ''}
     assert run_record('sim', 'gym', 'lidar', 'twin', 'abc')['sim'] == 'gym'
 
 
@@ -100,7 +135,8 @@ def test_record_command_logs_every_topic_to_mcap_in_chunks():
     assert cmd[cmd.index('--output') + 1] == '/logs/run'
     assert cmd[cmd.index('--max-bag-duration') + 1] == '60'
     # nothing limits it to some topics
-    assert not {'--topics', '--regex', '-e', '--exclude-regex', '--exclude-topics'} & set(cmd)
+    assert not {'--topics', '--regex', '-e', '--exclude-regex', '--exclude-topics',
+                 '--exclude-topic-types'} & set(cmd)
     # the record goes last (--custom-data takes every argument after it); empty fields left out
     assert cmd[cmd.index('--custom-data') + 1:] == ['target=car', 'car=v1.0']
 
