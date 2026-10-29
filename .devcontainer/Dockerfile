@@ -60,7 +60,7 @@ RUN cd /opt/zephyr-ws \
 
 # ROS 2 Jazzy (ADR-0016): the base install, the build tools (colcon, rosdep),
 # MCAP bags for log replay, launch_testing, and jsonschema for the car
-# configuration (config/cars/). The simulators come later
+# configuration (config/cars/). The F1TENTH gym is below; Gazebo comes later
 # (ADR-0032, phase 5). Near the end so changing it doesn't rebuild Zephyr.
 ARG ROS_APT_SOURCE_VERSION=1.3.0
 RUN curl -fsSL -o /tmp/ros2-apt-source.deb \
@@ -77,6 +77,19 @@ RUN curl -fsSL -o /tmp/ros2-apt-source.deb \
 ARG PYMAVLINK_VERSION=2.4.50
 ARG CANTOOLS_VERSION=44.2.1
 RUN pip install --no-cache-dir "pymavlink==${PYMAVLINK_VERSION}" "cantools==${CANTOOLS_VERSION}"
+
+# The F1TENTH gym (ADR-0032), for the gym backend (ros/src/arc_backend_sim_gym/).
+# It isn't on PyPI: installed from git at a fixed commit on its v1.0.0 branch
+# (gymnasium; its main branch needs gym 0.19 and numpy <= 1.22, which don't
+# install on Python 3.12). Its dependencies are pinned in requirements-gym.txt,
+# all with wheels for amd64 and arm64 (ADR-0050).
+ARG F1TENTH_GYM_COMMIT=5a301bd0ae1ceaf7dec653e7549c8d099db58a6b
+COPY .devcontainer/requirements-gym.txt /tmp/requirements-gym.txt
+RUN pip install --no-cache-dir -r /tmp/requirements-gym.txt \
+    && pip install --no-cache-dir --no-deps \
+         "git+https://github.com/f1tenth/f1tenth_gym@${F1TENTH_GYM_COMMIT}" \
+    && rm /tmp/requirements-gym.txt \
+    && python3 -c "import f1tenth_gym.envs.base_classes"
 
 # The motor controllers' VESC firmware (firmware/vesc/, ADR-0033, ADR-0034) builds
 # with Arm's GCC 7 2018-q2, the compiler upstream release_7_00 expects
