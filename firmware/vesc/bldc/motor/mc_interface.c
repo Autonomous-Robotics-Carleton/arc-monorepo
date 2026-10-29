@@ -43,6 +43,7 @@
 #include "events.h"
 #include "timer.h"
 #include "confgenerator.h"
+#include "arc/speed_limit.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -2241,6 +2242,17 @@ void mc_interface_adc_inj_int_handler(void) {
  * The configaration to update.
  */
 static void update_override_limits(volatile motor_if_state_t *motor, volatile mc_configuration *conf) {
+	// ARC (ADR-0034): cap |eRPM| whatever the configuration says. Runs on
+	// every configuration change and every timer tick, so it also catches
+	// COMM_SET_MCCONF_TEMP, which writes the live configuration directly.
+	{
+		float min_erpm = conf->l_min_erpm;
+		float max_erpm = conf->l_max_erpm;
+		arc_speed_limit_apply(&min_erpm, &max_erpm);
+		conf->l_min_erpm = min_erpm;
+		conf->l_max_erpm = max_erpm;
+	}
+
 	bool is_motor_1 = motor == &m_motor_1;
 
 	const float v_in = motor->m_input_voltage_filtered;
