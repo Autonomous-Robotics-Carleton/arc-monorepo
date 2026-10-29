@@ -50,6 +50,12 @@ jobs:
         # firmware and ROS need the dev container's toolchains: the dev-container job below
         run: npx nx affected -t lint test check build --exclude='tag:env:dev-container'
 
+      - name: Split check (ADR-0047)
+        # Every PR, not only when affected: code anywhere above the split must
+        # never branch on which target it's on (tools/README.md)
+        if: ${{ !cancelled() }}
+        run: npx nx run split-check:check
+
       # The two checkers from anishathalye/proof-html, run on the runner. As a
       # Docker action, its image was pulled from Docker Hub at the start of every
       # run, and failed when the runners hit the anonymous pull rate limit.
@@ -216,3 +222,4 @@ jobs:
       - name: Check, build and test affected firmware and ROS
         # `nx affected` has no --projects: exclude everything without the tag
         run: npx nx affected -t check build test --exclude='*,!tag:env:dev-container'
+
