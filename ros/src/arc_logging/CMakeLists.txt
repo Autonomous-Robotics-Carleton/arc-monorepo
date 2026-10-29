@@ -14,6 +14,10 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(launch_testing_ament_cmake REQUIRED)
   ament_add_pytest_test(test_recorder test/test_recorder.py)
+  # What it promises against what it depends on: rosbag2, bringup, systems/
+  ament_add_pytest_test(test_contract test/test_contract.py)
+  # The node and recorder as real processes: killed, excluding, latched, the drive untouched
+  ament_add_pytest_test(test_process test/test_process.py TIMEOUT 240)
   # A short run in chunks with a crashing experiment, read back from the log
   add_launch_test(test/test_logging.py TIMEOUT 120)
   # The operator is warned on /diagnostics, and the platform isn't stopped
