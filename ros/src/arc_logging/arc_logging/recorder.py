@@ -92,13 +92,15 @@ def run_dir(root, name):
     return path
 
 
-def run_record(target, sim, sensors, car, car_config_hash):
+def run_record(target, sim, sensors, car, car_config_hash, log_exclude=''):
     """The run record (#152 part 2): what a log needs to be read later.
 
     It's written as the log's custom data (metadata.yaml's `custom_data`, which
     rosbag2's MCAP storage also keeps in each .mcap file), so plain rosbag2
     reads it back. Every field is passed through as given; an empty one
-    (`sim` off a simulator) is left out. So far it holds what the launch
+    (`sim` off a simulator, `log_exclude` when nothing is left out) is left
+    out. `log_exclude` is the pattern of topics the log doesn't hold, so a
+    log says what it left out. So far the record holds what the launch
     knows; still to come: the software versions (#160), the envelope, the
     experiment's profile and who drove.
     """
@@ -108,10 +110,26 @@ def run_record(target, sim, sensors, car, car_config_hash):
         'sensors': sensors,
         'car': car,
         'car_config': car_config_hash,  # config/cars/ hash (ADR-0051)
+        'log_exclude': log_exclude,
     }
 
 
-def record_command(output, record, chunk_s, node_name='arc_logging_recorder'):
+def check_exclude(pattern):
+    """Why `pattern` can't be used as log_exclude, or None if it can (or is empty).
+
+    rosbag2 splits each custom-data pair on every '=', so a pattern with one
+    would be stored cut short and the log would misstate what it left out.
+    """
+    if '=' in pattern:
+        return "it contains '=', which the run record can't hold"
+    try:
+        re.compile(pattern)
+    except re.error as e:
+        return f"it isn't a valid regex ({e})"
+    return None
+
+
+def record_command(output, record, chunk_s, exclude='', node_name='arc_logging_recorder'):
     """`ros2 bag record` for every topic of the run, into `output`.
 
     --all-topics keeps discovering, so an experiment's topics are recorded
@@ -120,6 +138,8 @@ def record_command(output, record, chunk_s, node_name='arc_logging_recorder'):
     local for state, so a latched value published before it started is still
     logged. The log is split into chunks of `chunk_s` seconds, each closed
     when the next starts, so a crash or power loss loses at most the last one.
+    `exclude` leaves out every topic whose name contains a match (rosbag2's
+    --exclude-regex); empty records everything.
     """
     custom = [f'{key}={value}' for key, value in record.items() if value != '']
     return [
@@ -130,6 +150,7 @@ def record_command(output, record, chunk_s, node_name='arc_logging_recorder'):
         '--max-bag-duration', str(int(chunk_s)),
         '--node-name', node_name,
         '--disable-keyboard-controls',
+        *(['--exclude-regex', exclude] if exclude else []),
         '--custom-data', *custom,
     ]
 

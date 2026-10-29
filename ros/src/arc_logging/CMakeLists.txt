@@ -17,7 +17,7 @@ if(BUILD_TESTING)
   # A short run in chunks with a crashing experiment, read back from the log
   add_launch_test(test/test_logging.py TIMEOUT 120)
   # The operator is warned on /diagnostics, and the platform isn't stopped
-  foreach(case log_off no_log_dir low_space recorder_dies)
+  foreach(case log_off no_log_dir low_space recorder_dies bad_exclude)
     add_launch_test(test/test_warnings.py
       TARGET test_warnings_${case}
       ARGS "case:=${case}"

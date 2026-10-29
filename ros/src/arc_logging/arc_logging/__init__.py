@@ -3,6 +3,7 @@
 from arc_logging.recorder import (
     STORAGE,
     Plan,
+    check_exclude,
     free_gb,
     log_root,
     lost_messages,
@@ -13,5 +14,5 @@ from arc_logging.recorder import (
     run_record,
 )
 
-__all__ = ['STORAGE', 'Plan', 'free_gb', 'log_root', 'lost_messages', 'plan', 'record_command',
-           'run_dir', 'run_name', 'run_record']
+__all__ = ['STORAGE', 'Plan', 'check_exclude', 'free_gb', 'log_root', 'lost_messages', 'plan',
+           'record_command', 'run_dir', 'run_name', 'run_record']

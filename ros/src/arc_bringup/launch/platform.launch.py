@@ -57,7 +57,7 @@ def include_logging(context):
         return LaunchConfiguration(name).perform(context)
 
     share = FindPackageShare('arc_logging').perform(context)
-    args = {name: arg(name) for name in ('target', 'sensors', 'car', 'log_dir')}
+    args = {name: arg(name) for name in ('target', 'sensors', 'car', 'log_dir', 'log_exclude')}
     args.update(logging_args(arg('target'), arg('sim'), arg('log')))
     return [IncludeLaunchDescription(
         PythonLaunchDescriptionSource(f'{share}/launch/logging.launch.py'),
@@ -92,6 +92,10 @@ def generate_launch_description():
             'log_dir', default_value='',
             description='Where runs are logged (default: $ARC_LOG_DIR, which the car '
                         'requires; elsewhere ~/arc_logs if it is unset)'),
+        DeclareLaunchArgument(
+            'log_exclude', default_value='',
+            description='Regex of topics not to record (rosbag2 --exclude-regex; '
+                        'default: record every topic)'),
         OpaqueFunction(function=car_config),
         # every topic of the run to MCAP (#152), and whether it's being logged on /diagnostics
         OpaqueFunction(function=include_logging),

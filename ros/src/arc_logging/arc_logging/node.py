@@ -10,8 +10,9 @@ cache.
 Its status goes on /diagnostics (ICD-ros2-msgs) and to the console: OK while
 recording (or when not logging was asked for), WARN when the run isn't being
 logged and should be, when the recorder stops mid-run, when rosbag2 reports
-lost messages, or when free space drops below min_free_gb. The platform never
-stops for any of these.
+lost messages, when free space drops below min_free_gb, or when log_exclude
+can't be used (the run is then recorded whole). The platform never stops for
+any of these.
 """
 
 import ctypes
@@ -28,6 +29,7 @@ from rclpy.node import Node
 
 from arc_car_config import config_hash, load
 from arc_logging.recorder import (
+    check_exclude,
     free_gb,
     log_root,
     lost_messages,
@@ -56,12 +58,20 @@ class Logger(Node):
         self.min_free_gb = self.declare_parameter('min_free_gb', 20.0).value
         # TBC: the most a crash or power loss may lose
         self.chunk_s = self.declare_parameter('chunk_s', 60).value
+        # topics not to record (rosbag2's --exclude-regex); empty records everything
+        self.exclude = self.declare_parameter('log_exclude', '').value
+        self.exclude_problem = check_exclude(self.exclude)
+        if self.exclude_problem:
+            # record more, never less, than was asked for
+            self.exclude_problem = (f'log_exclude {self.exclude!r} ignored, every topic is '
+                                    f'recorded: {self.exclude_problem}')
+            self.exclude = ''
         # the run's fields, passed through into its name and record
         target = self.declare_parameter('target', '').value
         sim = self.declare_parameter('sim', '').value
         sensors = self.declare_parameter('sensors', '').value
         car = self.declare_parameter('car', 'twin').value
-        record = run_record(target, sim, sensors, car, config_hash(load(car)))
+        record = run_record(target, sim, sensors, car, config_hash(load(car)), self.exclude)
 
         self.root = log_root(log_dir, os.environ.get('ARC_LOG_DIR', ''), must_log)
         self.plan = plan(log, must_log, self.root, run_name(target), self.min_free_gb)
@@ -81,7 +91,7 @@ class Logger(Node):
         self.plan.output.parent.mkdir(parents=True, exist_ok=True)
         env = dict(os.environ, RCUTILS_LOGGING_BUFFERED_STREAM='1')
         self.proc = subprocess.Popen(
-            record_command(self.plan.output, record, self.chunk_s),
+            record_command(self.plan.output, record, self.chunk_s, self.exclude),
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=env,
             start_new_session=True, preexec_fn=_die_with_parent)
         self.reader = threading.Thread(target=self.read_recorder, daemon=True)
@@ -104,6 +114,8 @@ class Logger(Node):
             return True, (f'RECORDER STOPPED (exit code {code}): the rest of this run is not '
                           f'recorded; {self.plan.output} holds it up to here')
         warn, message = False, self.plan.message
+        if self.exclude_problem:
+            warn, message = True, f'{message}; {self.exclude_problem}'
         if self.lost:
             warn, message = True, f'{message}; rosbag2 reports {self.lost} messages lost'
         space = free_gb(self.root)
@@ -129,6 +141,7 @@ class Logger(Node):
             'log_dir': str(self.plan.output or self.root or ''),
             'min_free_gb': f'{self.min_free_gb:g}',
             'chunk_s': str(self.chunk_s),
+            'log_exclude': self.exclude,
             'messages_lost': str(self.lost),
         }
         msg = DiagnosticArray()
