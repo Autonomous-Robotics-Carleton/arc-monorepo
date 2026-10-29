@@ -1,7 +1,7 @@
 """The logger as real processes, on a ROS domain of its own: what happens to
-the log when the node is killed outright, which topics log_exclude leaves out,
-that a latched value from before the start is kept, and that what's already
-on the log drive is never touched.
+the log when the node is killed outright, which topics log_exclude and each
+log_profile leave out, that a latched value from before the start is kept,
+and that what's already on the log drive is never touched.
 """
 
 import hashlib
@@ -17,6 +17,8 @@ import time
 import pytest
 import rosbag2_py
 
+from arc_logging.recorder import free_gb, PROFILES
+
 TALKER = str(Path(__file__).with_name('talker.py'))
 LATCHED = """
 import sys, time, rclpy
@@ -30,6 +32,33 @@ pub.publish(String(data='set before the recorder'))
 print('published', flush=True)
 rclpy.spin(node)
 """
+# A camera's topics, raw and through image_transport's compressed transport, and
+# a measurement: published whether or not anything subscribes
+CAMERA = """
+import rclpy
+from sensor_msgs.msg import CameraInfo, CompressedImage, Image
+from std_msgs.msg import String
+rclpy.init()
+node = rclpy.create_node('camera')
+pubs = [(node.create_publisher(Image, '/test/camera/image_raw', 10),
+         Image(height=2, width=2, encoding='mono8', step=2, data=[0, 1, 2, 3])),
+        (node.create_publisher(CompressedImage, '/test/camera/image_raw/compressed', 10),
+         CompressedImage(format='jpeg', data=[1, 2, 3])),
+        (node.create_publisher(CameraInfo, '/test/camera/camera_info', 10), CameraInfo()),
+        (node.create_publisher(String, '/test/measurement', 10), String(data='m'))]
+sent = 0
+def tick():
+    global sent
+    for pub, msg in pubs:
+        pub.publish(msg)
+    sent += 1
+    if sent % 20 == 0:
+        print(f'{sent} sent', flush=True)
+node.create_timer(0.05, tick)
+rclpy.spin(node)
+"""
+CAMERA_TOPICS = {'/test/camera/image_raw', '/test/camera/image_raw/compressed',
+                 '/test/camera/camera_info', '/test/measurement'}
 
 
 @pytest.fixture
@@ -190,3 +219,57 @@ def test_nothing_already_on_the_drive_is_touched(tmp_path, env):
     assert new_runs().name.endswith('_car')
     after = snapshot()
     assert {p: v for p, v in after.items() if p in before} == before
+
+
+@pytest.mark.parametrize('profile,kept', [
+    ('minimal', {'/test/camera/camera_info', '/test/measurement'}),
+    ('full', CAMERA_TOPICS),
+])
+def test_each_profile_logs_its_topics(tmp_path, env, profile, kept):
+    """ADR-0056: minimal leaves out camera images, raw or compressed, by type."""
+    camera = start([sys.executable, '-c', CAMERA], env)
+    node = None
+    try:
+        wait_for(camera, '20 sent')
+        node = logger(env, tmp_path, log_profile=profile)
+        wait_for(node, 'recording to')
+        for topic in kept:
+            wait_for(node, f"Subscribed to topic '{topic}'")
+        time.sleep(1.0)  # some messages on each
+    finally:
+        stop(*(p for p in (node, camera) if p))
+    # never subscribed to, so a driver never encodes frames for the log
+    subscribed = {topic for topic in CAMERA_TOPICS
+                  if any(f"Subscribed to topic '{topic}'" in line for line in node.lines)}
+    assert subscribed == kept
+    run = only_run(tmp_path)
+    topics, messages = read(run)
+    assert topics & CAMERA_TOPICS == kept
+    assert {t for t, _ in messages} & CAMERA_TOPICS == kept
+    record = rosbag2_py.Info().read_metadata(str(run), 'mcap').custom_data
+    assert record['log_profile'] == profile
+
+
+def test_full_without_room_logs_minimal(tmp_path, env):
+    """A full run that doesn't fit records minimal, warns, and says so in its record."""
+    need = PROFILES['minimal'].min_free_gb
+    if free_gb(tmp_path) < need:
+        pytest.skip(f'needs {need:g} GB free where the test logs')
+    camera = start([sys.executable, '-c', CAMERA], env)
+    node = None
+    try:
+        wait_for(camera, '20 sent')
+        node = logger(env, tmp_path, log_profile='full', min_free_gb=1e12)
+        wait_for(node, 'NOT LOGGING full')
+        wait_for(node, "Subscribed to topic '/test/measurement'")
+        time.sleep(1.0)
+    finally:
+        stop(*(p for p in (node, camera) if p))
+    assert not any("Subscribed to topic '/test/camera/image_raw" in line for line in node.lines)
+    # a warning, not just a message: the operator asked for images and isn't getting them
+    assert any('[WARN]' in line and 'NOT LOGGING full' in line for line in node.lines)
+    run = only_run(tmp_path)
+    topics, _ = read(run)
+    assert '/test/measurement' in topics and '/test/camera/image_raw' not in topics
+    assert rosbag2_py.Info().read_metadata(str(run), 'mcap').custom_data['log_profile'] == \
+        'minimal'

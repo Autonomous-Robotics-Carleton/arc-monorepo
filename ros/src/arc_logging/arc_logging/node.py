@@ -14,14 +14,18 @@ The run counts as recorded only once the recorder's own output shows rosbag2
 recording ("Recording...", with the output directory created); until then
 the status says the recorder is starting.
 
+What a run records is its log_profile (ADR-0056): minimal, every topic but
+camera images, unless full is asked for. A full run without room for it
+records minimal instead.
+
 Its status goes on /diagnostics (ICD-ros2-msgs) and to the console: OK while
 recording (or when not logging was asked for), WARN when the run isn't being
-logged and should be (including while the recorder starts), when the recorder
-fails to start or hasn't started within start_timeout_s, when it stops
-mid-run, when rosbag2 reports
+logged and should be (including while the recorder starts), when it records
+minimal for lack of room for full, when the recorder fails to start or hasn't
+started within start_timeout_s, when it stops mid-run, when rosbag2 reports
 lost messages, when free space drops below warn_free_gb, or when log_exclude
-can't be used (the run is then recorded whole). The platform never stops for
-any of these.
+or log_profile can't be used (the run is then recorded whole). The platform
+never stops for any of these.
 """
 
 import os
@@ -39,10 +43,12 @@ from rclpy.node import Node
 from arc_car_config import config_hash, load
 from arc_logging.recorder import (
     check_exclude,
+    choose_profile,
     free_gb,
     log_root,
     lost_messages,
     plan,
+    PROFILES,
     record_command,
     run_name,
     run_record,
@@ -61,11 +67,13 @@ class Logger(Node):
         log = self.declare_parameter('log', False).value
         must_log = self.declare_parameter('must_log', False).value
         log_dir = self.declare_parameter('log_dir', '').value
-        # TBC: a full run's log, ~178 GB (v1.0's ~296 MB/s, total-electrical-cost.md, x
-        # SYS-03's 10 min), x 1.5
-        self.min_free_gb = self.declare_parameter('min_free_gb', 270.0).value
-        # TBC: free space below which a run already recording warns: ~3 min of v1.0 logging
-        self.warn_free_gb = self.declare_parameter('warn_free_gb', 60.0).value
+        # which topics this run records (ADR-0056)
+        self.profile, self.profile_problem = choose_profile(
+            self.declare_parameter('log_profile', 'minimal').value)
+        # free space to start recording, and below which a recording run warns, GB;
+        # negative: the profile's own (PROFILES, TBC)
+        min_free_gb = self.declare_parameter('min_free_gb', -1.0).value
+        warn_free_gb = self.declare_parameter('warn_free_gb', -1.0).value
         # TBC: the most a crash or power loss may lose
         self.chunk_s = self.declare_parameter('chunk_s', 15).value
         # TBC: how long rosbag2 may take to start recording before the operator is warned
@@ -84,10 +92,17 @@ class Logger(Node):
         sim = self.declare_parameter('sim', '').value
         sensors = self.declare_parameter('sensors', '').value
         car = self.declare_parameter('car', 'twin').value
-        record = run_record(target, sim, sensors, car, config_hash(load(car)), self.exclude)
 
         self.root = log_root(log_dir, os.environ.get('ARC_LOG_DIR', ''), must_log)
-        self.plan = plan(log, must_log, self.root, run_name(target), self.min_free_gb)
+        self.min_free_gb = (min_free_gb if min_free_gb >= 0
+                            else PROFILES[self.profile].min_free_gb)
+        self.plan = plan(log, must_log, self.root, run_name(target), self.profile,
+                         self.min_free_gb)
+        # the recorded profile's: minimal's if full didn't fit
+        self.warn_free_gb = (warn_free_gb if warn_free_gb >= 0
+                             else PROFILES[self.plan.profile].warn_free_gb)
+        record = run_record(target, sim, sensors, car, config_hash(load(car)), self.exclude,
+                            self.plan.profile)
         self.must_log = must_log
         self.proc = None
         self.recording = threading.Event()  # set once rosbag2 shows it is recording
@@ -108,7 +123,8 @@ class Logger(Node):
         env = dict(os.environ, RCUTILS_LOGGING_BUFFERED_STREAM='1')
         self.proc = subprocess.Popen(
             [*DIE_WITH_PARENT,
-             *record_command(self.plan.output, record, self.chunk_s, self.exclude)],
+             *record_command(self.plan.output, record, self.chunk_s, self.exclude,
+                             PROFILES[self.plan.profile].exclude_types)],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env=env,
             start_new_session=True)
         self.reader = threading.Thread(target=self.read_recorder, daemon=True)
@@ -139,9 +155,10 @@ class Logger(Node):
         if code is not None:
             return True, (f'RECORDER STOPPED (exit code {code}): the rest of this run is not '
                           f'recorded; {self.plan.output} holds it up to here')
-        warn, message = False, self.plan.message
-        if self.exclude_problem:
-            warn, message = True, f'{message}; {self.exclude_problem}'
+        warn, message = self.plan.warn, self.plan.message
+        for problem in (self.profile_problem, self.exclude_problem):
+            if problem:
+                warn, message = True, f'{message}; {problem}'
         if self.lost:
             warn, message = True, f'{message}; rosbag2 reports {self.lost} messages lost'
         space = free_gb(self.root)
@@ -165,6 +182,7 @@ class Logger(Node):
             self.last = (warn, message)
         values = {
             'log_dir': str(self.plan.output or self.root or ''),
+            'log_profile': self.plan.profile,
             'min_free_gb': f'{self.min_free_gb:g}',
             'warn_free_gb': f'{self.warn_free_gb:g}',
             'chunk_s': str(self.chunk_s),

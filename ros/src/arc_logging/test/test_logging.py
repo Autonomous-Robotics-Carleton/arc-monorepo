@@ -129,6 +129,7 @@ class TestLog(unittest.TestCase):
         self.assertEqual(record['car'], 'twin')
         self.assertRegex(record['car_config'], r'^[0-9a-f]{64}$')
         self.assertEqual(record['log_exclude'], f'/{LEFT_OUT}$')
+        self.assertEqual(record['log_profile'], 'minimal')  # the default (ADR-0056)
 
     def test_excluded_topic_is_left_out(self):
         run, _ = read_log()
