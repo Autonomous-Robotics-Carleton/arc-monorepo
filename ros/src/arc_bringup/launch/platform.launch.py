@@ -9,7 +9,8 @@ The platform nodes are the same on every target; only the backend that
 implements the car interface (arc_msgs) changes. `sensors:=` picks the
 sensor profile a simulator renders (ADR-0032); real targets ignore it.
 `car:=` picks the car configuration (config/cars/<car>.yaml, ADR-0051),
-checked before anything starts.
+checked before anything starts. Every run is logged to MCAP by arc_logging,
+into `log_dir:=` (default $ARC_LOG_DIR, else ~/arc_logs).
 Platform nodes are added here as they're written.
 """
 
@@ -40,6 +41,14 @@ def include_backend(context):
         launch_arguments={'sensors': LaunchConfiguration('sensors')}.items())]
 
 
+def include_logging(context):
+    share = FindPackageShare('arc_logging').perform(context)
+    return [IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(f'{share}/launch/logging.launch.py'),
+        launch_arguments={name: LaunchConfiguration(name)
+                          for name in ('target', 'sim', 'sensors', 'car', 'log_dir')}.items())]
+
+
 def car_config(context):
     car = LaunchConfiguration('car').perform(context)
     values = load(car)  # a missing or invalid car file stops the launch here
@@ -61,7 +70,12 @@ def generate_launch_description():
         DeclareLaunchArgument(
             'car', default_value='twin',
             description='Car configuration: config/cars/<car>.yaml'),
+        DeclareLaunchArgument(
+            'log_dir', default_value='',
+            description='Where runs are logged (default: $ARC_LOG_DIR, else ~/arc_logs)'),
         OpaqueFunction(function=car_config),
+        # every topic of the run to MCAP (#152)
+        OpaqueFunction(function=include_logging),
         OpaqueFunction(function=include_backend),
         # who drives: the operator or the experiment (#151)
         Node(package='arc_control', executable='control', output='screen'),

@@ -39,6 +39,7 @@ Scaffolding: every package builds and starts; apart from the car backend's sync-
 | `arc_msgs` | The car interface: the messages and services in ICD-ros2-msgs that have no standard type | Messages defined (ICD rev B, reviewed, #84); `arc_control` uses the drive command and the control mode, nothing else publishes them yet. A test in `arc_backend_car` checks their constants against the sync link's | ADR-0028, ADR-0047 |
 | `arc_bringup` | Launch files and parameters; `target:=`, `sim:=`, `sensors:=`, `car:=` | Picks the backend and the car configuration; a launch test per backend | ADR-0028, ADR-0032 |
 | `arc_control` | Chooses who drives: the operator's teleop or the experiment's vehicle command, by its mode (`/control/mode`, switched with `/control/set_mode`); a silent source is replaced by the zero command. The envelope itself is on the sync MCU | The rules in ICD-ros2-msgs ("Choosing who drives"), with their TBC values as parameters; started by the platform launch; unit tests on made-up times (with the sanitizers) and a test on a ROS graph | SYS-21, SYS-22, ADR-0048 |
+| `arc_logging` | Records every topic of a run to one MCAP log (rosbag2's MCAP storage), from the platform's start to its stop, in its own process so an experiment can't stop it and it can't hold up the platform. See [Logs](#logs) | Started by the platform launch; the run record so far holds the target, sensors, car and car configuration hash; a launch test reads back a short run in which an experiment crashes | SYS-09, SYS-21, SYS-23, SYS-24 |
 | `arc_car_config` | Loads a car's configuration ([`config/cars/`](../config/cars/README.md)), checks it, hashes it and works out the top speed | Loader and checks; nothing reads the values yet | ADR-0047, ADR-0051 |
 | `arc_backend_sim_gazebo` | Gazebo Harmonic: full sensor suite, event cameras; Linux with a GPU | Stub | ADR-0032 |
 | `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
@@ -52,9 +53,17 @@ Still to come:
 | --- | --- | --- |
 | `arc_drivers` | LiDAR and camera drivers (the Orin has no CAN: motor-controller and steering data come through `arc_backend_car`) | ADR-0001, ADR-0021 |
 | `arc_safety` | Forwards the operator's heartbeat to the sync MCU; the watchdog and the safety envelope run on the sync MCU, not here | SYS-04, SYS-22 |
-| `arc_logging` | Time-aligned logs of every sensor, command and operator input | SYS-09, SYS-23, SYS-24 |
 | Teleop (package TBD) | Operator driving from the laptop | ADR-0015 |
 | `arc_description` | One URDF of the car, the source for every simulator's model | ADR-0032 |
+
+## Logs
+
+`arc_logging` runs `ros2 bag record --all-topics --storage mcap` for the length of the run. Each run gets its own directory, `<log_dir>/<UTC start>_<target>` (e.g. `20261029T140501Z_sim-gym`): a standard rosbag2 log, `metadata.yaml` and one `.mcap`, that `ros2 bag info`, `ros2 bag play` and the replay backend read with nothing of ours.
+
+- **Where:** `log_dir:=` on the platform launch, else `$ARC_LOG_DIR`, else `~/arc_logs`.
+- **What:** every topic with a publisher, found as it appears (an experiment's topics too), with the publisher's QoS: reliable where it's offered (ICD-ros2-msgs), transient local for state. Each message is stamped with when the recorder received it; `header.stamp` still says when it was sampled.
+- **The run record** (#152): written as the log's custom data, in `metadata.yaml` and in the `.mcap` file's own `rosbag2` metadata record. `ros2 bag info` doesn't show it yet; `rosbag2_py.Info().read_metadata(run, 'mcap').custom_data` does.
+- **Stopping:** launch stops the recorder with SIGINT at shutdown, and it writes out its cache and closes the file. If it stops on its own, the platform keeps running and logs that the rest of the run isn't recorded.
 
 ## Build and test
 

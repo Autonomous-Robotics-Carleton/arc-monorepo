@@ -1,12 +1,14 @@
 """The platform comes up on a target: the target's backend and the platform
-nodes start and stay up. It also checks the default car configuration (twin):
-if that fails to load, the launch stops before anything starts.
+nodes start and stay up, and arc_logging records the run (into a temporary
+directory). It also checks the default car configuration (twin): if that
+fails to load, the launch stops before anything starts.
 
 Run once per backend by CMakeLists.txt: target:=sim with each sim:=, then
 target:=replay and target:=car.
 """
 
 import sys
+import tempfile
 import unittest
 
 import launch_testing
@@ -31,7 +33,8 @@ def generate_test_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(platform),
             launch_arguments={'target': LaunchConfiguration('target'),
-                              'sim': LaunchConfiguration('sim')}.items()),
+                              'sim': LaunchConfiguration('sim'),
+                              'log_dir': tempfile.mkdtemp(prefix='arc_bringup_test_')}.items()),
         launch_testing.actions.ReadyToTest(),
     ])
 
@@ -50,6 +53,9 @@ class TestBackendStarts(unittest.TestCase):
 
     def test_arc_control_reports_in(self, proc_output):
         proc_output.assertWaitFor('arc_control: operator mode, waiting for teleop', timeout=30)
+
+    def test_arc_logging_records(self, proc_output):
+        proc_output.assertWaitFor('[arc_logging]: Recording...', timeout=30)
 
 
 @launch_testing.post_shutdown_test()
