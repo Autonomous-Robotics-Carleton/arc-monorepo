@@ -19,7 +19,10 @@ install(TARGETS backend DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_pytest REQUIRED)
   find_package(launch_testing_ament_cmake REQUIRED)
+  # The topics played and listened on, against ICD-ros2-msgs
+  ament_add_pytest_test(test_topics_contract test/test_topics_contract.py)
   # The sample log (scripts/make_sample_log.py) as recorded, faster and slower
   foreach(rate 1.0 2.0 0.5)
     string(REPLACE "." "_" name ${rate})
