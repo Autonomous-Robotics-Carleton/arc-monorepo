@@ -92,7 +92,7 @@ sequenceDiagram
 
 1. The ground station sends teleop and a **heartbeat** over the operator link: a fixed-rate UDP stream with sequence numbers, marked as top-priority traffic on the router (ADR-0015, rule 4).
 2. On the Orin, `arc_safety` receives both. It forwards the heartbeat towards the sync MCU and hands the teleop to `arc_control`.
-3. `arc_control` picks what drives: the operator while their teleop is fresh, otherwise the experiment.
+3. `arc_control` picks what drives: its mode says the operator or the experiment, and a silent source is replaced by the zero command ([ICD-ros2-msgs](../icd/ros2-msgs.md), "Choosing who drives").
 4. The car backend packs the command and the heartbeat into MAVLink messages on the sync link.
 5. The sync MCU clamps the command to the **safety envelope** (speed, acceleration and steering limits; 3 m/s by default for a new experiment, SYS-22).
 6. It splits the clamped command into a speed for each wheel. In a turn each wheel follows a different arc, so the outer wheels turn faster than the inner ones. The split uses the car's geometry from its car configuration. The sync MCU sends one speed to each motor controller, and the steering angle to the steering controller.
@@ -149,7 +149,7 @@ The re-arm message is `ARC_REARM` on the sync link (ICD-sync-link); the operator
 1. The platform starts the experiment's container, with its resource limits, its real-time cores and the session's envelope.
 2. The experiment reads the car interface (sensors, car state). It estimates, plans and controls however it likes, for example starting from the baseline estimator, an example experiment.
 3. It publishes one vehicle command: speed, acceleration limit, steering angle.
-4. Commands reach the motors only through `arc_control` (operator or experiment) and the sync MCU's envelope. The operator can take over at any time, and the heartbeat still governs everything.
+4. Commands reach the motors only through `arc_control` (operator or experiment) and the sync MCU's envelope. The experiment drives only after the ground station hands it control; the operator can take over at any time, by pushing a stick or with the take-over button, and the heartbeat still governs everything.
 5. If the experiment crashes or hogs resources, the platform keeps driving, logging and able to stop (SYS-21). If it starves the Orin despite its limits, the heartbeat stops being forwarded and the sync MCU stops the car (SYS-04).
 
 Per-wheel commands, for traction and torque-vectoring research, aren't offered for now (ADR-0048, set 2026-10-25): per-wheel speeds come when an experiment needs them, per-wheel torque only with a speed limiter on the sync MCU.
