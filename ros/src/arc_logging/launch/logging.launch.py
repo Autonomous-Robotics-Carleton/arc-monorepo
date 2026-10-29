@@ -22,11 +22,13 @@ ARGS = {
     'must_log': ('false', 'Warn if this run is not logged; no default log directory'),
     'log_dir': ('', 'Where runs are logged (default: $ARC_LOG_DIR, else ~/arc_logs '
                     'unless must_log)'),
-    'min_free_gb': ('20.0', 'TBC: free space needed to start logging, GB: '
-                            'log rate x the longest run (SYS-03) x a margin'),
-    'chunk_s': ('60', 'TBC: length of each log chunk, s: the most a crash or power loss loses'),
-    'start_timeout_s': ('10.0', 'TBC: how long the recorder may take to start recording, s, '
-                                'before the operator is warned'),
+    'min_free_gb': ('270.0', 'TBC: free space needed to start logging, GB: a full run '
+                             '(~178 GB at v1.0\'s log rate x SYS-03) x 1.5'),
+    'warn_free_gb': ('60.0', 'TBC: free space below which a recording run warns, GB: '
+                             '~3 min of v1.0 logging'),
+    'chunk_s': ('15', 'TBC: length of each log chunk, s: the most a crash or power loss loses'),
+    'start_timeout_s': ('5.0', 'TBC: how long the recorder may take to start recording, s, '
+                               'before the operator is warned'),
     'log_exclude': ('', 'Regex of topics not to record (rosbag2 --exclude-regex); '
                         'empty records every topic'),
     'target': ('', 'Run record: the target'),
@@ -34,8 +36,8 @@ ARGS = {
     'sensors': ('', 'Run record: the sensor profile'),
     'car': ('twin', 'Run record: the car configuration'),
 }
-TYPES = {'log': bool, 'must_log': bool, 'min_free_gb': float, 'chunk_s': int,
-         'start_timeout_s': float}
+TYPES = {'log': bool, 'must_log': bool, 'min_free_gb': float, 'warn_free_gb': float,
+         'chunk_s': int, 'start_timeout_s': float}
 
 
 def generate_launch_description():

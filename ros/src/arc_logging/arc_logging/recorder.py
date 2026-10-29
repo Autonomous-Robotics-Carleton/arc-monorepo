@@ -77,7 +77,8 @@ def run_name(target, now=None):
 
     Without a target (arc_logging launched on its own) it's the time alone.
     """
-    stamp = (now or datetime.now(timezone.utc)).strftime('%Y%m%dT%H%M%SZ')
+    now = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    stamp = now.strftime('%Y%m%dT%H%M%SZ')
     return '_'.join(filter(None, (stamp, target)))
 
 

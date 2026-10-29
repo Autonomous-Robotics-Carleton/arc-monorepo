@@ -4,6 +4,7 @@
     log_off        must_log, but log:=false was passed
     no_log_dir     must_log, and neither log_dir:= nor $ARC_LOG_DIR is set
     low_space      less free space than min_free_gb: nothing is recorded or deleted
+    low_space_running  free space drops below warn_free_gb while recording
     recorder_dies  the recorder is killed once it is recording
     fails_to_start rosbag2 can't create the log directory, so the recorder exits
                    before it records anything
@@ -39,12 +40,16 @@ CASES = {
     'no_log_dir': ({'log': 'true', 'must_log': 'true'}, '$ARC_LOG_DIR is not set'),
     'low_space': ({'log': 'true', 'log_dir': str(LOG_DIR), 'min_free_gb': '1e12'},
                   'Free space on the log drive'),
-    'recorder_dies': ({'log': 'true', 'log_dir': str(LOG_DIR)}, 'RECORDER STOPPED'),
+    'low_space_running': ({'log': 'true', 'log_dir': str(LOG_DIR), 'min_free_gb': '0',
+                           'warn_free_gb': '1e12'}, 'LOW SPACE'),
+    'recorder_dies': ({'log': 'true', 'log_dir': str(LOG_DIR), 'min_free_gb': '0',
+                       'warn_free_gb': '0'}, 'RECORDER STOPPED'),
     # /proc can't hold directories, even for root; it reports no free space, hence min_free_gb 0
     'fails_to_start': ({'log': 'true', 'must_log': 'true', 'min_free_gb': '0',
                         'log_dir': f'/proc/arc_logging_test_{os.getpid()}'},
                        'the recorder failed to start (exit code 1)'),
-    'bad_exclude': ({'log': 'true', 'log_dir': str(LOG_DIR), 'log_exclude': '/a(?=b)'},
+    'bad_exclude': ({'log': 'true', 'log_dir': str(LOG_DIR), 'min_free_gb': '0',
+                     'warn_free_gb': '0', 'log_exclude': '/a(?=b)'},
                     'every topic is recorded'),
 }
 
@@ -87,7 +92,7 @@ class TestShutdown(unittest.TestCase):
 
     def test_nothing_recorded_or_deleted(self):
         runs = list(LOG_DIR.iterdir())
-        if CASE in ('recorder_dies', 'bad_exclude'):
+        if CASE in ('recorder_dies', 'bad_exclude', 'low_space_running'):
             self.assertEqual(len(runs), 1)  # the run up to where the recorder died, or all of it
         else:
             self.assertEqual(runs, [])

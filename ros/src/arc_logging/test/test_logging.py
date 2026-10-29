@@ -52,7 +52,9 @@ def generate_test_description():
     return LaunchDescription([
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(logging),
+            # whatever the disk has free: the space checks have their own cases
             launch_arguments={'log': 'true', 'log_dir': str(LOG_DIR),
+                              'min_free_gb': '0', 'warn_free_gb': '0',
                               'chunk_s': str(CHUNK_S), 'log_exclude': f'/{LEFT_OUT}$',
                               'target': 'sim', 'sim': 'gym', 'car': 'twin'}.items()),
         talker(PLATFORM),
