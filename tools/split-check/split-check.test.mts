@@ -24,11 +24,50 @@ test('Python: comparisons, conditions and tables keyed by target', () => {
     "    pass",
     "x = 'gazebo' if world else 'gym'", // 3: a conditional expression
     "if is_sim:", // 4: an identifier
-    "backend = {'sim': a, 'car': b}[target]", // 5: a table keyed by target
+    "backend = {'sim': a, 'car': b}[target]", // 5: a table looked up by the target
     "LaunchConfigurationEquals('target', 'replay')", // 6
     "while mode != \"interface\":", // 7
   ].join('\n');
   assert.deepEqual(flagged('ros/src/arc_new/arc_new/node.py', src), [1, 3, 4, 5, 6, 7]);
+});
+
+test('tables keyed by target: a branch only when looked up by a value', () => {
+  // dispatch tables: caught, on one line or several
+  const dispatch = [
+    "pkg = {'sim': a, 'car': b}[target]", // 1
+    "pkg = {'sim': a, 'car': b}.get(target)", // 2
+    'BACKENDS = {', // 3
+    "    'gazebo': 'arc_backend_sim_gazebo',", // 4
+    "    'gym': 'arc_backend_sim_gym',",
+    '}',
+    'pkg = BACKENDS[world]', // 7: no target name on this line, but the table is looked up
+    'x = {', // 8
+    "    'replay': a,", // 9
+    '}.get(mode, None)',
+  ].join('\n');
+  assert.deepEqual(flagged('ros/src/arc_x/arc_x/node.py', dispatch), [1, 2, 4, 9]);
+  assert.deepEqual(flagged('experiments/x/src/main.ts', "const pkg = { sim: a, car: b }[target];\nconst q = TABLE.get(k);"), [1]);
+  assert.deepEqual(flagged('experiments/x/src/main.ts', "const T = {\n  'sim': a,\n};\nrun(T[target]);"), [2]);
+
+  // fields that happen to be target names: not branches (#152's run record and launch arguments)
+  const record = [
+    'def run_record(target, sim, sensors, car, car_config_hash):',
+    '    return {',
+    "        'target': target,",
+    "        'sim': sim,",
+    "        'sensors': sensors,",
+    "        'car': car,",
+    '    }',
+    'ARGS = {',
+    "    'sim': ('', 'Run record: the simulator, if any'),",
+    "    'car': ('twin', 'Run record: the car configuration'),",
+    '}',
+    'for name, (default, description) in ARGS.items():',
+    '    pass',
+    "x = ARGS['sim']", // indexed by a literal, not a value
+    'y = [ARGS]',
+  ].join('\n');
+  assert.deepEqual(flagged('ros/src/arc_logging/arc_logging/recorder.py', record), []);
 });
 
 test('Python: comments, docstrings, loops, data and use_sim_time pass', () => {
