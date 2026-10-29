@@ -1,0 +1,24 @@
+# The sync MCU firmware on an emulated NUCLEO-H723ZG (#178). Findings:
+# systems/software/renode-investigation.md. From the repo root, after
+# `npx nx build sync-mcu`:
+#
+#   renode --disable-gui --console -e 'include @tools/renode/nucleo_h723zg.resc; start'
+#
+# The console (USART3) goes to Renode's log. Set $elf first to run another
+# build, e.g. a Zephyr sample built for nucleo_h723zg. For a second machine in
+# the same run, load its ELF with `sysbus LoadELF` after the include: setting
+# $elf again before a second include didn't take effect in Renode 1.17.0.
+
+$name?="nucleo_h723zg"
+$elf?=@firmware/sync-mcu/build/nucleo_h723zg/zephyr/zephyr.elf
+
+mach create $name
+machine LoadPlatformDescription @tools/renode/nucleo_h723zg.repl
+
+showAnalyzer sysbus.usart3 Antmicro.Renode.Analyzers.LoggingUartAnalyzer
+
+macro reset
+"""
+    sysbus LoadELF $elf
+"""
+runMacro $reset
