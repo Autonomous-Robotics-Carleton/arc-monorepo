@@ -17,7 +17,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0009](0009-single-classic-can-bus.md) | One classic CAN bus to the four corner VESCs | Accepted, amended by 0011 and 0034 |
 | [0010](0010-compute-orin-nx.md) | Orin NX 16GB for v1, all inference onboard | Accepted, amended by 0046 |
 | [0011](0011-vesc-telemetry-link.md) | VESC 6.4 fork; telemetry on two CAN-FD buses, commands on the classic bus | Superseded by 0034 |
-| [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Accepted, amended by 0019 and 0034 |
+| [0012](0012-estop-controlled-braking.md) | E-stop: controlled braked stop, then hardware torque cut | Accepted, amended by 0019 and 0034; amendment 0055 proposed |
 | [0013](0013-canfd-physical-layer.md) | CAN-FD physical layer: daisy-chain, discrete transceivers, rework-only fallbacks | Superseded by 0036 |
 | [0014](0014-ground-speed-event-camera.md) | Ground speed: downward event camera with three lighting modes; dead-wheel pod as fallback | Accepted, amended by 0046 |
 | [0015](0015-ground-link.md) | Ground link: team router (Flint 3), laptop gateway, button hotspot, wired service port | Accepted |
@@ -44,7 +44,7 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0036](0036-steering-bus-physical-layer.md) | Steering CAN-FD bus physical layer: discrete transceiver, rework-only fallbacks | Accepted |
 | [0037](0037-vesc-modules-in-arc.md) | Our VESC firmware code lives in `firmware/vesc/arc/`, joined to upstream by small hooks | Accepted |
 | [0038](0038-steering-loss-stops-the-car.md) | Losing steering stops the car, and the car doesn't drive without it | Accepted |
-| [0039](0039-fault-stop-reset.md) | A fault stop latches, and only an e-stop cycle on the car resets it | Accepted, amended by 0052 and 0053 |
+| [0039](0039-fault-stop-reset.md) | A fault stop latches, and only an e-stop cycle on the car resets it | Accepted, amended by 0052 and 0053; amendment 0055 proposed |
 | [0040](0040-custom-corners.md) | We design the corners; only generic parts are bought (Arrma 6S drivetrain and wheel parts, industrial bearings and rod ends) | Accepted |
 | [0041](0041-grounding-and-isolation.md) | Controlled return star / non-isolated review baseline; complete isolation alternative | Proposed |
 | [0042](0042-combined-power-sync-motherboard.md) | Power and sync MCU share one motherboard PCB; Jetson carrier stays separate | Accepted |
@@ -60,3 +60,4 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0052](0052-envelope-defaults-and-heartbeat-stop.md) | The envelope's defaults, reverse, and a heartbeat stop held until the operator re-arms | Accepted |
 | [0053](0053-fault-reset-details.md) | The fault reset's details: a 3 s check window, a stopped-wheel threshold, the steering check deferred | Accepted |
 | [0054](0054-car-configuration-values.md) | The car configuration's values: written by hand in nominal.yaml, and only what code needs now | Accepted |
+| [0055](0055-every-estop-press-latches.md) | Every e-stop press latches the stop, fault or not; driving resumes after the release, the power-on checks and the operator's re-arm | Proposed |
