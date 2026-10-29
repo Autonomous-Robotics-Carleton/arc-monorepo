@@ -184,6 +184,11 @@ export function check(files: { path: string; src: string }[], r: Rules = rules) 
   return { violations, excused, stale };
 }
 
+// GitHub workflow commands: a property value escapes % \r \n : and , ;
+// the message escapes % \r \n
+export const escapeData = (s: string) => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+export const escapeProperty = (s: string) => escapeData(s).replace(/:/g, '%3A').replace(/,/g, '%2C');
+
 function main(argv: string[]) {
   let root = '.';
   const paths: string[] = [];
@@ -211,7 +216,7 @@ function main(argv: string[]) {
   for (const v of violations) {
     const message = `branches on the target (${v.names.join(', ')}): code above the split never asks which target it's on (ADR-0047)`;
     console.error(`${v.path}:${v.line}: ${message}\n    ${v.text}`);
-    if (annotate) console.log(`::error file=${v.path},line=${v.line},title=Split check::${message}`);
+    if (annotate) console.log(`::error file=${escapeProperty(v.path)},line=${v.line},title=Split check::${escapeData(message)}`);
   }
   const summary = `${files.length} files checked, ${excused.length} known exception(s)`;
   if (violations.length) {

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { check, checkFile, glob } from './split-check.mts';
+import { check, checkFile, escapeData, escapeProperty, glob } from './split-check.mts';
 import * as rules from './rules.mts';
 
 const flagged = (path: string, src: string) => checkFile(path, src, rules).map(v => v.line);
@@ -120,6 +120,21 @@ test('allowed paths: backends (new ones too), bringup, board files; new packages
   assert.deepEqual(flagged('ros/src/arc_x/README.md', src), [], 'not code');
 });
 
+test('test code is skipped; the code it tests is still checked', () => {
+  const src = "assert topics == {'sim': '/sim/scan'}\nif target == 'car':\n    pass";
+  for (const path of ['ros/src/arc_logging/test/test_recorder.py', 'firmware/sync-mcu/tests/safety/src/main.c', 'test/x.py', 'ros/src/arc_x/arc_x/test_node.py', 'experiments/x/src/node_test.cpp']) {
+    assert.deepEqual(flagged(path, src), [], path);
+  }
+  for (const path of ['ros/src/arc_logging/arc_logging/recorder.py', 'ros/src/arc_x/arc_x/testing.py', 'ros/src/arc_x/arc_x/latest.py']) {
+    assert.deepEqual(flagged(path, src), [1, 2], path);
+  }
+});
+
+test('annotations escape the file path and message', () => {
+  assert.equal(escapeProperty('a%b,c:d\r\ne'), 'a%25b%2Cc%3Ad%0D%0Ae');
+  assert.equal(escapeData('50% done: a,b\n'), '50%25 done: a,b%0A');
+});
+
 test('exceptions excuse the line they name; unmatched ones are reported as stale', () => {
   const r = { ...rules, EXCEPTIONS: [
     { path: 'a/x.py', contains: "== 'car'", followUp: '#1' },
@@ -155,6 +170,11 @@ test('the command: exit codes, file list from git, GitHub annotations', async t 
   assert.equal(r.status, 1);
   assert.match(r.stderr, /ros\/src\/arc_new\/node\.py:3: branches on the target \(car\)/);
   assert.match(r.stdout, /::error file=ros\/src\/arc_new\/node\.py,line=3,/);
+
+  await fs.mkdir(join(root, 'experiments/a,b'), { recursive: true });
+  await fs.writeFile(join(root, 'experiments/a,b/main.py'), "if target == 'sim':\n    pass\n");
+  r = run('experiments/a,b/main.py');
+  assert.match(r.stdout, /::error file=experiments\/a%2Cb\/main\.py,line=1,/);
 
   r = run('ignored.py');
   assert.equal(r.status, 1, 'explicit paths are checked even if git ignores them');

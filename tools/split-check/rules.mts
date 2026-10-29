@@ -42,6 +42,13 @@ export const ALLOWED: { path: string; why: string }[] = [
   // Launch-time choice of target (ADR-0028, ADR-0047)
   { path: 'ros/src/arc_backend_*/**', why: 'Backends: each one is a target (ADR-0028); covers new backends' },
   { path: 'ros/src/arc_bringup/**', why: 'Bringup: chooses the backend from target:=' },
+  // Test code: tests assert on target names (expected topics, launch
+  // arguments, log fields) rather than branch on them, and each test picks
+  // the target it runs on. The code under test is still checked.
+  { path: '**/test/**', why: 'Test code' },
+  { path: '**/tests/**', why: 'Test code' },
+  { path: '**/test_*.py', why: 'Test code' },
+  { path: '**/*_test.*', why: 'Test code' },
   // Not code above the split
   { path: 'tools/**', why: "Repo scripts, the firmware-in-the-loop test and this check: they run on developers' machines and in CI, not on the car" },
   { path: 'firmware/vesc/bldc/**', why: 'Upstream VESC firmware (ADR-0033): its hardware targets are upstream code' },
