@@ -161,3 +161,4 @@ The twin's timing is simulated (ADR-0049), so timing results show the logic, not
 | Whether Linux virtual CAN works on Docker Desktop (macOS, Windows) | The `twin` profile on those laptops |
 | Whether a SCIP emulator for the Hokuyo is worth it, or a LiDAR model at the topic level | The LiDAR in the twin |
 | Whether to run the real ARM firmware binaries in an emulator such as Renode (support for the STM32H7's FD-CAN and Ethernet is unconfirmed) | Testing the peripheral drivers before the boards arrive |
+| Whether to adopt the Renode proposal in [`renode-investigation.md`](renode-investigation.md) (#178): the `nucleo_h723zg` build boots there, and Zephyr's FD-CAN and Ethernet tests pass | Driver-level CI without hardware |
