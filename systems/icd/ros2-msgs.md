@@ -1,6 +1,6 @@
 # ICD-ros2-msgs
 
-- **Revision:** A (2026-10-26). Messages in [`ros/src/arc_msgs/`](../../ros/src/arc_msgs/).
+- **Revision:** B (2026-10-29): adds how `arc_control` chooses who drives. Messages in [`ros/src/arc_msgs/`](../../ros/src/arc_msgs/).
 - **Status:** Draft. Topic names, message types and QoS are proposals (TBC) until both sides sign off (#84). Owners: Shrikar Vempati on both sides until reassigned.
 - **Side A:** what publishes the car's measurements and state: the car backend (`arc_backend_car`, the Orin's end of the sync link) and the LiDAR and camera drivers (`arc_drivers`) (owner: Shrikar Vempati, until reassigned)
 - **Side B:** what uses them and commands the car: the platform nodes (`arc_safety`, `arc_control`, `arc_logging`, car state and health), experiments, and the ground station through its bridge (owner: Shrikar Vempati, until reassigned)
@@ -140,7 +140,43 @@ ROS lets any process publish on any topic, so the *Published by* column is check
 | --- | --- | --- | --- |
 | `/control/set_mode` | `arc_msgs/SetControlMode` | `arc_control` | The ground station, through `arc_safety` (TBC, #144) |
 
-An experiment reads the measurements above and publishes one `DriveCommand` (ADR-0048). `arc_control` forwards it or the teleop to `/car/cmd/drive`, and replaces a silent source with a zero command (#151). The envelope stays on the sync MCU (SYS-22).
+An experiment reads the measurements above and publishes one `DriveCommand` (ADR-0048). `arc_control` forwards it or the teleop to `/car/cmd/drive`, and replaces a silent source with the zero command (below). The envelope stays on the sync MCU (SYS-22).
+
+## Choosing who drives (`arc_control`)
+
+`arc_control` (#151) forwards one source to `/car/cmd/drive`, and its mode says which. The mode is the switch itself, not a label: `/control/mode` reports it.
+
+| Mode | Drives | The other source |
+| --- | --- | --- |
+| Operator | `/control/teleop` | The experiment's commands are dropped |
+| Experiment | `/control/experiment` | Teleop is ignored, unless it's past the deadband: then the operator takes over |
+
+**How the mode changes:**
+
+- **It starts in operator mode.**
+- **Only a request gives the experiment control:** `/control/set_mode` with `MODE_EXPERIMENT`. It's refused, with the reason, unless an experiment command has arrived within the experiment timeout.
+- **A request for operator mode is always accepted.** It's the ground station's take-over button, and needs no fresh teleop: without it, the car gets the zero command.
+- **Takeover:** in experiment mode, a teleop command past the deadband (in speed or in steering) switches to operator mode and drives. Centred sticks, or a stick that doesn't quite centre, don't.
+- **Lost experiment:** no experiment command for the lost timeout switches to operator mode. When the experiment comes back it doesn't get control again; that takes another request.
+
+**Commands:**
+
+- **The source in control is forwarded as it arrives,** unchanged, its `header.stamp` included (SYS-23).
+- **A silent source is replaced by the zero command,** sent every tick until it's back, never by its last value. The experiment keeps control through a gap shorter than the lost timeout, so a hiccup doesn't end a run.
+- **The zero command:** `speed` 0; `steer` held at the last one sent, since straightening the wheels while stopping would change the car's path; `accel` the largest float, which means as hard as the envelope allows (the sync MCU caps every command's `accel` at the envelope's `max_accel`, SYS-22). Stamped when it's sent.
+- **Freshness is when a command arrived,** on the car's ROS clock, not its `header.stamp`: the ground station's clock isn't the car's. If the clock goes back (a simulator reset), every source is stale.
+- **A command with a NaN or infinite field is dropped,** as if it never came.
+- **Experiments reset when they gain control.** An experiment's commands are dropped while it isn't in control, so a controller that kept running can have wound up. It reads `/control/mode` and resets its state (integrators, rate limits on its own output) when the mode becomes `MODE_EXPERIMENT`; otherwise its first command can jump. The envelope limits the steering angle, not how fast it changes.
+
+| Parameter | Value | Why |
+| --- | --- | --- |
+| `teleop_timeout` | 200 ms (TBC) | The operator link has gaps: 10 missed commands at 50 Hz. Set from the link's measured gaps (#144). At the default envelope's 3 m/s (SYS-22) the car covers 0.6 m before the zero command |
+| `experiment_timeout` | 100 ms (TBC) | On the Orin, with no link between: 5 missed commands at 50 Hz (SYS-21) |
+| `experiment_lost_timeout` | 1 s (TBC) | Long enough that a hiccup doesn't end a run; a crashed or restarted experiment, or a stray publisher, doesn't get control back without a request (SYS-21) |
+| `takeover_speed`, `takeover_steer` | 0.1 m/s, 0.05 rad (TBC) | Past stick drift, well below a deliberate push |
+| Tick | 10 ms (TBC) | How often the zero command goes out, and how late a timeout can be noticed |
+
+What else stops the car: `arc_control` handles a source that goes silent. `arc_control` itself going silent while heartbeats still arrive is open issue 9 (#198); the operator link going down is `arc_safety`'s and the sync MCU's watchdog's (SYS-04).
 
 ## The messages (`arc_msgs`)
 
@@ -186,3 +222,5 @@ An experiment reads the measurements above and publishes one `DriveCommand` (ADR
 9. When drive commands stop: ICD-sync-link doesn't say what the sync MCU does when `ARC_DRIVE_COMMAND` stops arriving while heartbeats still do. The latest command wins, so if `arc_control` dies the car could hold its last speed. Either the sync MCU gets a timeout for it (ICD-sync-link), or the car backend sends a zero command after a silence (TBC).
 10. Who publishes `/joint_states`, once calibrated angles exist (#143).
 11. Every log records the car configuration it ran with (#143), so a run can be read later.
+12. Braking while turning: the zero command brakes as hard as the envelope allows on the steering it had, and braking hard in a tight turn can skid. Whether the envelope should limit braking by steering angle is for the envelope on the sync MCU (SYS-22).
+13. A teleop speed cap below the envelope's, if the measured teleop timeout (#144) leaves the car too far to travel before the zero command.
