@@ -17,6 +17,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, LogInfo, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 from arc_car_config import config_hash, load, top_speed
@@ -62,4 +63,6 @@ def generate_launch_description():
             description='Car configuration: config/cars/<car>.yaml'),
         OpaqueFunction(function=car_config),
         OpaqueFunction(function=include_backend),
+        # who drives: the operator or the experiment (#151)
+        Node(package='arc_control', executable='control', output='screen'),
     ])
