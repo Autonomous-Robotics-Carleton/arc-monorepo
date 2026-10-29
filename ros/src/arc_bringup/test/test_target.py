@@ -46,7 +46,8 @@ def expected_backend():
 class TestBackendStarts(unittest.TestCase):
 
     def test_chosen_backend_reports_in(self, proc_output):
-        proc_output.assertWaitFor(f'{expected_backend()}: not implemented yet', timeout=30)
+        # the gym compiles its physics before it reports in: up to seconds
+        proc_output.assertWaitFor(f'{expected_backend()}:', timeout=45)
 
     def test_arc_control_reports_in(self, proc_output):
         proc_output.assertWaitFor('arc_control: operator mode, waiting for teleop', timeout=30)

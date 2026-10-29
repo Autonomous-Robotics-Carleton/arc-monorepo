@@ -2,13 +2,27 @@
 <package format="3">
   <name>arc_backend_sim_gym</name>
   <version>0.0.0</version>
-  <description>F1TENTH gym simulator backend: 2D, fast, for planning and control experiments and CI (ADR-0032). Stub.</description>
+  <description>F1TENTH gym simulator backend (ADR-0032), in interface mode (ADR-0047): the gym's 2D single-track car behind the car interface, for fast control experiments and CI. Takes arc_control's drive command; publishes the LiDAR, motor, steering, IMU and wheel-angle topics, and the simulator's clock.</description>
   <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <depend>rclcpp</depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
   <depend>arc_msgs</depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>arc_car_config</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>rosgraph_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <!-- The F1TENTH gym has no rosdep key: the dev container installs it
+       (.devcontainer/requirements-gym.txt) -->
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>arc_control</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

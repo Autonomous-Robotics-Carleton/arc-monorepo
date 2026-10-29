@@ -42,7 +42,7 @@ Scaffolding: every package builds and starts; apart from the car backend's sync-
 | `arc_car_config` | Loads a car's configuration ([`config/cars/`](../config/cars/README.md)), checks it, hashes it and works out the top speed | Loader and checks; nothing reads the values yet | ADR-0047, ADR-0051 |
 | `arc_backend_sim_gazebo` | Gazebo Harmonic: full sensor suite, event cameras; Linux with a GPU | Stub | ADR-0032 |
 | `arc_backend_sim_webots` | Webots on the host's GPU (macOS, Windows, Linux), ROS in the container | Stub | ADR-0032 |
-| `arc_backend_sim_gym` | F1TENTH gym: 2D and fast; planning, control, CI | Stub | ADR-0032 |
+| `arc_backend_sim_gym` | F1TENTH gym: 2D and fast; planning, control, CI | Interface mode (a shortcut, no firmware below it): takes `arc_control`'s drive command; publishes the LiDAR, motor, steering, IMU-at-CG and wheel-angle topics and `/clock`, with the car configuration's geometry and gearing; a closed-loop launch test drives 3 m. [Its README](src/arc_backend_sim_gym/README.md) lists the TBC values | ADR-0032, ADR-0047 |
 | `arc_backend_replay` | Log-replay backend | Stub | ADR-0028, SYS-24 |
 | `arc_backend_car` | The sync bridge: the Orin's end of the sync link to the sync MCU, and the driver process SYS-29 is measured at. Motor-controller and steering data reach the Orin only through it (ADR-0034) | Exchanges `ARC_LINK_STATUS` with the sync MCU over UDP (version logged, not yet checked; gap counters not implemented); a round-trip test of the generated code; the car interface itself is a stub | ADR-0021, ADR-0024, ADR-0031, SYS-29 |
 
