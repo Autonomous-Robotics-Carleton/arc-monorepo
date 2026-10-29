@@ -43,6 +43,7 @@ const systemsPages: Record<string, string> = {
   'handoff/software.md': 'software/handoff.md',
   'software/architecture.md': 'software/architecture.md',
   'software/simulation.md': 'software/simulation.md',
+  'software/renode-investigation.md': 'software/renode-investigation.md',
   'software/platform-plan.md': 'software/platform-plan.md',
   'software/setup-plan.md': 'software/setup-plan.md',
 };
@@ -71,6 +72,7 @@ const systemsTitles: Record<string, string> = {
   'software/handoff.md': 'Software handoff',
   'software/architecture.md': 'Software architecture',
   'software/simulation.md': 'Simulation (digital twin)',
+  'software/renode-investigation.md': 'Renode investigation',
   'software/platform-plan.md': 'Platform plan',
   'software/setup-plan.md': 'Setup plan',
 };
