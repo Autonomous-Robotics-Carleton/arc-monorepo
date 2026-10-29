@@ -132,15 +132,15 @@ Loading a track, resetting the car, pausing and showing ground truth are things 
 
 | Model | Good enough to show | Can't show | Calibrated by |
 | --- | --- | --- | --- |
-| Sensor emulators | The drivers parse and stamp correctly; dropouts are detected | Electrical noise, real SPI timing, mounting vibration | Bench tests with breakouts (rig R1); TBD |
-| Motor-controller model | The command path, the e-stop and timeout behaviour of our modules, the any-corner stop | The VESC's motor control, current regulation, heating | [`tests/a50s-arrival.md`](../tests/a50s-arrival.md), rig R2 |
-| Steering model | The steering-loss stop, re-arm checks | Belt compliance, real lock-to-lock time | Rig R2; TBD |
-| Drivetrain and tyres | Plausible acceleration and stopping distance, roughly | Real grip on tile, slip (SYS-10) | A system-identification run on the floor (TBD) |
-| Power model | The low-battery sequence and fault handling | Real voltage sag, inrush, transients (those stay as LTspice analysis) | Rig R4 |
-| Network model | The heartbeat and teleop behaviour under loss and delay | Real 6 GHz behaviour at the venue | Rig R6 |
-| Timing | The order of events and the logic | Real interrupt latency, SYS-29's latencies, Orin load (SYS-08) | Rig R5; the dev kit |
+| Sensor emulators | The drivers parse and stamp correctly; dropouts are detected | Electrical noise, real SPI timing, mounting vibration | Bench tests with breakouts (rig R1): [`tests/twin-sensors.md`](../tests/twin-sensors.md) |
+| Motor-controller model | The command path, the e-stop and timeout behaviour of our modules, the any-corner stop | The VESC's motor control, current regulation, heating | [`tests/twin-motor-controller.md`](../tests/twin-motor-controller.md), with [`tests/a50s-arrival.md`](../tests/a50s-arrival.md), rig R2 |
+| Steering model | The steering-loss stop, re-arm checks | Belt compliance, real lock-to-lock time | Rig R2: [`tests/twin-steering.md`](../tests/twin-steering.md) |
+| Drivetrain and tyres | Plausible acceleration and stopping distance, roughly | Real grip on tile, slip (SYS-10) | A system-identification run on the floor, rig R7: [`tests/twin-drivetrain.md`](../tests/twin-drivetrain.md) |
+| Power model | The low-battery sequence and fault handling | Real voltage sag, inrush, transients (those stay as LTspice analysis) | Rig R4: [`tests/twin-power.md`](../tests/twin-power.md) |
+| Network model | The heartbeat and teleop behaviour under loss and delay | Real 6 GHz behaviour at the venue | Rig R6: [`tests/twin-network.md`](../tests/twin-network.md) |
+| Timing | The order of events and the logic | Real interrupt latency, SYS-29's latencies, Orin load (SYS-08) | Rig R5; the dev kit: [`tests/twin-timing.md`](../tests/twin-timing.md) |
 
-The twin's timing is simulated (ADR-0049), so timing results show the logic, not the car's real latencies. Those are measured on the rigs (`verification/plan.md`).
+The twin's timing is simulated (ADR-0049), so timing results show the logic, not the car's real latencies. Those are measured on the rigs (`verification/plan.md`). How a procedure's result becomes a model parameter is in the plan's [Twin fidelity](../verification/plan.md#twin-fidelity) section.
 
 ## What exists today
 

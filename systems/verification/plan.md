@@ -21,13 +21,13 @@
 
 | Rig | Contents | Used for |
 | --- | --- | --- |
-| **R1 Sync-board HIL** | Combined power/sync motherboard (ADR-0042); real sensors where cheap (IMUs, AS5047s on hand-turned shafts, ToF over a moving target); a second MCU acting as fake CAN nodes and four controller UART links; signal generator; scope; fault injection (pull connectors, short a bus, drop the Ethernet link) | SYS-04, -07, -19, -22, -24, -25, -29, -31, -32 |
-| **R2 Motor bench** | One corner (A50S + 1010 + gearbox, ADR-0034) driving a flywheel or brake load; second corner for bus tests; a moteus-c1 on the steering bus (RSK-03); current probe; e-stop button; power board's motor-bus cut; bus clamp | SYS-05, -25, RSK-03, RSK-11, RSK-12, RSK-18 |
+| **R1 Sync-board HIL** | Combined power/sync motherboard (ADR-0042); real sensors where cheap (IMUs, AS5047s on hand-turned shafts, ToF over a moving target); a second MCU acting as fake CAN nodes and four controller UART links; signal generator; scope; fault injection (pull connectors, short a bus, drop the Ethernet link) | SYS-04, -07, -19, -22, -24, -25, -29, -31, -32; twin fidelity (sensors, timing) |
+| **R2 Motor bench** | One corner (A50S + 1010 + gearbox, ADR-0034) driving a flywheel or brake load; second corner for bus tests; a moteus-c1 on the steering bus (RSK-03); current probe; e-stop button; power board's motor-bus cut; bus clamp | SYS-05, -25, RSK-03, RSK-11, RSK-12, RSK-18; twin fidelity (motor controller, steering, motor-bus cut) |
 | **R3 CAN-FD harness** | Original standalone rig retired by ADR-0034. Steering checks remain on R2; drive UART qualification follows ADR-0034 and `tests/a50s-arrival.md`; see `tests/rsk-03-canfd-bench.md` | SYS-24, RSK-03 |
-| **R4 Power** | Electronic load, bench supply standing in for the pack, 19 V brick, scope with current probe | SYS-14, -30, -31, power scenarios |
-| **R5 Timing and latency** | Scope; LED + photodiode in front of each camera; GPIO toggles timestamped by both the sync MCU and the Orin | SYS-06, -07, -29 |
-| **R6 Network** | Flint 3 router, laptops on Linux/macOS, traffic generator for bulk transfers, packet capture | SYS-11, -26, -27, -28 |
-| **R7 Track instrumentation** | Taped distance markers, high-speed phone video, logged heartbeat gaps | SYS-01, -04, -05, -10, -11 |
+| **R4 Power** | Electronic load, bench supply standing in for the pack, 19 V brick, scope with current probe | SYS-14, -30, -31, power scenarios; twin fidelity (power) |
+| **R5 Timing and latency** | Scope; LED + photodiode in front of each camera; GPIO toggles timestamped by both the sync MCU and the Orin | SYS-06, -07, -29; twin fidelity (timing) |
+| **R6 Network** | Flint 3 router, laptops on Linux/macOS, traffic generator for bulk transfers, packet capture | SYS-11, -26, -27, -28; twin fidelity (network) |
+| **R7 Track instrumentation** | Taped distance markers, high-speed phone video, logged heartbeat gaps | SYS-01, -04, -05, -10, -11; twin fidelity (drivetrain and tyres, network) |
 | **R8 Platform software** | Orin with platform stack; stress tools (CPU, GPU, memory, disk hogs); a deliberately broken experiment container | SYS-08, -21, -23 |
 
 ## Verification matrix
@@ -66,6 +66,26 @@
 | SYS-31 Brownout immunity | T | S2 | R4: step the pack voltage down by the peak-current sag and beyond | No resets at the expected sag | Not started |
 | SYS-32 Cell monitoring | T | S1, S2 | Cell simulator: known voltages; measure the off-state drain | ±10 mV at ≥ 100 Hz; negligible drain when off | Not started |
 | SYS-33 Software targets | D, T | S0, S3 | CI builds every component for every target and runs the simulation tests; the platform stack runs unchanged against the simulator, log replay and the car (R8) | All targets build; simulation tests pass; same launch on every target except the target argument | Not started |
+
+## Twin fidelity
+
+The digital twin ([`software/simulation.md`](../software/simulation.md)) gives evidence for a requirement only as far as its models are calibrated. Each row of its fidelity table has a procedure here that runs the same input on a rig and in the twin, says what "matches" means, and names the model parameters the measurement sets.
+
+- **Code is checked, models are calibrated.** The firmware, drivers and platform code run unchanged in the twin (ADR-0047). Where they behave differently on the rig and in the twin for the same input, that's a defect to fix, not a parameter to tune. Only the modelled parts get calibrated.
+- **A calibration is a PR.** It changes the parameter, names the procedure and its result as the value's source, and records the run in the procedure's results table.
+- **A fidelity test verifies no requirement by itself.** A requirement verified by test still needs its row in the matrix above to pass on hardware. The twin's results stand in for a rig only for what the fidelity table says the model is good enough to show.
+- **Stage:** each procedure runs when its rig first exists, and again when the hardware it measured changes (rerun triggers TBD).
+- **Open:** where the calibrated parameters of each model live (the car configuration holds only geometry, tyre, gearing and steering, ADR-0054); whether the twin runs with a measured car's file or only `twin.yaml`; the tolerances, all TBD.
+
+| Model | Procedure | Rig | Stage | Parameters it sets |
+| --- | --- | --- | --- | --- |
+| Sensor emulators | [`tests/twin-sensors.md`](../tests/twin-sensors.md) | R1 | S1, S2 | IMU, angle-sensor and ToF noise and bias |
+| Motor-controller model | [`tests/twin-motor-controller.md`](../tests/twin-motor-controller.md), alongside [`tests/a50s-arrival.md`](../tests/a50s-arrival.md) | R2 | S2 | Motor constants, current limits |
+| Steering model | [`tests/twin-steering.md`](../tests/twin-steering.md) | R2; the car on a stand (TBD) | S2, S3 | Steering range and centre, actuator response |
+| Drivetrain and tyres | [`tests/twin-drivetrain.md`](../tests/twin-drivetrain.md) | R7 | S4 | Rolling diameter, mass and CG, losses, tyre grip |
+| Power model | [`tests/twin-power.md`](../tests/twin-power.md) | R4, R2 | S1, S2 | Monitor noise, handshake times, motor-bus cut delay, pack model |
+| Network model | [`tests/twin-network.md`](../tests/twin-network.md) | R6, R7 | S1, S4 | Operator-link delay and loss |
+| Timing | [`tests/twin-timing.md`](../tests/twin-timing.md) | R5, R1, dev kit + R8 | S2 | The twin's Orin limits; order of events checked |
 
 ## Before the order (S0 checklist)
 
