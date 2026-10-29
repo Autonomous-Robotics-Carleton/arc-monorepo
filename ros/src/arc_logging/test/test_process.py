@@ -155,7 +155,9 @@ def test_latched_value_from_before_the_start_is_logged(tmp_path, env):
         time.sleep(1.0)
         node = logger(env, tmp_path)
         wait_for(node, 'recording to')
-        time.sleep(2.0)
+        # discovery can take seconds; the value is delivered on subscribing
+        wait_for(node, "Subscribed to topic '/test/latched'")
+        time.sleep(1.0)
     finally:
         stop(*(p for p in (node, latched) if p))
     _, messages = read(only_run(tmp_path))
