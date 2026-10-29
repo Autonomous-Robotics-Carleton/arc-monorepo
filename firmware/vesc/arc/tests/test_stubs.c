@@ -4,6 +4,8 @@
  * module is implemented; the e-stop routine needs its own suite.
  */
 
+/* The checks are asserts: never let a release build (NDEBUG) drop them. */
+#undef NDEBUG
 #include <assert.h>
 #include <stdio.h>
 

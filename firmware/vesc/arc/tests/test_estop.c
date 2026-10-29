@@ -5,6 +5,8 @@
  * controller (port/estop_vesc.c).
  */
 
+/* The checks are asserts: never let a release build (NDEBUG) drop them. */
+#undef NDEBUG
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
