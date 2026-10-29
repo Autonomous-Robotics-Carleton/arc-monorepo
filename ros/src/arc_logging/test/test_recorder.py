@@ -13,6 +13,8 @@ from arc_logging.recorder import (
     run_dir,
     run_name,
     run_record,
+    start_status,
+    started,
 )
 
 START = datetime(2026, 10, 29, 14, 5, 1, tzinfo=timezone.utc)
@@ -124,3 +126,25 @@ def test_lost_messages_reads_rosbag2s_reports():
     assert lost_messages('[WARN] [rosbag2_cpp]: Total lost: 3') == 3
     assert lost_messages('[INFO] [r]: Recording...') is None
 
+
+
+def test_started_only_once_rosbag2_records_into_the_directory(tmp_path):
+    line = '[INFO] [1793293385.2] [arc_logging_recorder]: Recording...'
+    assert not started(line, tmp_path / 'run')  # the directory isn't there yet
+    (tmp_path / 'run').mkdir()
+    assert started(line, tmp_path / 'run')
+    assert not started("[INFO] [arc_logging_recorder]: Starting recording to 'run'",
+                       tmp_path / 'run')
+
+
+def test_start_status_never_says_recording():
+    # starting: a warning only for a run that must be logged
+    starting = 'starting the recorder: not recording yet'
+    assert start_status(None, 1.0, 10.0, True) == (True, starting)
+    assert start_status(None, 1.0, 10.0, False) == (False, starting)
+    warn, message = start_status(1, 1.0, 10.0, False)
+    assert warn and 'failed to start (exit code 1)' in message and 'not recorded' in message
+    warn, message = start_status(None, 11.0, 10.0, False)
+    assert warn and 'has not started' in message and 'start_timeout_s' in message
+    for status in (start_status(None, 1.0, 10.0, True), start_status(1, 1.0, 10.0, True)):
+        assert 'recording to' not in status[1]

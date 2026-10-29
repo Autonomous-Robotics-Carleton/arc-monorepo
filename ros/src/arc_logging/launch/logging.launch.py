@@ -25,6 +25,8 @@ ARGS = {
     'min_free_gb': ('20.0', 'TBC: free space needed to start logging, GB: '
                             'log rate x the longest run (SYS-03) x a margin'),
     'chunk_s': ('60', 'TBC: length of each log chunk, s: the most a crash or power loss loses'),
+    'start_timeout_s': ('10.0', 'TBC: how long the recorder may take to start recording, s, '
+                                'before the operator is warned'),
     'log_exclude': ('', 'Regex of topics not to record (rosbag2 --exclude-regex); '
                         'empty records every topic'),
     'target': ('', 'Run record: the target'),
@@ -32,7 +34,8 @@ ARGS = {
     'sensors': ('', 'Run record: the sensor profile'),
     'car': ('twin', 'Run record: the car configuration'),
 }
-TYPES = {'log': bool, 'must_log': bool, 'min_free_gb': float, 'chunk_s': int}
+TYPES = {'log': bool, 'must_log': bool, 'min_free_gb': float, 'chunk_s': int,
+         'start_timeout_s': float}
 
 
 def generate_launch_description():

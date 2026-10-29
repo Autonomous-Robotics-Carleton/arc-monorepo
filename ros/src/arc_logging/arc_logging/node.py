@@ -7,9 +7,15 @@ the kernel sends the recorder SIGINT and it still closes its file. At
 shutdown the node forwards SIGINT and waits for the recorder to write out its
 cache.
 
+The run counts as recorded only once the recorder's own output shows rosbag2
+recording ("Recording...", with the output directory created); until then
+the status says the recorder is starting.
+
 Its status goes on /diagnostics (ICD-ros2-msgs) and to the console: OK while
 recording (or when not logging was asked for), WARN when the run isn't being
-logged and should be, when the recorder stops mid-run, when rosbag2 reports
+logged and should be (including while the recorder starts), when the recorder
+fails to start or hasn't started within start_timeout_s, when it stops
+mid-run, when rosbag2 reports
 lost messages, when free space drops below min_free_gb, or when log_exclude
 can't be used (the run is then recorded whole). The platform never stops for
 any of these.
@@ -21,6 +27,7 @@ import signal
 import subprocess
 import sys
 import threading
+import time
 
 from diagnostic_msgs.msg import DiagnosticArray, DiagnosticStatus, KeyValue
 import rclpy
@@ -37,6 +44,8 @@ from arc_logging.recorder import (
     record_command,
     run_name,
     run_record,
+    start_status,
+    started,
 )
 
 PR_SET_PDEATHSIG = 1
@@ -58,6 +67,8 @@ class Logger(Node):
         self.min_free_gb = self.declare_parameter('min_free_gb', 20.0).value
         # TBC: the most a crash or power loss may lose
         self.chunk_s = self.declare_parameter('chunk_s', 60).value
+        # TBC: how long rosbag2 may take to start recording before the operator is warned
+        self.start_timeout_s = self.declare_parameter('start_timeout_s', 10.0).value
         # topics not to record (rosbag2's --exclude-regex); empty records everything
         self.exclude = self.declare_parameter('log_exclude', '').value
         self.exclude_problem = check_exclude(self.exclude)
@@ -75,7 +86,9 @@ class Logger(Node):
 
         self.root = log_root(log_dir, os.environ.get('ARC_LOG_DIR', ''), must_log)
         self.plan = plan(log, must_log, self.root, run_name(target), self.min_free_gb)
+        self.must_log = must_log
         self.proc = None
+        self.recording = threading.Event()  # set once rosbag2 shows it is recording
         self.lost = 0
         self.stopping = False
         self.last = None
@@ -88,7 +101,8 @@ class Logger(Node):
         self.report()
 
     def start_recorder(self, record):
-        self.plan.output.parent.mkdir(parents=True, exist_ok=True)
+        # rosbag2 creates the directory and its parents; if it can't, it fails to start
+        self.started_at = time.monotonic()
         env = dict(os.environ, RCUTILS_LOGGING_BUFFERED_STREAM='1')
         self.proc = subprocess.Popen(
             record_command(self.plan.output, record, self.chunk_s, self.exclude),
@@ -98,10 +112,12 @@ class Logger(Node):
         self.reader.start()
 
     def read_recorder(self):
-        """Pass the recorder's output through, and note what it says it lost."""
+        """Pass the recorder's output through, and note when it starts and what it loses."""
         for line in self.proc.stdout:
             sys.stderr.write(line)
             sys.stderr.flush()
+            if not self.recording.is_set() and started(line, self.plan.output):
+                self.recording.set()
             lost = lost_messages(line)
             if lost:
                 self.lost = max(self.lost, lost)
@@ -110,6 +126,11 @@ class Logger(Node):
         if self.proc is None:
             return self.plan.warn, self.plan.message
         code = self.proc.poll()
+        if code is not None:
+            self.reader.join()  # it has exited: read all it said before deciding
+        if not self.recording.is_set():
+            return start_status(code, time.monotonic() - self.started_at,
+                                self.start_timeout_s, self.must_log)
         if code is not None:
             return True, (f'RECORDER STOPPED (exit code {code}): the rest of this run is not '
                           f'recorded; {self.plan.output} holds it up to here')

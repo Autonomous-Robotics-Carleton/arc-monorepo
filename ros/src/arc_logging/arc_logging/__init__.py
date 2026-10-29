@@ -12,7 +12,9 @@ from arc_logging.recorder import (
     run_dir,
     run_name,
     run_record,
+    start_status,
+    started,
 )
 
 __all__ = ['STORAGE', 'Plan', 'check_exclude', 'free_gb', 'log_root', 'lost_messages', 'plan',
-           'record_command', 'run_dir', 'run_name', 'run_record']
+           'record_command', 'run_dir', 'run_name', 'run_record', 'start_status', 'started']
