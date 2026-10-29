@@ -3,7 +3,7 @@ the car interface: every message on the car's topics, with their stamps, at
 the log's timing scaled by `rate:=`; /clock on the log's time; nothing on the
 platform's own topics; and commands sent to the car are ignored.
 
-Run by CMakeLists.txt once per rate, with log:= the sample log.
+Run by CMakeLists.txt once per rate, with bag:= the sample log.
 """
 
 import sys
@@ -50,12 +50,12 @@ def generate_test_description():
         FindPackageShare('arc_backend_replay'), 'launch', 'backend.launch.py',
     ])
     return LaunchDescription([
-        DeclareLaunchArgument('log'),
+        DeclareLaunchArgument('bag'),
         DeclareLaunchArgument('rate'),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(backend),
             # paused, so the test subscribes before the first message
-            launch_arguments={'log': LaunchConfiguration('log'),
+            launch_arguments={'bag': LaunchConfiguration('bag'),
                               'rate': LaunchConfiguration('rate'),
                               'start_paused': 'true'}.items()),
         launch_testing.actions.ReadyToTest(),
