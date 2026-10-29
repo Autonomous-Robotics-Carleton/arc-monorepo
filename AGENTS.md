@@ -91,3 +91,4 @@ Gotchas:
 - Rebase on `origin/main`; never merge `main` into a branch, and don't use GitHub's "Update branch" (it creates a merge commit).
 - PRs use the template in `.github/pull_request_template.md`. They're merged **once**, with "Rebase and merge" (or "Squash and merge" for messy branches). If a PR's commits are already on `main`, close it instead.
 - Check `git status` before committing: files already staged by `git mv` or `git rm` get swept into the next commit.
+- **Engineering practices** (flaky tests, incidents become tests, releases, hardware runners, coverage) are in [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md#engineering-practices). Never re-run a flaky test until it passes: fix it or quarantine it.
