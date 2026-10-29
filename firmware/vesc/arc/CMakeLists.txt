@@ -11,3 +11,7 @@ enable_testing()
 add_executable(test_stubs tests/test_stubs.c)
 target_link_libraries(test_stubs arc_vesc)
 add_test(NAME stubs COMMAND test_stubs)
+
+add_executable(test_speed_limit tests/test_speed_limit.c)
+target_link_libraries(test_speed_limit arc_vesc m)
+add_test(NAME speed_limit COMMAND test_speed_limit)
