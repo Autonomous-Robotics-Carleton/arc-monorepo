@@ -31,6 +31,7 @@ The script stages its result but doesn't commit it; on conflicts it lists the fi
 | `bldc/` | Upstream VESC firmware, plus the hooks that join `arc/` to the build (marked `ARC`) |
 | `arc/` | Our additions (e-stop, UART telemetry, speed limit; the command timeout to come) as modules with host tests; `arc.mk` joins them to the firmware build. A module not implemented yet is a fail-safe stub |
 | `UPSTREAM` | The upstream commit `bldc/` is based on |
+| `motors/` | Each drive motor's detected configuration, by the label on the motor, and how to load it with VESC Tool after a corner swap (SYS-13) |
 
 ## Build and test
 
