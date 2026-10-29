@@ -107,7 +107,7 @@ The heartbeat goes through the Orin on purpose: if the Orin hangs, it stops forw
 2. It forwards the sample over the sync link within 0.25 ms (ADR-0024). Every message carries its sample time.
 3. The car backend publishes it as a ROS topic, with the time mapped onto the Orin's clock. Samples must reach this process within 2 ms of sampling, p99 (SYS-29).
 4. The running experiment uses it, for example to estimate the car's state. The car must support an estimate at ≥ 200 Hz and ≤ 5 ms old (SYS-06); the baseline estimator, an example experiment in `experiments/`, is how that's checked once it exists (ADR-0048).
-5. `arc_logging` records it to the NVMe drive (SYS-09); every sensor, command and operator input is logged on the same time base (SYS-23).
+5. `arc_logging` records it to the NVMe drive (SYS-09; camera images only on runs that ask for them, ADR-0056); every sensor, command and operator input is logged on the same time base (SYS-23).
 
 LiDAR and cameras connect to the Orin directly, so their path differs:
 - **LiDAR** scans are stamped on arrival and mapped to the sync MCU's time, to ≤ 1 ms.
