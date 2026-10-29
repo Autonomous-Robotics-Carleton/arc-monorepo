@@ -1,7 +1,8 @@
 """The platform comes up on a target: the target's backend and the platform
-nodes start and stay up, and arc_logging records the run (into a temporary
-directory). It also checks the default car configuration (twin): if that
-fails to load, the launch stops before anything starts.
+nodes start and stay up. Logging follows the target's default: the car's run
+is recorded (into a temporary directory), the others are not. It also checks
+the default car configuration (twin): if that fails to load, the launch stops
+before anything starts.
 
 Run once per backend by CMakeLists.txt: target:=sim with each sim:=, then
 target:=replay and target:=car.
@@ -54,8 +55,11 @@ class TestBackendStarts(unittest.TestCase):
     def test_arc_control_reports_in(self, proc_output):
         proc_output.assertWaitFor('arc_control: operator mode, waiting for teleop', timeout=30)
 
-    def test_arc_logging_records(self, proc_output):
-        proc_output.assertWaitFor('[arc_logging]: Recording...', timeout=30)
+    def test_arc_logging_follows_the_targets_default(self, proc_output):
+        on_car = dict(a.split(':=', 1) for a in sys.argv if ':=' in a).get('target') == 'car'
+        expected = ('[arc_logging_recorder]: Recording...' if on_car
+                    else 'arc_logging: not logging (log:=false)')
+        proc_output.assertWaitFor(expected, timeout=30)
 
 
 @launch_testing.post_shutdown_test()
