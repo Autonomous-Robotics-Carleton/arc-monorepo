@@ -42,7 +42,7 @@
 | SYS-06 State estimate | T | S2, S3 | R5 + R1: timestamp a sensor event and the baseline estimator's estimate that reflects it (ADR-0048) | ≥ 200 Hz; age ≤ 5 ms p99 | Not started |
 | SYS-07 Time alignment | T | S2 | R5: one physical event seen by several sensors (light flash for cameras, tap for IMUs, edge for encoders); compare timestamps | ≤ 10 µs between sensors; LiDAR ≤ 1 ms | Not started |
 | SYS-08 Compute rates | T | S3 | R8: classical stack + learned policy at full load for 30 min | Localization 40 Hz, MPC ≥ 100 Hz, perception ≥ 30 Hz (≤ 50 ms), policy ≥ 5 Hz; MPC deadline misses < 0.1% | Not started |
-| SYS-09 Logging | D | S3, S4 | Log a full run; check every stream is present and complete | All streams, full run, no gaps | Not started |
+| SYS-09 Logging | D | S3, S4 | Log a full run in each profile (ADR-0056); check every stream the profile holds is present and complete | All the profile's streams, full run, no gaps | Not started |
 | SYS-10 Slip and sideslip | T | S4 | Ground-speed camera against fusion, plus a measured-distance run; motion capture if ever available | Slip ratio and sideslip within ±2% (TBC) | Not started |
 | SYS-11 Teleop latency | T | S4 | R6 + R7: timestamp the gamepad event on the laptop and the wheel response on the car | ≤ 20 ms p95, ≤ 50 ms p99 | Not started |
 | SYS-12 Crash survival | T | S4 | Controlled frontal impacts into a padded barrier at increasing speed | No damage at SYS-12 speed | Not started |

@@ -61,3 +61,4 @@ The ADRs marked *backfilled* record decisions made before this process existed. 
 | [0053](0053-fault-reset-details.md) | The fault reset's details: a 3 s check window, a stopped-wheel threshold, the steering check deferred | Accepted |
 | [0054](0054-car-configuration-values.md) | The car configuration's values: written by hand in nominal.yaml, and only what code needs now | Accepted |
 | [0055](0055-every-estop-press-latches.md) | Every e-stop press latches the stop, fault or not; driving resumes after the release, the power-on checks and the operator's re-arm | Accepted |
+| [0056](0056-logging-profiles.md) | Each run logs a profile: everything but camera images by default, images when a run asks | Proposed |
