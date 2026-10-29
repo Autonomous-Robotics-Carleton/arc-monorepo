@@ -149,21 +149,60 @@ export function targetNames(line: string, lang: Lang, r: Rules): string[] {
   return [...found];
 }
 
-// A table keyed by target name ({'sim': ..., 'car': ...}[target]) is a branch too
-export function keyedByTarget(line: string, lang: Lang, r: Rules): string[] {
+// A table keyed by target name is a branch too, but only when it's looked up
+// by a value: {'sim': a, 'car': b}[target], {...}.get(target), or a name bound
+// to such a table and then indexed by a value anywhere in the file
+// (BACKENDS[target]). A dict that merely has a field called 'sim' or 'car'
+// (a log's record, launch arguments) isn't one. Works on the whole
+// comment-free source, since tables usually span several lines.
+export function lookupTables(code: string, lang: Lang, r: Rules): { line: number; names: string[] }[] {
   if (lang !== 'python' && lang !== 'js') return [];
   const names = r.TARGET_NAMES.map(escape).join('|');
-  const keys = [...line.matchAll(new RegExp(`(['"\`])(${names})\\1\\s*:(?!:)`, 'g'))].map(m => m[2]);
-  if (lang === 'js') keys.push(...[...line.matchAll(new RegExp(`(?:^|[{,]\\s*)(${names})\\s*:(?!:)`, 'g'))].map(m => m[1]));
-  return keys;
+  const keyRe = lang === 'js'
+    ? new RegExp(`(?:(['"\`])(${names})\\1|(?<![\\w.'"\`])(${names}))\\s*:(?!:)`, 'g')
+    : new RegExp(`(['"])(${names})\\1\\s*:(?!:)`, 'g');
+  if (!new RegExp(keyRe.source).test(code)) return []; // no table to look for
+  const lineAt = (i: number) => code.slice(0, i).split('\n').length;
+  // the index of the brace closing the one at `open`, skipping strings
+  const close = (open: number) => {
+    let depth = 0;
+    for (let i = open; i < code.length; i++) {
+      const c = code[i];
+      if (c === '"' || c === "'" || c === '`') {
+        let j = i + 1;
+        while (j < code.length && code[j] !== c && (code[j] !== '\n' || c === '`')) j += code[j] === '\\' ? 2 : 1;
+        i = j;
+      } else if (c === '{') depth++;
+      else if (c === '}' && --depth === 0) return i;
+    }
+    return -1;
+  };
+  const byValue = String.raw`(?:\[\s*(?![\s'"\`\d\]])|\.get\(\s*(?![\s'"\`)]))`;
+  const found: { line: number; names: string[] }[] = [];
+  for (let open = code.indexOf('{'); open >= 0; open = code.indexOf('{', open + 1)) {
+    const end = close(open);
+    if (end < 0) break;
+    const keys = [...code.slice(open + 1, end).matchAll(keyRe)];
+    if (!keys.length) continue;
+    const literalLookup = new RegExp(`^\\s*${byValue}`).test(code.slice(end + 1));
+    const bound = code.slice(Math.max(0, open - 200), open).match(/\b([A-Za-z_$][\w$]*)\s*(?::[^=\n]*)?=\s*$/)?.[1];
+    const namedLookup = bound !== undefined && new RegExp(`(?<![\\w$.])${escape(bound)}\\s*${byValue}`).test(code);
+    if (literalLookup || namedLookup) {
+      found.push({ line: lineAt(open + 1 + keys[0].index!), names: [...new Set(keys.map(k => k[2] ?? k[3]))] });
+    }
+  }
+  return found;
 }
 
 export function checkFile(path: string, src: string, r: Rules): Violation[] {
   const lang = language(path);
   if (!lang || allowedBy(path, r)) return [];
   const original = src.split('\n');
-  return stripComments(src, lang).split('\n').flatMap((line, n) => {
-    const names = [...new Set([...(isCondition(line, lang) ? targetNames(line, lang, r) : []), ...keyedByTarget(line, lang, r)])];
+  const code = stripComments(src, lang);
+  const tables = lookupTables(code, lang, r);
+  return code.split('\n').flatMap((line, n) => {
+    const keyed = tables.filter(t => t.line === n + 1).flatMap(t => t.names);
+    const names = [...new Set([...(isCondition(line, lang) ? targetNames(line, lang, r) : []), ...keyed])];
     return names.length ? [{ path, line: n + 1, text: original[n].trim(), names }] : [];
   });
 }
