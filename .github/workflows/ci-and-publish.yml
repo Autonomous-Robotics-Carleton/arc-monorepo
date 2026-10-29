@@ -226,9 +226,9 @@ jobs:
   ros-arm64:
     # The ROS platform on arm64, the Orin's architecture (SYS-33, ADR-0050);
     # the dev-container job covers amd64. The dev container is amd64 only
-    # (native_sim needs 32-bit host libraries), so this job installs the same
-    # ROS 2 Jazzy packages as .devcontainer/Dockerfile directly on GitHub's
-    # arm64 runner. Those runners are free for public repositories and build
+    # (native_sim needs 32-bit host libraries), so this job installs the
+    # image's ROS 2 Jazzy packages, read from .devcontainer/, directly on
+    # GitHub's arm64 runner. Those runners are free for public repositories and build
     # natively; QEMU on an amd64 runner is also free but several times slower.
     runs-on: ubuntu-24.04-arm
     permissions:
@@ -265,20 +265,32 @@ jobs:
             echo "ROS isn't affected: nothing to build"
           fi
 
-      - name: Install ROS 2 Jazzy
+      - name: Install ROS 2 Jazzy (and the F1TENTH gym, once the image has it)
         if: steps.affected.outputs.ros == 'true'
-        # The ROS part of .devcontainer/Dockerfile: keep the two in step
-        env:
-          ROS_APT_SOURCE_VERSION: 1.3.0
+        # Read from the dev container's own inputs so the two can't drift: the
+        # apt packages from .devcontainer/apt-ros.txt, the pinned versions from
+        # the Dockerfile's ARGs, the gym's dependencies from
+        # .devcontainer/requirements-gym.txt when it exists
         run: |
+          set -euo pipefail
+          arg() { sed -n "s/^ARG $1=//p" .devcontainer/Dockerfile; }
+          ros_apt_source="$(arg ROS_APT_SOURCE_VERSION)"
           curl -fsSL -o /tmp/ros2-apt-source.deb \
-            "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-apt-source_${ROS_APT_SOURCE_VERSION}.noble_all.deb"
+            "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ros_apt_source:?}/ros2-apt-source_${ros_apt_source}.noble_all.deb"
           sudo dpkg -i /tmp/ros2-apt-source.deb
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            ros-jazzy-ros-base ros-dev-tools \
-            ros-jazzy-rosbag2-storage-mcap ros-jazzy-launch-testing-ament-cmake \
-            python3-jsonschema
+          sed 's/#.*//' .devcontainer/apt-ros.txt | xargs sudo apt-get install -y --no-install-recommends
+          if [ -f .devcontainer/requirements-gym.txt ]; then
+            # As in the image: a venv that also sees the system's (ROS's) packages
+            sudo apt-get install -y --no-install-recommends python3-venv
+            /usr/bin/python3 -m venv --system-site-packages "$RUNNER_TEMP/venv"
+            pip="$RUNNER_TEMP/venv/bin/pip"
+            gym_commit="$(arg F1TENTH_GYM_COMMIT)"
+            "$pip" install --no-cache-dir -r .devcontainer/requirements-gym.txt
+            "$pip" install --no-cache-dir --no-deps "git+https://github.com/f1tenth/f1tenth_gym@${gym_commit:?}"
+            "$RUNNER_TEMP/venv/bin/python3" -c "import f1tenth_gym.envs.base_classes"
+            echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          fi
 
       - name: Build and test ROS on arm64
         if: steps.affected.outputs.ros == 'true'
