@@ -2,20 +2,21 @@
 <package format="3">
   <name>arc_logging</name>
   <version>0.0.0</version>
-  <description>Records every topic of a run to one MCAP log (rosbag2's MCAP storage), started and stopped with the platform, in its own process so an experiment can't stop it and it can't block the platform (SYS-09, SYS-21, SYS-24, #152).</description>
+  <description>Records every topic of a run to MCAP (rosbag2's MCAP storage), in chunks, started and stopped with the platform, in its own process so an experiment can't stop it and it can't block the platform; reports on /diagnostics when a run isn't being logged (SYS-09, SYS-21, SYS-24, #152).</description>
   <maintainer email="devlead@arcarleton.ca">ARC</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>ament_cmake_python</buildtool_depend>
   <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>diagnostic_msgs</exec_depend>
   <exec_depend>ros2bag</exec_depend>
   <exec_depend>rosbag2_storage_mcap</exec_depend>
   <exec_depend>arc_car_config</exec_depend>
   <test_depend>ament_cmake_pytest</test_depend>
-  <test_depend>launch_ros</test_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
-  <test_depend>rclpy</test_depend>
   <test_depend>rosbag2_py</test_depend>
   <test_depend>std_msgs</test_depend>
 
