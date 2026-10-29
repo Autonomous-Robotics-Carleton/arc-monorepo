@@ -150,7 +150,8 @@ The twin's timing is simulated (ADR-0049), so timing results show the logic, not
   - a browser ground station with gamepad teleop and a heartbeat test cutoff
 
   Its `car_link.py` re-implements the watchdog and brake ramp in Python. Under ADR-0047 that behaviour comes from the real firmware instead, so the file splits into the operator-link receiver on the Orin, the firmware's `safety.c`, and the Gazebo-side model.
-- **Stubs** for the Gazebo, Webots, gym and replay backends in `ros/src/`.
+- **The gym backend** (`arc_backend_sim_gym`), in interface mode without `safety.c` yet (a stub): the F1TENTH gym's 2D car behind the car interface, with the car configuration's geometry and gearing and its other vehicle values TBC; a CI test drives it closed loop through `arc_control`.
+- **Stubs** for the Gazebo, Webots and replay backends in `ros/src/`.
 
 ## Open questions
 
