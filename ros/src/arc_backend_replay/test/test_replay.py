@@ -153,8 +153,9 @@ class TestReplay(unittest.TestCase):
 
     def test_missing_topics_are_named(self, proc_output):
         proc_output.assertWaitFor('replay backend: playing', timeout=30)
-        lines = [line for output in proc_output for line in output.text.decode().splitlines()
-                 if "topics aren't in this log" in line]
+        # whole lines: the process's output arrives in chunks that can split one
+        text = ''.join(output.text.decode() for output in proc_output)
+        lines = [line for line in text.splitlines() if "topics aren't in this log" in line]
         self.assertEqual(len(lines), 1, lines)
         line = lines[0]
         self.assertIn('[WARN]', line)
