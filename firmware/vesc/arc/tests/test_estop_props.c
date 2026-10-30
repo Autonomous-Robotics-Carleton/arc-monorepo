@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 /*
- * E-stop routine (ADR-0012, ADR-0034): properties checked over every input
+ * E-stop routine (ADR-0012, ADR-0034) and its command timeout (ADR-0035):
+ * properties checked over every input
  * sequence, written from the ADRs and estop.h rather than from estop.c, so
  * they hold whatever the implementation looks like. test_estop.c has the
  * worked cases; this suite is the exhaustive one.
@@ -32,6 +33,10 @@ static long failures;
 	} while (0)
 
 #define DT 0.001f
+/* A step long enough for the command timeout to fall inside a walk: 4 quiet
+ * steps (160 ms) time out, 3 (120 ms) don't, so float rounding at exactly
+ * 150 ms never decides a case. */
+#define DT_TIMEOUT 0.040f
 
 static float target(void)
 {
@@ -47,12 +52,17 @@ static float target(void)
  *   have arrived before it, so it doesn't count).
  * - braking_steps: consecutive steps the routine has been braking since it
  *   last drove (or since power on).
+ * - quiet_steps, timed_out (ADR-0035): once driving, steps since the last
+ *   command; at ARC_ESTOP_COMMAND_TIMEOUT_S_TBC of them the routine brakes
+ *   until a command arrives.
  */
 struct spec {
 	int since_low;
 	int cmd_after_release;
 	int braking_steps;
 	float last_current;
+	int quiet_steps;
+	int timed_out;
 };
 
 static void spec_init(struct spec *s)
@@ -61,24 +71,39 @@ static void spec_init(struct spec *s)
 	s->cmd_after_release = 0;
 	s->braking_steps = 0;
 	s->last_current = 0.0f;
+	s->quiet_steps = 0;
+	s->timed_out = 0;
 }
 
-/* One step with the line and command given; checks every property. */
+/* One step of dt with the line and command given; checks every property. */
 static void step_and_check(struct arc_estop *e, struct spec *s, int line_high,
-			   int cmd, const char *path)
+			   int cmd, float dt, const char *path)
 {
-	struct arc_estop_output out = arc_estop_step(e, line_high, cmd, DT);
+	struct arc_estop_output out = arc_estop_step(e, line_high, cmd, dt);
 
 	if (!line_high) {
 		s->since_low = 0;
 		s->cmd_after_release = 0;
+		s->timed_out = 0;
 	} else {
 		s->since_low++;
-		if (s->since_low >= 2 && cmd) {
+		if (s->since_low >= 2 && cmd && !s->cmd_after_release) {
+			/* the command that ends a release starts the drive */
 			s->cmd_after_release = 1;
+			s->quiet_steps = 0;
+		} else if (s->cmd_after_release) {
+			if (cmd) {
+				s->quiet_steps = 0;
+				s->timed_out = 0;
+			} else if (!s->timed_out) {
+				s->quiet_steps++;
+				if ((float)s->quiet_steps * dt >= ARC_ESTOP_COMMAND_TIMEOUT_S_TBC) {
+					s->timed_out = 1;
+				}
+			}
 		}
 	}
-	const int should_drive = line_high && s->cmd_after_release;
+	const int should_drive = line_high && s->cmd_after_release && !s->timed_out;
 
 	/* Safety: a low line always blocks and brakes, in the same step. */
 	if (!line_high) {
@@ -101,9 +126,9 @@ static void step_and_check(struct arc_estop *e, struct spec *s, int line_high,
 	if (out.brake) {
 		s->braking_steps++;
 		/* The ramp: linear from 0 at ramp_s/dt steps, then held. */
-		const float want = fminf((float)s->braking_steps * DT / ARC_ESTOP_RAMP_S_TBC,
+		const float want = fminf((float)s->braking_steps * dt / ARC_ESTOP_RAMP_S_TBC,
 					 1.0f) * target();
-		CHECK(fabsf(out.brake_current_a - want) <= 1e-3f * target(),
+		CHECK(fabsf(out.brake_current_a - want) <= 1e-3f * target() * (dt / DT),
 		      "current %g want %g after %d braking steps (%s)",
 		      (double)out.brake_current_a, (double)want, s->braking_steps, path);
 		/* It never drops while braking, whatever the line does. */
@@ -115,6 +140,14 @@ static void step_and_check(struct arc_estop *e, struct spec *s, int line_high,
 		s->braking_steps = 0;
 		s->last_current = 0.0f;
 	}
+	/* The bits ARC_MOTOR_STATUS reports (ADR-0035), on the global's state */
+	struct arc_estop saved = arc_estop_state;
+	arc_estop_state = *e;
+	CHECK(arc_estop_engaged() == !line_high, "engaged=%d line_high=%d (%s)",
+	      arc_estop_engaged(), line_high, path);
+	CHECK(arc_estop_command_timeout() == (line_high && s->cmd_after_release && s->timed_out),
+	      "command_timeout=%d (%s)", arc_estop_command_timeout(), path);
+	arc_estop_state = saved;
 }
 
 /*
@@ -123,7 +156,7 @@ static void step_and_check(struct arc_estop *e, struct spec *s, int line_high,
  */
 static long walked;
 
-static void walk(const struct arc_estop *e, const struct spec *s, int depth,
+static void walk(const struct arc_estop *e, const struct spec *s, int depth, float dt,
 		 char *path, int at)
 {
 	if (depth == 0) {
@@ -138,8 +171,8 @@ static void walk(const struct arc_estop *e, const struct spec *s, int depth,
 
 		path[at] = line_high ? (cmd ? 'H' : 'h') : (cmd ? 'L' : 'l');
 		path[at + 1] = '\0';
-		step_and_check(&e2, &s2, line_high, cmd, path);
-		walk(&e2, &s2, depth - 1, path, at + 1);
+		step_and_check(&e2, &s2, line_high, cmd, dt, path);
+		walk(&e2, &s2, depth - 1, dt, path, at + 1);
 	}
 }
 
@@ -153,14 +186,21 @@ static void test_every_sequence(void)
 	/* Power on: the state is zeroed, not initialised (it's a static). */
 	memset(&e, 0, sizeof(e));
 	spec_init(&s);
-	walk(&e, &s, DEPTH, path, 0);
+	walk(&e, &s, DEPTH, DT, path, 0);
 	CHECK(walked == 1L << (2 * DEPTH), "walked %ld", walked);
 
 	/* And from arc_estop_init(). */
 	walked = 0;
 	arc_estop_init(&e);
 	spec_init(&s);
-	walk(&e, &s, DEPTH, path, 0);
+	walk(&e, &s, DEPTH, DT, path, 0);
+
+	/* With steps long enough for the command timeout to fire and clear
+	 * inside a sequence (ADR-0035). */
+	walked = 0;
+	arc_estop_init(&e);
+	spec_init(&s);
+	walk(&e, &s, DEPTH, DT_TIMEOUT, path, 0);
 }
 
 /* The global the controller uses: zeroed at boot, so engaged and blocking. */
@@ -278,17 +318,20 @@ static void test_any_corrupted_state(void)
 {
 	const float ramps[] = { -1.0f, -0.0f, 0.0f, 0.5f, 1.0f, 1.0000001f, 2.0f,
 				1e30f, -1e30f, NAN, INFINITY, -INFINITY };
+	const float quiets[] = { 0.0f, -1.0f, 0.1f, 0.149f, 0.15f, 1e30f, NAN, -INFINITY };
 
 	for (int mode = -3; mode < 300; mode++) {
 		for (size_t r = 0; r < sizeof(ramps) / sizeof(ramps[0]); r++) {
-			for (int in = 0; in < 4; in++) {
+			for (int in = 0; in < 4 * (int)(sizeof(quiets) / sizeof(quiets[0])); in++) {
 				struct arc_estop e;
 				const int line_high = in & 1;
 				const int cmd = (in >> 1) & 1;
+				const float quiet = quiets[in >> 2];
 
 				memset(&e, 0, sizeof(e));
 				e.mode = (enum arc_estop_mode)mode;
 				e.ramp = ramps[r];
+				e.quiet_s = quiet;
 				struct arc_estop_output out = arc_estop_step(&e, line_high, cmd, DT);
 
 				CHECK(isfinite(out.brake_current_a) &&
@@ -309,12 +352,20 @@ static void test_any_corrupted_state(void)
 					      "mode %d ramp %g: current %g, want the full brake",
 					      mode, (double)ramps[r], (double)out.brake_current_a);
 				}
-				/* Only a state that was already DRIVE may drive straight away. */
-				if (mode != ARC_ESTOP_DRIVE && mode != ARC_ESTOP_RELEASED) {
+				/* Only a state that was already DRIVE may drive straight away
+				 * (or RELEASED and TIMEOUT, given a command). */
+				if (mode != ARC_ESTOP_DRIVE && mode != ARC_ESTOP_RELEASED &&
+				    mode != ARC_ESTOP_TIMEOUT) {
 					CHECK(out.block_commands, "corrupt mode %d drove", mode);
 				}
+				/* A corrupted quiet time while driving, with no command, brakes. */
+				if (mode == ARC_ESTOP_DRIVE && line_high && !cmd &&
+				    !(quiet >= 0.0f && quiet < ARC_ESTOP_COMMAND_TIMEOUT_S_TBC - 2 * DT)) {
+					CHECK(out.block_commands && out.brake,
+					      "quiet %g while driving didn't brake", (double)quiet);
+				}
 				CHECK(e.mode == ARC_ESTOP_ENGAGED || e.mode == ARC_ESTOP_RELEASED ||
-					      e.mode == ARC_ESTOP_DRIVE,
+					      e.mode == ARC_ESTOP_DRIVE || e.mode == ARC_ESTOP_TIMEOUT,
 				      "mode %d left as %d", mode, e.mode);
 			}
 		}
@@ -377,6 +428,7 @@ static void test_constants(void)
 {
 	CHECK(ARC_ESTOP_DECEL_MPS2_TBC == 5.0f, "ADR-0012: ~5 m/s^2");
 	CHECK(ARC_ESTOP_RAMP_S_TBC == 0.150f, "ADR-0012: ~150 ms ramp");
+	CHECK(ARC_ESTOP_COMMAND_TIMEOUT_S_TBC == 0.150f, "ADR-0035: 150 ms command timeout");
 	CHECK(ARC_ESTOP_CAR_MASS_KG_TBC >= 5.0f, "the upper end of ADR-0044's 4-5 kg");
 	CHECK(ARC_ESTOP_BRAKED_WHEELS == 4, "all four corners brake");
 	/* The ramp takes a whole number of 1 ms steps. */

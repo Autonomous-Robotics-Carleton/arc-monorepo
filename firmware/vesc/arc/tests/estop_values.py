@@ -41,6 +41,7 @@ kv = define('ARC_ESTOP_MOTOR_KV_TBC')
 mass = define('ARC_ESTOP_CAR_MASS_KG_TBC')
 decel = define('ARC_ESTOP_DECEL_MPS2_TBC')
 ramp_s = define('ARC_ESTOP_RAMP_S_TBC')
+timeout_s = define('ARC_ESTOP_COMMAND_TIMEOUT_S_TBC')
 
 # The car configuration: same tyre; the brake current is sized for the lower
 # gearing, which needs the more current.
@@ -57,6 +58,10 @@ adr12 = 'systems/adr/0012-estop-controlled-braking.md'
 check(decel == float(find(adr12, r'~(\d+(?:\.\d+)?) m/s² deceleration')),
       f'deceleration {decel} != ADR-0012')
 check(ramp_s * 1000 == float(find(adr12, r'~(\d+) ms brake ramp')), f'ramp {ramp_s} != ADR-0012')
+# ADR-0035: the controller's command timeout.
+adr35 = 'systems/adr/0035-corner-state-and-command-timeout.md'
+check(round(timeout_s * 1000) == float(find(adr35, r'command bus for (\d+) ms \(TBC')),
+      f'command timeout {timeout_s} s != ADR-0035')
 # ADR-0057: the brake current is sized for the safe end of the mass range,
 # so the heaviest car still decelerates at the target.
 adr57 = 'systems/adr/0057-estop-delay-and-mass.md'
