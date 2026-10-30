@@ -16,9 +16,14 @@ and $ARC_LOG_DIR (or `log_dir:=`) must be set; off elsewhere.
 images by default, every topic with `full`. A replay's log (target:=replay
 log:=true) leaves out what the player replays, so it holds only what the
 live platform produced, and its run record points back to `bag:=` (#205).
+The workspace's git version (arc_version) is printed at start and goes into
+the run record (#160).
 Platform nodes are added here as they're written.
 """
 
+from pathlib import Path
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, LogInfo, OpaqueFunction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -35,6 +40,12 @@ SENSOR_PROFILES = ('lidar', 'stereo', 'all')
 # (arc_backend_replay's kCarTopics) and /clock. A replay's log leaves them out
 # (#205). /diagnostics stays: the live platform publishes there too.
 REPLAYED_TOPICS = r'^/(sensors/.+|car/(motor/.+|steering|power|safety_state|faults|link)|clock)$'
+
+
+def ros_version():
+    """The git commit this workspace was built from, '-dirty' if it had changes (#160)."""
+    share = Path(get_package_share_directory('arc_version'))
+    return (share / 'version.txt').read_text().strip()
 
 
 def backend_package(target, sim):
@@ -75,6 +86,7 @@ def include_logging(context):
             for name in ('target', 'sensors', 'car', 'log_profile', 'log_dir', 'log_exclude')}
     args.update(logging_args(arg('target'), arg('sim'), arg('log'), arg('log_exclude'),
                              arg('bag')))
+    args['ros_version'] = ros_version()
     return [IncludeLaunchDescription(
         PythonLaunchDescriptionSource(f'{share}/launch/logging.launch.py'),
         launch_arguments=args.items())]
@@ -84,7 +96,8 @@ def car_config(context):
     car = LaunchConfiguration('car').perform(context)
     values = load(car)  # a missing or invalid car file stops the launch here
     return [LogInfo(msg=f'car {car} ({values["build"]}): config {config_hash(values)[:12]}, '
-                        f'top speed {top_speed(values):.1f} m/s')]
+                        f'top speed {top_speed(values):.1f} m/s'),
+            LogInfo(msg=f'software: ros {ros_version()}')]
 
 
 def generate_launch_description():
