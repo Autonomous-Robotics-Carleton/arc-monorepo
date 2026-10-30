@@ -7,6 +7,14 @@ const DiscordIcon = () => (
   </svg>
 );
 
+const InstagramIcon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
 /**
  * Shared layout configurations
  */
@@ -28,6 +36,13 @@ export function baseOptions(): BaseLayoutProps {
         text: 'Discord',
         icon: <DiscordIcon />,
         url: 'https://discord.gg/bRWPQXv6zk', // <-- Replace with your invite URL
+        external: true,
+      },
+      {
+        type: 'icon',
+        text: 'Instagram',
+        icon: <InstagramIcon />,
+        url: 'https://instagram.com/arcarleton', // the club's, as on the website's contact page
         external: true,
       },
     ],
