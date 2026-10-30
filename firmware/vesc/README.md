@@ -39,8 +39,10 @@ In the dev container (GCC 7 2018-q2, the compiler upstream expects):
 
 ```bash
 npx nx build vesc   # bldc: make fw_a50s_v23c_12s -> bldc/build/a50s_v23c_12s/*.bin
-npx nx test vesc    # arc/: host tests with CMake and CTest
+npx nx test vesc    # arc/: host tests with CMake and CTest, then the coverage check
 ```
+
+The host tests run under AddressSanitizer and UndefinedBehaviorSanitizer, so a memory error or undefined behaviour fails a test even when the value it checks comes out right (`-DARC_SANITIZE=OFF` to build without). They then run again instrumented for coverage, and `nx test vesc` fails unless every line and branch in `arc/src/` runs (proposed in #159, pending the team's minimum). The firmware hooks in `bldc/` aren't host code, so they aren't counted; the hook tests check they're still in place.
 
 Upstream's Makefile warns that the ARM SDK isn't in `bldc/tools`: ignore it. The container's GCC is on `PATH`; don't run `make arm_sdk_install`, which downloads a second copy.
 
