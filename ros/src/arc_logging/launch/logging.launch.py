@@ -41,6 +41,8 @@ ARGS = {
     'sim': ('', 'Run record: the simulator, if any'),
     'sensors': ('', 'Run record: the sensor profile'),
     'car': ('twin', 'Run record: the car configuration'),
+    'source_log': ('', 'Run record: the log this run replays, if any (#205)'),
+    'ros_version': ('', "Run record: the ROS workspace's git version (arc_version, #160)"),
 }
 TYPES = {'log': bool, 'must_log': bool, 'min_free_gb': float, 'warn_free_gb': float,
          'chunk_s': int, 'start_timeout_s': float}

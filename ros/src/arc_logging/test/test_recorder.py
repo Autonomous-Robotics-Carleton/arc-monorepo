@@ -15,6 +15,7 @@ from arc_logging.recorder import (
     run_dir,
     run_name,
     run_record,
+    source_record,
     start_status,
     started,
 )
@@ -116,8 +117,15 @@ def test_free_gb_measures_where_the_directory_would_be(tmp_path):
 def test_run_record_passes_its_fields_through():
     assert run_record('car', '', 'all', 'v1.0', 'abc') == {
         'target': 'car', 'sim': '', 'sensors': 'all', 'car': 'v1.0', 'car_config': 'abc',
-        'log_profile': '', 'log_exclude': ''}
+        'log_profile': '', 'log_exclude': '', 'ros_version': ''}
     assert run_record('sim', 'gym', 'lidar', 'twin', 'abc')['sim'] == 'gym'
+
+
+def test_run_record_names_the_software_version():
+    record = run_record('car', '', 'all', 'v1.0', 'abc', ros_version='0123456789ab-dirty')
+    assert record['ros_version'] == '0123456789ab-dirty'
+    cmd = record_command('/logs/run', record, 60)
+    assert 'ros_version=0123456789ab-dirty' in cmd[cmd.index('--custom-data') + 1:]
 
 
 def test_run_record_says_what_the_log_left_out():
@@ -125,6 +133,61 @@ def test_run_record_says_what_the_log_left_out():
     assert record['log_exclude'] == '/sensors/camera/.*'
     cmd = record_command('/logs/run', record, 60, '/sensors/camera/.*')
     assert 'log_exclude=/sensors/camera/.*' in cmd[cmd.index('--custom-data') + 1:]
+
+
+def test_source_record_points_back_to_the_replayed_log(tmp_path):
+    def read(path):
+        return {'target': 'car', 'car': 'v1.0', 'car_config': 'abc', 'log_profile': 'minimal',
+                'sim': '', 'sensors': 'all', 'log_exclude': ''}, None
+    fields, problem = source_record(str(tmp_path / 'run'), read)
+    assert problem is None
+    assert fields == {'source_log': str(tmp_path / 'run'), 'source_target': 'car',
+                      'source_car': 'v1.0', 'source_car_config': 'abc',
+                      'source_log_profile': 'minimal'}
+
+
+def test_source_record_is_absolute_and_keeps_only_what_it_has(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    fields, _ = source_record('run.mcap', lambda path: ({'car': 'twin', 'car_config': ''}, None))
+    assert fields == {'source_log': str(tmp_path / 'run.mcap'), 'source_car': 'twin'}
+
+
+def test_source_record_is_empty_without_a_replay():
+    assert source_record('', lambda path: 1 / 0) == ({}, None)
+
+
+def test_source_record_reports_what_it_could_not_read_or_record():
+    fields, problem = source_record('/logs/old', lambda path: ({}, 'unreadable'))
+    assert fields == {'source_log': '/logs/old'} and problem == 'unreadable'
+    fields, problem = source_record('/logs/a=b', lambda path: 1 / 0)
+    assert fields == {} and "'='" in problem
+    fields, _ = source_record('/logs/run', lambda path: ({'car': 'x=y'}, None))
+    assert 'source_car' not in fields
+
+
+def test_source_record_reads_a_real_logs_run_record(tmp_path):
+    import rosbag2_py
+    bag = tmp_path / 'source'
+    writer = rosbag2_py.SequentialWriter()
+    writer.open(rosbag2_py.StorageOptions(uri=str(bag), storage_id='mcap',
+                                          custom_data={'target': 'car', 'car': 'v1.0'}),
+                rosbag2_py.ConverterOptions('cdr', 'cdr'))
+    writer.create_topic(rosbag2_py.TopicMetadata(0, '/x', 'std_msgs/msg/String', 'cdr'))
+    del writer
+    for path in (bag, bag / 'source_0.mcap'):  # a bag directory or one of its files
+        fields, problem = source_record(str(path))
+        assert problem is None
+        assert fields == {'source_log': str(path), 'source_target': 'car', 'source_car': 'v1.0'}
+    fields, problem = source_record(str(tmp_path / 'missing'))
+    assert fields == {'source_log': str(tmp_path / 'missing')}
+    assert "couldn't be read" in problem
+
+
+def test_run_record_adds_the_source_fields():
+    record = run_record('replay', '', '', 'twin', 'abc', source={'source_log': '/logs/run'})
+    assert record['source_log'] == '/logs/run' and record['target'] == 'replay'
+    cmd = record_command('/logs/replay', record, 60)
+    assert 'source_log=/logs/run' in cmd[cmd.index('--custom-data') + 1:]
 
 
 def test_record_command_logs_every_topic_to_mcap_in_chunks():

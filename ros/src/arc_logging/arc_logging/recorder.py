@@ -17,6 +17,8 @@ import re
 import shutil
 from typing import NamedTuple, Optional
 
+import rosbag2_py
+
 STORAGE = 'mcap'
 
 # Camera images, raw or encoded (image_transport's compressed, theora and ffmpeg
@@ -147,7 +149,8 @@ def run_dir(root, name):
     return path
 
 
-def run_record(target, sim, sensors, car, car_config_hash, log_exclude='', log_profile=''):
+def run_record(target, sim, sensors, car, car_config_hash, log_exclude='', log_profile='',
+               source=None, ros_version=''):
     """The run record (#152 part 2): what a log needs to be read later.
 
     It's written as the log's custom data (metadata.yaml's `custom_data`, which
@@ -155,9 +158,12 @@ def run_record(target, sim, sensors, car, car_config_hash, log_exclude='', log_p
     reads it back. Every field is passed through as given; an empty one
     (`sim` off a simulator, `log_exclude` when nothing is left out) is left
     out. `log_profile` and `log_exclude` say what the log doesn't hold: the
-    profile recorded (ADR-0056) and the pattern of topics left out. So far
-    the record holds what the launch knows; still to come: the software
-    versions (#160), the envelope, the experiment's profile and who drove.
+    profile recorded (ADR-0056) and the pattern of topics left out.
+    `ros_version` is the git commit the ROS workspace was built from (#160).
+    So far the record holds what the launch knows; still to come: the
+    firmware's versions (#160), the envelope, the experiment's profile and
+    who drove.
+    `source` is the log this run replays, if any (`source_record`).
     """
     return {
         'target': target,
@@ -167,7 +173,43 @@ def run_record(target, sim, sensors, car, car_config_hash, log_exclude='', log_p
         'car_config': car_config_hash,  # config/cars/ hash (ADR-0051)
         'log_profile': log_profile,
         'log_exclude': log_exclude,
+        'ros_version': ros_version,
+        **(source or {}),
     }
+
+
+# What a replay's record keeps from the replayed log's own record
+SOURCE_FIELDS = ('target', 'car', 'car_config', 'log_profile')
+
+
+def read_custom_data(path):
+    """(custom data, problem): a log's run record, or {} and why it couldn't be read."""
+    try:
+        return dict(rosbag2_py.Info().read_metadata(str(path), STORAGE).custom_data), None
+    except RuntimeError as e:
+        return {}, f"source_log {path}: its run record couldn't be read ({e})"
+
+
+def source_record(path, read=read_custom_data):
+    """(fields, problem): what a run's record says about the log it replays (#205).
+
+    The log's absolute path, and its own target, car, car configuration and
+    profile when its record has them, each as `source_<field>`: so a replay's
+    log points back to the run it came from and isn't taken for a run of its
+    own. A log from before run records has only its path. Nothing when no log
+    is replayed.
+    """
+    if not path:
+        return {}, None
+    if '=' in path:
+        # rosbag2 splits each custom-data pair on every '=' (check_exclude)
+        return {}, (f"source_log {path!r} not recorded: it contains '=', which the run "
+                    "record can't hold")
+    data, problem = read(path)
+    fields = {'source_log': str(Path(path).absolute())}
+    fields.update({f'source_{key}': data[key] for key in SOURCE_FIELDS
+                   if data.get(key) and '=' not in data[key]})
+    return fields, problem
 
 
 def check_exclude(pattern):

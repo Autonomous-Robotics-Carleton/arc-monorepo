@@ -9,7 +9,9 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
   <exec_depend>arc_car_config</exec_depend>
+  <exec_depend>arc_version</exec_depend>
   <exec_depend>arc_control</exec_depend>
   <exec_depend>arc_logging</exec_depend>
   <exec_depend>arc_backend_sim_gazebo</exec_depend>
@@ -18,6 +20,9 @@
   <exec_depend>arc_backend_replay</exec_depend>
   <exec_depend>arc_backend_car</exec_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>rosbag2_py</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
