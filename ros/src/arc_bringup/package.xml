@@ -18,6 +18,9 @@
   <exec_depend>arc_backend_replay</exec_depend>
   <exec_depend>arc_backend_car</exec_depend>
   <test_depend>launch_testing_ament_cmake</test_depend>
+  <test_depend>rosbag2_py</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
