@@ -1,7 +1,8 @@
 """The replay backend plays the sample log (scripts/make_sample_log.py) through
 the car interface: every message on the car's topics, with their stamps, at
 the log's timing scaled by `rate:=`; /clock on the log's time; nothing on the
-platform's own topics; and commands sent to the car are ignored.
+platform's own topics; commands sent to the car are ignored; and the car's
+topics the log doesn't have are named in a warning.
 
 Run by CMakeLists.txt once per rate, with bag:= the sample log.
 """
@@ -37,6 +38,9 @@ CAR_TOPICS = {
     '/car/safety_state': SafetyState,
 }
 STATE_TOPICS = ('/car/safety_state', '/control/mode')
+# In the sample log with no messages, and two the car publishes that it leaves out
+NOT_LOGGED = ('/sensors/lidar/scan', '/sensors/camera/stereo/left/image_raw', '/diagnostics')
+CAR_TOPIC_COUNT = 36  # ICD-ros2-msgs' Side A (test_topics_contract.py)
 
 
 def rate():
@@ -146,6 +150,22 @@ class TestReplay(unittest.TestCase):
         drive_publishers = [i.node_name for i in
                             self.node.get_publishers_info_by_topic('/car/cmd/drive')]
         self.assertEqual(drive_publishers, ['test_replay'])
+
+    def test_missing_topics_are_named(self, proc_output):
+        proc_output.assertWaitFor('replay backend: playing', timeout=30)
+        lines = [line for output in proc_output for line in output.text.decode().splitlines()
+                 if "topics aren't in this log" in line]
+        self.assertEqual(len(lines), 1, lines)
+        line = lines[0]
+        self.assertIn('[WARN]', line)
+        missing = CAR_TOPIC_COUNT - len(CAR_TOPICS)
+        self.assertIn(f"replay backend: {missing} of the car's {CAR_TOPIC_COUNT} topics", line)
+        named = line.split('nothing is published on them: ', 1)[1].split(', ')
+        self.assertEqual(len(named), missing, named)
+        for topic in NOT_LOGGED:
+            self.assertIn(topic, named)
+        for topic in CAR_TOPICS:  # in the log: not named
+            self.assertNotIn(topic, named)
 
     def test_commands_are_ignored(self, proc_output):
         self.assertTrue(self.spin_until(

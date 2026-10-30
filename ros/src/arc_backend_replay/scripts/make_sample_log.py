@@ -8,7 +8,8 @@ this script or rosbag2 does.
     python3 ros/src/arc_backend_replay/scripts/make_sample_log.py
 
 The log also holds two topics the replay backend must not play, a drive
-command and the control mode: the live platform publishes those.
+command and the control mode: the live platform publishes those. And one car
+topic with no messages, which the backend reports as missing from the log.
 """
 
 import math
@@ -44,6 +45,10 @@ TOPICS = {
     # not the car's: the replay backend leaves these out
     '/car/cmd/drive': ('arc_msgs/msg/DriveCommand', COMMANDS, lambda i, t: drive(t)),
     '/control/mode': ('arc_msgs/msg/ControlMode', STATE, lambda i, t: ControlMode()),
+}
+# topic: (type, QoS), in the log but with no messages
+EMPTY = {
+    '/sensors/lidar/scan': ('sensor_msgs/msg/LaserScan', SAMPLES),
 }
 
 
@@ -134,7 +139,8 @@ def main():
         writer.open(rosbag2_py.StorageOptions(uri=str(bag), storage_id='mcap',
                                               storage_preset_profile='zstd_small'),
                     rosbag2_py.ConverterOptions('cdr', 'cdr'))
-        for topic_id, (topic, (msg_type, qos, _)) in enumerate(TOPICS.items()):
+        for topic_id, (topic, (msg_type, qos, *_)) in enumerate([*TOPICS.items(),
+                                                                 *EMPTY.items()]):
             writer.create_topic(rosbag2_py.TopicMetadata(
                 topic_id, topic, msg_type, 'cdr', [qos]))
         for i in range(DURATION_NS * RATE_HZ // 10**9):
