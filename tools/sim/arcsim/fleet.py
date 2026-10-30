@@ -5,13 +5,14 @@ import time
 from .controller import CORNERS, FakeController
 from .canbus import FakeCommandBus
 from .dialect import SCHEMA, load_dialect
+from .estop import FakeEstop
 from .orin import FakeOrin
 from .transport import CaptureTransport, open_transport
 
 
 class Fleet:
     def __init__(self, nodes, events=()):
-        self.nodes = nodes  # name -> node: "FL".."RR", "orin"
+        self.nodes = nodes  # name -> node: "FL".."RR", "orin", "can", "estop"
         self.events = list(events)
 
     def _apply_due(self, now_ns):
@@ -42,11 +43,12 @@ class Fleet:
             n.transport.close()
 
 
-def build(links=None, *, orin=None, can=None, seed=0, captures=None, events=(),
-          schema=SCHEMA, **orin_options):
+def build(links=None, *, orin=None, can=None, estop=None, seed=0, captures=None, events=(),
+          schema=SCHEMA, estop_options=None, **orin_options):
     """links: corner name -> transport or spec; orin: transport or spec;
     captures: corner name -> file (each corner's bytes, for golden frames);
-    can: the command bus, a transport or spec."""
+    can: the command bus, a transport or spec; estop: the e-stop input, a
+    transport or spec."""
     dialect, version = load_dialect(schema)
 
     def transport(spec):
@@ -62,7 +64,10 @@ def build(links=None, *, orin=None, can=None, seed=0, captures=None, events=(),
     if orin is not None:
         nodes["orin"] = FakeOrin(dialect, version, transport(orin), seed=seed,
                                  **orin_options)
+    controllers = {n: v for n, v in nodes.items() if n in CORNERS}
     if can is not None:
-        nodes["can"] = FakeCommandBus(transport(can), controllers={
-            n: v for n, v in nodes.items() if n in CORNERS})
+        nodes["can"] = FakeCommandBus(transport(can), controllers=controllers)
+    if estop is not None:
+        nodes["estop"] = FakeEstop(transport(estop), controllers=controllers,
+                                   **(estop_options or {}))
     return Fleet(nodes, events)

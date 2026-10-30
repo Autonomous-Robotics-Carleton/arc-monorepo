@@ -4,6 +4,12 @@
  * tools/sim attaches a fake controller to it. The console stays on stdout.
  */
 / {
+	/* the e-stop status input (estop_input.c): an emulated pin, pressed by the
+	 * simulator through sim_estop.c; 0 at start-up, released */
+	zephyr,user {
+		estop-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
+	};
+
 	aliases {
 		arc-can-command = &can_command_bus;
 		arc-ctrl-fl = &ctrl_uart_fl;

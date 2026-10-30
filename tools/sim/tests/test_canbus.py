@@ -62,7 +62,8 @@ class Status(unittest.TestCase):
 
 class CommandTimeout(unittest.TestCase):
     def setUp(self):
-        self.ctl = {"FL": type("C", (), {"auto_state": 0, "target_erpm": 5000.0, "erpm": 0.0})()}
+        self.ctl = {"FL": type("C", (), {"auto_state": 0, "target_erpm": 5000.0, "erpm": 0.0,
+                                       "estop_line": False, "powered": True})()}
         self.bus = FakeCommandBus(MemoryTransport(), controllers=self.ctl)
 
     def test_no_timeout_before_the_first_command(self):
@@ -84,6 +85,20 @@ class CommandTimeout(unittest.TestCase):
         self.assertEqual(self.ctl["FL"].auto_state, 2)
         feed(self.bus, frame(3, 0, 5000), 210 * MS)
         self.assertEqual(self.ctl["FL"].auto_state, 0)
+
+    def test_a_controller_on_estop_or_unpowered_ignores_the_bus(self):
+        # ADR-0012: CAN commands are ignored while ESTOP_EN is low
+        self.ctl["FL"].target_erpm = 0.0
+        self.ctl["FL"].estop_line = True
+        feed(self.bus, frame(3, 0, 5000), 0)
+        self.assertEqual(self.ctl["FL"].target_erpm, 0.0)
+        self.ctl["FL"].estop_line = False
+        self.ctl["FL"].powered = False  # the motor bus is cut
+        feed(self.bus, frame(3, 0, 5000), MS)
+        self.assertEqual(self.ctl["FL"].target_erpm, 0.0)
+        self.ctl["FL"].powered = True
+        feed(self.bus, frame(3, 0, 5000), 2 * MS)
+        self.assertEqual(self.ctl["FL"].target_erpm, 5000.0)
 
     def test_a_brake_command_stops_the_motor(self):
         feed(self.bus, frame(2, 0, 10000), 0)

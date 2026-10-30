@@ -378,3 +378,38 @@ ZTEST(controller_link, test_version_mismatch_refuses_drive_without_a_stop)
 	zassert_equal(corner, 3);
 	zassert_false(cl_is_stop(CL_VERSION));
 }
+
+/* --- wheels stopped (ADR-0039's power-on checks) ------------------------- */
+
+static void feed_erpm(int corner, int64_t now, int32_t erpm)
+{
+	uint8_t buf[MAVLINK_MAX_PACKET_LEN];
+	mavlink_message_t m;
+
+	mavlink_msg_arc_motor_status_pack(1, corner + 1, &m, 1ULL, erpm, 0, 0.0f, 0.0f, 0.0f, 0.0f,
+					  16.0f, 30.0f, 28.0f, corner, 0, 0);
+	cl_feed(&links, corner, buf, mavlink_msg_to_send_buffer(buf, &m), now);
+}
+
+ZTEST(controller_link, test_wheels_stopped_needs_every_corner_within_the_threshold)
+{
+	zassert_false(cl_all_stopped(&links, 100)); /* nobody has reported */
+	for (int i = 0; i < CL_CORNERS; i++) {
+		feed_erpm(i, MS, i == 2 ? -100 : 50);
+	}
+	zassert_true(cl_all_stopped(&links, 100));
+
+	feed_erpm(2, 2 * MS, -101);
+	zassert_false(cl_all_stopped(&links, 100));
+	feed_erpm(2, 3 * MS, 0);
+	feed_erpm(0, 3 * MS, 101);
+	zassert_false(cl_all_stopped(&links, 100));
+}
+
+ZTEST(controller_link, test_wheels_stopped_needs_all_four)
+{
+	for (int i = 0; i < CL_CORNERS - 1; i++) {
+		feed_erpm(i, MS, 0);
+	}
+	zassert_false(cl_all_stopped(&links, 100));
+}

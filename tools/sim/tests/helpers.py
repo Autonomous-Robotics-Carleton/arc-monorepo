@@ -9,13 +9,16 @@ MS = 1_000_000
 dialect, VERSION = load_dialect()
 
 
-def run(events=(), *, duration_ms=1000, seed=1, corners=controller.CORNERS, orin=False):
+def run(events=(), *, duration_ms=1000, seed=1, corners=controller.CORNERS, orin=False,
+        estop=False, estop_options=None):
     """Virtual-time run; returns {node name: MemoryTransport}."""
     links = {n: MemoryTransport() for n in corners}
     if orin:
         links["orin"] = MemoryTransport()
-    fleet = build({n: t for n, t in links.items() if n != "orin"}, seed=seed,
-                  orin=links.get("orin"),
+    if estop:
+        links["estop"] = MemoryTransport()
+    fleet = build({n: t for n, t in links.items() if n in controller.CORNERS}, seed=seed,
+                  orin=links.get("orin"), estop=links.get("estop"), estop_options=estop_options,
                   events=scenario.load_scenario({"events": list(events)}))
     fleet.run(duration_ms * MS)
     return links

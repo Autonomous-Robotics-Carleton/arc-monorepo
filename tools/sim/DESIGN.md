@@ -14,7 +14,8 @@ This is a proposal, not a decision of the repo's owners. It follows ADR-0028: Ze
 | Steering CAN-FD | moteus-c1 | ADR-0019 only; the protocol is mjbots' and isn't in the repo | | Not started. Needs mjbots' protocol documentation |
 | SPI sensors, 12 | 2 IMUs, 4 wheel, 4 suspension and 2 knuckle encoders | Only the sensor choices (BOM); no register-level spec, and the firmware drivers aren't written | | Not started |
 | I2C ToF, 5 | Ride-height sensors | The part is TBD (E-26) | | Blocked |
-| GPIO | E-stop in, LEDs, lighting modes, camera triggers and PPS out, low-battery signal out | BOM tally | | Not started: needs pins to drive and observe |
+| GPIO: e-stop in | The e-stop button (E-32) | ADR-0039; ICD-power-sync-stack ESTOP_STATUS (level and polarity TBD, #95) | `FakeEstop` | Done on `native_sim`: an emulated pin set over UDP (`sim_estop.c`); also drives the controllers' `ESTOP`, the motor-bus cut and their restart |
+| GPIO, other | LEDs, lighting modes, camera triggers and PPS out, low-battery signal out | BOM tally | | Not started: needs pins to drive and observe |
 | Power-board header | Battery, cells, faults | ICD power-sync-stack not written; ADR-0022 proposed | | Blocked |
 | Time | Orin PTP/PPS | ADR-0021 | | Out of scope |
 
@@ -46,10 +47,11 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 | M1 | Fake controllers (UART) | ICD-controller-telemetry | Done |
 | M2 | Fake Orin (UDP) | ICD-sync-link | Done |
 | M3a | Firmware: parse the four controller links and decide when to stop (`controller_link_core`, `controller_links`), with tests in virtual time | M1 | Done: 21 unit tests; `firmware_in_loop.sh` passes 5 scenarios, 3 runs in a row |
-| M3b | `safety.c` (envelope clamp, heartbeat watchdog, drive decision) and `safety_task.c`, fed by the fake Orin's heartbeat, commands and envelope; the firmware answers with `ARC_SAFETY_STATE` | M2 | Done: 22 unit tests; `firmware_in_loop.sh` checks 5 Orin scenarios. Still missing: brake commands on the CAN bus (M4) |
+| M3b | `safety.c` (envelope clamp, heartbeat watchdog, drive decision) and `safety_task.c`, fed by the fake Orin's heartbeat, re-arm, commands and envelope; the firmware answers with `ARC_SAFETY_STATE` | M2 | Done: 36 unit tests; `firmware_in_loop.sh` checks 6 Orin scenarios. Still missing: brake commands on the CAN bus (M4) |
 | M4 | The command CAN bus: controllers receive commands, answer with `STATUS_1`, brake on `COMMAND_TIMEOUT` | The firmware's CAN code | Done: `can_command_core` (11 unit tests), `can_buses`, `sim_can_bridge`, `FakeCommandBus` (10 tests); `firmware_in_loop.sh` checks that a heartbeat loss and a corner fault put brake frames on all four controllers, and that drive and zero commands never leave a gap. Missing: the STATUS_1 watch (SYS-25, ~60 ms) and bus-off, and how the sync MCU commands the brake *ramp* (see below) |
 | M5 | Steering controller | mjbots protocol | Not started |
-| M6 | Sensors, e-stop, camera triggers | Sensor driver specs; pins | Not started |
+| M6a | The e-stop button and the reset (`fault_latch`, ADR-0039) | Emulated GPIO | Done: 18 unit tests; `firmware_in_loop.sh` resets after a corner fault, and refuses to drive before the re-arm |
+| M6b | Sensors, camera triggers | Sensor driver specs; pins | Not started |
 | M7 | Lockstep with the guest clock; CI job | | Not started |
 
 ## Decisions for the owners
@@ -57,18 +59,18 @@ The strongest tests need no simulator: the any-corner stop and the watchdog writ
 1. Where it lives: `tools/sim/` here, or under `firmware/sync-mcu/`, and whether `tools/sim/firmware_in_loop.sh` and the Python tests become Nx targets with a CI job.
 2. The silence window: 5 ms (TBC in SYS-25) is what the unit tests check. A real-time run on a laptop can't hold it, so the integration run uses 100 ms. Whether a real-time check of 5 ms is wanted (on hardware, rig R1) is for the verification plan.
 3. Who reviews the firmware: the any-corner stop is a safety function, and the repo requires a second reviewer.
-4. What the sync MCU does at the stop (brake commands need the CAN bus), and the reset sequence of ADR-0039, neither of which exists yet.
+4. What the sync MCU does at the stop (brake commands need the CAN bus). The reset sequence of ADR-0039 is in `fault_latch.c`; the steering check is skipped until a steering driver exists (decided 2026-10-25).
 
 ## Addresses
 
-`addresses_in_loop.sh` runs the sync link on the proposed 10.73.1.0/24 addresses across two containers. It does not check: the real switch, ARP conflicts, or the Orin's other interfaces (Wi-Fi, hotspot) overlapping the subnet. The firmware does not check who sent a datagram, so a message from the wrong address is accepted.
+`addresses_in_loop.sh` runs the sync link on the car's 192.168.70.0/24 addresses (ICD-network) across two containers. It does not check: the real switch, ARP conflicts, or the Orin's other interfaces (Wi-Fi, hotspot) overlapping the subnet. The firmware does not check who sent a datagram, so a message from the wrong address is accepted.
 
 ## Not verified
 
 - The decision is made, logged, reported to the Orin and put on the command bus. On the bench it reaches all four fake controllers about 5 ms after a corner fault (1 run, laptop jitter included); SYS-25's 20 ms is not asserted, because a laptop can't hold it.
 - The spec does not say how the sync MCU commands the brake. `can-command.dbc` has only the stock VESC frames (current, brake current, rpm), and the ramp lives in the controllers (ADR-0012). The firmware sends `SET_CURRENT_BRAKE` at `ARC_CAN_BRAKE_CURRENT_MA`, which has no value in the spec (TBD): with none set, it sends nothing on a stop and the controllers brake on their own 150 ms timeout, later than SYS-25's 20 ms. The simulator build uses 10 A as a placeholder. Likewise `ARC_CAN_ERPM_PER_MPS` (wheel, gear ratio and pole pairs are still changing: ADR-0026, 0034, 0040) is 0 on the car, so it sends 0 A; the simulator uses the fake controller's model.
 - The command bus carries no STATUS_1 watch (SYS-25: ~60 ms) and no bus-off handling yet; the frames are counted and nothing acts on them.
-- `watchdog` in `ARC_SAFETY_STATE` has no value for "no heartbeat yet"; the firmware reports ROLLING.
+- `watchdog` in `ARC_SAFETY_STATE` has no value for "not armed yet"; the firmware reports ROLLING. After a heartbeat stop it reports BRAKING until the operator re-arms (ADR-0052).
 - The nucleo and arc_sync boards build but have no controller UARTs, so they use a stub.
 - Real-time runs on a loaded machine can add jitter; the firmware-in-the-loop test uses a 100 ms window for that reason.
 - The motor model is plausible, not calibrated.

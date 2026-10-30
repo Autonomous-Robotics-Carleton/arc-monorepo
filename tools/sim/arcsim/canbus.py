@@ -71,8 +71,8 @@ class FakeCommandBus:
     # --- the controllers ---
     def _controller(self, corner, *, timed_out=None, brake=False, rpm=None):
         c = self.controllers.get(CORNERS[corner])
-        if c is None:
-            return
+        if c is None or c.estop_line or not c.powered:
+            return  # on e-stop the controller ignores the bus (ADR-0012); unpowered, it's off
         if timed_out is not None:
             c.auto_state = COMMAND_TIMEOUT_BIT if timed_out else 0
         if brake:

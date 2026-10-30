@@ -38,6 +38,7 @@ static void handle(struct cl_links *l, int corner, const mavlink_message_t *m, i
 		c->last_valid_ns = now_ns;
 		c->fault = s.fault;
 		c->state = s.state;
+		c->erpm = s.erpm;
 		break;
 	}
 	case MAVLINK_MSG_ID_ARC_LINK_STATUS: {
@@ -131,6 +132,18 @@ enum cl_reason cl_check(const struct cl_links *l, int64_t now_ns, int *corner)
 		}
 	}
 	return CL_OK;
+}
+
+bool cl_all_stopped(const struct cl_links *l, int32_t max_erpm)
+{
+	for (int i = 0; i < CL_CORNERS; i++) {
+		const struct cl_corner *c = &l->c[i];
+
+		if (!c->seen || c->erpm > max_erpm || c->erpm < -max_erpm) {
+			return false;
+		}
+	}
+	return true;
 }
 
 bool cl_is_stop(enum cl_reason r)

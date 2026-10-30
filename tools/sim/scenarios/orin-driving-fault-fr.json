@@ -1,5 +1,8 @@
 {"events": [
-  {"t_ms": 200, "node": "orin", "action": "envelope", "max_speed": 3.0, "max_accel": 5.0, "max_steer": 0.4},
-  {"t_ms": 400, "node": "orin", "action": "command", "speed": 2.0, "accel": 1.0},
-  {"t_ms": 1500, "corner": "FR", "action": "fault", "code": 7}
+  {"t_ms": 0, "node": "estop", "action": "press"},
+  {"t_ms": 3000, "node": "estop", "action": "release"},
+  {"t_ms": 3400, "node": "orin", "action": "rearm"},
+  {"t_ms": 3500, "node": "orin", "action": "envelope", "max_speed": 3.0, "max_accel": 5.0, "max_steer": 0.4},
+  {"t_ms": 3700, "node": "orin", "action": "command", "speed": 2.0, "accel": 1.0},
+  {"t_ms": 4800, "corner": "FR", "action": "fault", "code": 7}
 ]}

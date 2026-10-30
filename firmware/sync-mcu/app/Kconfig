@@ -7,6 +7,29 @@ config ARC_HEARTBEAT_TIMEOUT_MS
 	  Time without an operator heartbeat before the car starts braking
 	  (SYS-04: rolls <= 2 m first; ~150 ms is ~1.4 m at 9 m/s; TBC).
 
+config ARC_CAR_MAX_SPEED_MMPS
+	int "The car's top speed (mm/s)"
+	default 9000
+	help
+	  The cap for raising the safety envelope's speed limit (SYS-22):
+	  SYS-01's 9 m/s. Moves to the car's configuration (ADR-0051).
+
+config ARC_CAR_MAX_ACCEL_MMPS2
+	int "The car's maximum acceleration (mm/s^2)"
+	default 5000
+	help
+	  The cap for raising the envelope's acceleration limit (SYS-22).
+	  TBD until measured; until then it equals the 5 m/s^2 default
+	  (ADR-0052), so the limit can't be raised. Moves to the car's
+	  configuration (ADR-0051).
+
+config ARC_CAR_MAX_STEER_MRAD
+	int "The car's steering range at the wheels, each side (mrad)"
+	default 436
+	help
+	  About +/-25 degrees (ADR-0019; TBC). The default envelope allows
+	  all of it (ADR-0052). Moves to the car's configuration (ADR-0051).
+
 config ARC_COMMAND_TIMEOUT_MS
 	int "Orin commands: age after which a command is dropped (ms)"
 	default 150
@@ -46,6 +69,47 @@ config ARC_CAN_ERPM_PER_MPS
 	  TBD: depends on the wheel diameter, gear ratio and pole pairs, which
 	  are still changing (ADR-0026, ADR-0034, ADR-0040). 0 sends 0 A, so the
 	  car can't drive until it is set.
+
+config ARC_ESTOP_CUT_MS
+	int "Reset: how long the e-stop must be held (ms)"
+	default 2400
+	help
+	  T, the motor-bus cut after an e-stop press (ADR-0034, TBC 2.4 s).
+	  A press released sooner doesn't reset a stop (ADR-0039).
+
+config ARC_RESET_CHECK_WINDOW_MS
+	int "Reset: how long the power-on checks may take after release (ms)"
+	default 3000
+	help
+	  The controllers restart after the cut and must report again, with
+	  no state bits or faults and every wheel stopped, within this time;
+	  otherwise the car stays latched (ADR-0039; 3 s set 2026-10-25, TBC).
+
+config ARC_RESET_MAX_STOPS
+	int "Reset: stops since power-on that need a restart"
+	default 3
+	help
+	  ADR-0039 item 5 (TBC). Corners reporting the e-stop don't count.
+
+config ARC_WHEEL_STOPPED_ERPM
+	int "Reset: the largest |eRPM| that counts as a stopped wheel"
+	default 100
+	help
+	  For the power-on checks' "all wheels stopped" (ADR-0039): an
+	  allowance for the speed estimate's noise at standstill
+	  (set 2026-10-25, TBC until measured).
+
+config ARC_SIM_ESTOP
+	bool "Simulation: the e-stop button over UDP"
+	depends on BOARD_NATIVE_SIM && NET_SOCKETS && GPIO_EMUL
+	help
+	  The emulated e-stop input, set by a simulator over UDP (sim_estop.c).
+	  Never on the car.
+
+config ARC_SIM_ESTOP_PORT
+	int "Simulation: UDP port for the e-stop button"
+	default 52102
+	depends on ARC_SIM_ESTOP
 
 config ARC_SIM_CAN_BRIDGE
 	bool "Simulation: carry the command bus over UDP"
@@ -88,10 +152,10 @@ config ARC_SYNC_LINK_PORT_TX
 
 config ARC_SYNC_LINK_PEER
 	string "Sync link: the Orin's IPv4 address"
-	default "10.73.1.20"
+	default "192.168.70.1"
 	help
 	  The Orin's wired address on the car's internal network
-	  (proposed, TBC; ICD-sync-link). boards/native_sim.conf sets 127.0.0.1 for the
+	  (ICD-network, set 2026-10-25, #72). boards/native_sim.conf sets 127.0.0.1 for the
 	  firmware and the bridge on one machine.
 
 source "Kconfig.zephyr"

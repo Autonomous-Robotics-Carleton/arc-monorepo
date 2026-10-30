@@ -59,6 +59,8 @@ class FakeController(MavNode):
         self.to_drop = 0
         self.state = 0
         self.auto_state = 0  # set by the command bus: COMMAND_TIMEOUT
+        self.estop_line = False  # ESTOP_EN active (estop.py): ignores the bus, brakes
+        self.powered = True  # the motor bus; cut at T after an e-stop press
         self.fault = 0
         self.target_erpm = 0.0
         self.erpm = 0.0
@@ -102,7 +104,25 @@ class FakeController(MavNode):
             raise ValueError(f"unknown action {action!r}")
 
     def silent(self, t_ns):
-        return self.silent_forever or t_ns < self.silent_until_ns
+        return not self.powered or self.silent_forever or t_ns < self.silent_until_ns
+
+    # --- the e-stop line and the motor bus (estop.py) ---
+    def estop(self, active):
+        self.estop_line = active
+        if active:
+            self.target_erpm = 0.0  # brakes on the e-stop ramp (ADR-0012)
+
+    def power_off(self):
+        self.powered = False
+
+    def power_on(self, t_ns, boot_ns):
+        """The controller boots: silent for boot_ns, then fresh: stopped, no
+        fault, no command timeout."""
+        self.powered = True
+        self.silent_until_ns = t_ns + boot_ns
+        self.erpm = self.target_erpm = 0.0
+        self.fault = 0
+        self.auto_state = 0
 
     # the motor: first-order lag to the target speed, plausible currents
     def _step_motor(self, dt_s):
@@ -128,7 +148,7 @@ class FakeController(MavNode):
             tachometer=self.tachometer, current_q=iq, current_d=0.0,
             current_in=iin, duty=duty, voltage_in=vin, temp_fet=self.temp_fet,
             temp_motor=self.temp_motor, corner=self.corner, fault=self.fault,
-            state=self.state | self.auto_state)
+            state=self.state | self.auto_state | (STATE_BITS["ESTOP"] if self.estop_line else 0))
         buf = self._pack(msg)
         if self.to_drop:  # sequence number spent, frame never sent: a gap
             self.to_drop -= 1

@@ -2,7 +2,7 @@
 """Fake nodes around the sync MCU firmware.
 
     sim.py --link FL=/dev/pts/3 --link FR=tcp:127.0.0.1:5001 ... \\
-           --orin udp:52001:10.73.1.10:52000 --scenario scenarios/one-corner-silent.json
+           --orin udp:52001:192.168.70.2:52000 --scenario scenarios/one-corner-silent.json
 
 Needs pymavlink (it is in the dev container). Not a safety function; the
 motor model is plausible, not calibrated. See README.md."""
@@ -27,6 +27,9 @@ def main(argv=None):
     p.add_argument("--can", metavar="TARGET",
                    help="the command bus (needs the firmware's simulator bridge): "
                         "udp:52101:127.0.0.1:52100")
+    p.add_argument("--estop", metavar="TARGET",
+                   help="the e-stop input (needs the firmware's simulator bridge): "
+                        "udp:52103:127.0.0.1:52102")
     p.add_argument("--capture", metavar="DIR",
                    help="write each corner's byte stream to DIR/<corner>.bin (virtual time)")
     p.add_argument("--scenario", help="JSON file of events")
@@ -50,10 +53,11 @@ def main(argv=None):
     if links and captures:
         p.error("--link and --capture can't be combined")
     events = load_scenario(args.scenario) if args.scenario else []
-    fleet = build(links, orin=args.orin, can=args.can, seed=args.seed, captures=captures, events=events)
+    fleet = build(links, orin=args.orin, can=args.can, estop=args.estop, seed=args.seed,
+                  captures=captures, events=events)
     if args.speed:
         for name, n in fleet.nodes.items():
-            if name != "orin":
+            if name in CORNERS:
                 n.apply("speed", mps=args.speed)
     fleet.run(int(args.duration * 1e9), realtime=not captures)
     bus = fleet.nodes.get("can")

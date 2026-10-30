@@ -5,6 +5,8 @@
 
 #include "arc_sync_link/mavlink.h"
 #include "controller_links.h"
+#include "estop_input.h"
+#include "fault_latch.h"
 #include "rate_monitor.h"
 #include "safety_task.h"
 #include "sync_link.h"
@@ -17,6 +19,8 @@ LOG_MODULE_REGISTER(safety, LOG_LEVEL_INF);
 #define RATE_WINDOW_NS 1000000000LL
 
 static struct safety state;
+static struct fault_latch latch; /* the fault stop and its reset (ADR-0039), under lock too */
+static bool last_estop;
 static struct safety_output last;
 static bool have_last;
 static struct safety_envelope last_envelope;
@@ -56,7 +60,27 @@ bool safety_task_envelope(const struct safety_envelope *env)
 
 	k_mutex_unlock(&lock);
 	if (!ok) {
-		LOG_WRN("envelope refused: a limit is negative or not a number");
+		LOG_WRN("envelope refused: a limit is negative, not a number or above the car's");
+	}
+	return ok;
+}
+
+bool safety_task_rearm(void)
+{
+	k_mutex_lock(&lock, K_FOREVER);
+	bool reset = fl_clear(&latch);
+	enum fl_state latch_state = latch.state;
+	bool after_stop = state.watchdog.tripped;
+	bool ok = reset && safety_on_rearm(&state, now_ms());
+
+	k_mutex_unlock(&lock);
+	if (ok) {
+		LOG_INF("re-armed%s", after_stop ? " after a heartbeat stop" : "");
+	} else if (!reset) {
+		LOG_WRN("re-arm refused: %s (ADR-0039: e-stop cycle and power-on checks first)",
+			fl_state_name(latch_state));
+	} else {
+		LOG_WRN("re-arm refused: no heartbeat arriving");
 	}
 	return ok;
 }
@@ -74,7 +98,8 @@ struct safety_output safety_task_output(void)
 
 static int watchdog_state(const struct safety_output *o)
 {
-	/* ARC_WATCHDOG_STATE has no "no heartbeat yet": report it as ROLLING (not arriving, not braking) */
+	/* ARC_WATCHDOG_STATE has no "not armed yet": report it as ROLLING (not driving, not braking).
+	 * A heartbeat stop stays BRAKING until re-armed (ADR-0052). */
 	switch (o->reason) {
 	case SAFETY_HEARTBEAT_LOST:
 		return ARC_WATCHDOG_BRAKING;
@@ -100,11 +125,49 @@ static bool command_differs(const struct safety_output *a, const struct safety_o
 	       (int)(a->cmd.steer_rad * 1000) != (int)(b->cmd.steer_rad * 1000);
 }
 
-static void report_state(const struct safety_output *o, const struct safety_envelope *env)
+static void report_state(const struct safety_output *o, const struct safety_envelope *env,
+			 bool estop)
 {
-	/* estop: the physical e-stop input isn't read yet */
 	sync_link_send_safety_state(env->max_speed_mps, env->max_accel_mps2, env->max_steer_rad,
-				    watchdog_state(o), 0);
+				    watchdog_state(o), estop);
+}
+
+static const char *const corner_name[CL_CORNERS] = {"FL", "FR", "RL", "RR"};
+
+static void log_latch(enum fl_event ev, const struct fault_latch *fl)
+{
+	const char *corner = fl->corner >= 0 && fl->corner < CL_CORNERS ? corner_name[fl->corner]
+									: "-";
+
+	switch (ev) {
+	case FL_EV_NONE:
+		break;
+	case FL_EV_LATCHED:
+	case FL_EV_RESTART:
+	case FL_EV_CHECKS_FAILED:
+		LOG_ERR("fault latch: %s: %s (%s %s%s; %d stops since power-on)",
+			fl_event_name(ev), fl_cause_name(fl->cause), corner,
+			cl_reason_name(fl->corner_reason), fl->wheels_moving ? ", wheels moving" : "",
+			fl->stops);
+		break;
+	case FL_EV_CLEARED:
+		LOG_INF("fault latch: %s", fl_event_name(ev));
+		LOG_WRN("fault latch: the steering wasn't checked (no steering driver yet)");
+		break;
+	default:
+		LOG_INF("fault latch: %s", fl_event_name(ev));
+		break;
+	}
+}
+
+/* The latch's view of the car, from the e-stop input and the controller links. */
+static struct fl_inputs latch_inputs(void)
+{
+	struct fl_inputs in = {.estop_pressed = estop_input_pressed()};
+
+	controller_links_reset_inputs(&in.corners, &in.corner, &in.fault_code,
+				      &in.wheels_stopped);
+	return in;
 }
 
 static void check_command_rate(const struct rate_report *r)
@@ -134,17 +197,23 @@ static void task(void *a, void *b, void *c)
 	ARG_UNUSED(c);
 
 	while (true) {
-		int corner;
-		enum cl_reason latched = controller_links_stop(&corner);
-		enum cl_reason current = controller_links_state(&corner);
-		bool stopped = cl_is_stop(latched) || cl_is_stop(current);
-		bool ready = current != CL_NOT_READY && current != CL_VERSION;
+		struct fl_inputs in = latch_inputs();
 
 		k_mutex_lock(&lock, K_FOREVER);
+		bool was_clear = fl_clear(&latch);
+		enum fl_event ev = fl_update(&latch, now_ms(), &in);
+		struct fault_latch fl = latch;
+
+		if (was_clear && !fl_clear(&latch)) {
+			safety_disarm(&state); /* the operator re-arms after the reset */
+		}
+		bool stopped = fl_brake(&latch);
+		bool ready = fl_clear(&latch) && in.corners != CL_NOT_READY &&
+			     in.corners != CL_VERSION;
 		struct safety_output out = safety_decide(&state, now_ms(), stopped, ready);
 		struct safety_envelope env = state.envelope;
 		bool changed = !have_last || out.reason != last.reason || out.brake != last.brake ||
-			       out.clamped != last.clamped ||
+			       out.clamped != last.clamped || in.estop_pressed != last_estop ||
 			       memcmp(&env, &last_envelope, sizeof(env)) != 0;
 		int64_t now = now_ms();
 		bool log = changed || (command_differs(&out, &logged) &&
@@ -152,12 +221,17 @@ static void task(void *a, void *b, void *c)
 
 		last = out;
 		last_envelope = env;
+		last_estop = in.estop_pressed;
 		have_last = true;
 		struct rate_report rate;
 		bool rate_ended = rate_monitor_poll(&command_rate, time_base_now_ns(), &rate);
 
 		k_mutex_unlock(&lock);
 
+		log_latch(ev, &fl);
+		if (ev == FL_EV_CLEARED) {
+			controller_links_reset();
+		}
 		if (rate_ended) {
 			check_command_rate(&rate);
 		}
@@ -167,7 +241,7 @@ static void task(void *a, void *b, void *c)
 			logged_ms = now;
 		}
 		if (changed) {
-			report_state(&out, &env);
+			report_state(&out, &env, in.estop_pressed);
 		}
 		k_sleep(K_MSEC(TASK_PERIOD_MS));
 	}
@@ -178,8 +252,24 @@ static struct k_thread task_data;
 
 int safety_task_init(void)
 {
-	safety_init(&state, CONFIG_ARC_HEARTBEAT_TIMEOUT_MS, CONFIG_ARC_COMMAND_TIMEOUT_MS,
+	const struct safety_envelope car = {
+		.max_speed_mps = CONFIG_ARC_CAR_MAX_SPEED_MMPS / 1000.0f,
+		.max_accel_mps2 = CONFIG_ARC_CAR_MAX_ACCEL_MMPS2 / 1000.0f,
+		.max_steer_rad = CONFIG_ARC_CAR_MAX_STEER_MRAD / 1000.0f,
+	};
+
+	const struct fl_config reset = {
+		.cut_ms = CONFIG_ARC_ESTOP_CUT_MS,
+		.check_window_ms = CONFIG_ARC_RESET_CHECK_WINDOW_MS,
+		.max_stops = CONFIG_ARC_RESET_MAX_STOPS,
+	};
+
+	estop_input_init();
+	safety_init(&state, &car, CONFIG_ARC_HEARTBEAT_TIMEOUT_MS, CONFIG_ARC_COMMAND_TIMEOUT_MS,
 		    now_ms());
+	fl_init(&latch, &reset, now_ms());
+	LOG_INF("fault latch: latched at power-on; reset with the e-stop held %d ms, then re-arm",
+		CONFIG_ARC_ESTOP_CUT_MS);
 	rate_monitor_init(&command_rate, RATE_WINDOW_NS, time_base_now_ns());
 	k_thread_create(&task_data, task_stack, K_THREAD_STACK_SIZEOF(task_stack), task, NULL,
 			NULL, NULL, K_PRIO_PREEMPT(3), 0, K_NO_WAIT);
