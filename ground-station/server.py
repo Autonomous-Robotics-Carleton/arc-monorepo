@@ -6,6 +6,7 @@ http://127.0.0.1:47380/track.png  the connected bridge's /track.png, proxied
 ws://127.0.0.1:47380/ws           server <-> page messages, see protocol.md
 ws://127.0.0.1:47380/scan         the connected bridge's /scan (binary LiDAR frames), relayed
 ws://127.0.0.1:47380/imu/<name>   one IMU, filtered here: a JSON summary per step the page picks
+ws://127.0.0.1:47380/encoders/wheel  the wheel encoders, likewise: measured speed per wheel per step
 
 Modes: `real` (startup) connects to the car's bridge at config car.host, retrying every 2 s.
 `sim` starts ../simulator/run.sh --bridge and connects to its bridge on 127.0.0.1. The sim
@@ -22,6 +23,9 @@ IMU sockets (/imu/<name>, the names the bridge announces in `sensors`) open thei
 the same way, but the server doesn't relay the raw samples: it takes every one, runs the orientation
 filter and the derived values (imu.py), and sends the page one summary per step, 0.1 s unless the page
 asks for another.
+
+The wheel encoders' socket (/encoders/wheel, when the bridge announces them) works the same way: every
+angle sample into encoders.py, one summary per step out (measured speed, received rate, dropped share).
 """
 
 import argparse
@@ -45,6 +49,7 @@ from websockets.datastructures import Headers
 from websockets.exceptions import ConnectionClosed
 from websockets.http11 import Response
 
+import encoders
 import imu
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -57,7 +62,8 @@ SIM_RETRY = 0.5  # s between sim bridge attempts while it starts
 STOP_GRACE = 20.0  # s to wait for run.sh to stop the container before `docker stop`
 SENSORS = ('/scan',)  # bridge websocket paths the page may open, besides /imu/<name>
 IMU_STEP = 0.1  # s between IMU summaries to the page, unless it asks for another
-IMU_STEPS = (0.1, 0.05, 0.02, 0.01)  # the steps a page may ask for
+IMU_STEPS = (0.1, 0.05, 0.02, 0.01)  # the steps a page may ask for; the wheel encoders use the same
+ENCODERS = '/encoders/wheel'
 
 log = logging.getLogger('server')
 
@@ -137,6 +143,7 @@ class Server:
         self.track_msg = None  # last track message, for pages that connect later
         self.track_status = None  # last bridge track_status message, likewise
         self.sensors = {}  # IMU name -> {accel_range, gyro_range}, from the bridge's `sensors`
+        self.encoders = []  # wheel encoder names in the bridge's frame order, from `sensors`; empty: none
         self.bridge_ws = None
         self.track = cfg['sim']['track']
         self.proc = None  # run.sh we started
@@ -163,7 +170,7 @@ class Server:
 
     async def process_request(self, connection, request):
         path = request.path.split('?', 1)[0]
-        if path == '/ws' or path in SENSORS or path.startswith('/imu/'):
+        if path in ('/ws', ENCODERS) or path in SENSORS or path.startswith('/imu/'):
             return None
         if path in ('/', '/index.html'):
             try:
@@ -184,6 +191,8 @@ class Server:
             return await self.sensor_relay(ws, path)
         if path.startswith('/imu/'):
             return await self.imu_relay(ws, path[len('/imu/'):])
+        if path == ENCODERS:
+            return await self.encoder_relay(ws)
         self.pages.add(ws)
         try:
             await ws.send(json.dumps(self.link()))
@@ -260,7 +269,7 @@ class Server:
             await page.close()
 
     def sensors_msg(self):
-        return json.dumps({'type': 'sensors', 'imu': sorted(self.sensors)})
+        return json.dumps({'type': 'sensors', 'imu': sorted(self.sensors), 'encoders': self.encoders})
 
     async def imu_relay(self, page, name):
         """One IMU for one page: every raw sample from the bridge into a filter, a summary per step out.
@@ -312,6 +321,55 @@ class Server:
                     await asyncio.gather(*tasks, return_exceptions=True)
         except (OSError, TimeoutError, ConnectionClosed) as e:
             log.info('/imu/%s relay: %s', name, e)
+        finally:
+            await page.close()
+
+    async def encoder_relay(self, page):
+        """The wheel encoders for one page: every angle sample from the bridge in, a summary per step out.
+
+        The page may send {"type": "step", "s": seconds} (one of IMU_STEPS).
+        """
+        if not self.connected or not self.encoders:
+            await page.close(1013, 'no bridge' if not self.connected else 'no wheel encoders')
+            return
+        f = encoders.WheelEncoders(self.encoders)
+        step = {'s': IMU_STEP}
+        host, port, _ = self.target()
+        try:
+            async with connect('ws://%s:%d%s' % (host, port, ENCODERS), open_timeout=2,
+                               max_size=2 ** 22) as up:
+
+                async def pull():  # every frame, in order: speed comes from consecutive angles
+                    async for frame in up:
+                        if isinstance(frame, bytes):
+                            f.feed(frame)
+
+                async def push():
+                    while True:
+                        await asyncio.sleep(step['s'])
+                        await page.send(json.dumps(f.report()))
+
+                async def commands():  # also notices the page closing
+                    async for raw in page:
+                        try:
+                            msg = json.loads(raw)
+                        except ValueError:
+                            continue
+                        if isinstance(msg, dict) and msg.get('type') == 'step' and msg.get('s') in IMU_STEPS:
+                            step['s'] = msg['s']
+
+                tasks = [asyncio.create_task(t()) for t in (pull, push, commands)]
+                try:
+                    done, _ = await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+                    for t in done:
+                        if not t.cancelled() and t.exception():
+                            log.info('%s relay: %s', ENCODERS, t.exception())
+                finally:
+                    for t in tasks:
+                        t.cancel()
+                    await asyncio.gather(*tasks, return_exceptions=True)
+        except (OSError, TimeoutError, ConnectionClosed) as e:
+            log.info('%s relay: %s', ENCODERS, e)
         finally:
             await page.close()
 
@@ -431,8 +489,9 @@ class Server:
         self.bridge_url = None
         self.bridge_ws = None
         self.track_status = None
-        if self.sensors:
+        if self.sensors or self.encoders:
             self.sensors = {}
+            self.encoders = []
             broadcast(self.pages, self.sensors_msg())
         if self.mode == 'real':
             self.car_found = False
@@ -533,15 +592,17 @@ class Server:
                 broadcast(self.pages, msg)
 
     def on_sensors(self, raw):
-        """The bridge's sensor list: keep the IMUs' ranges (for their filters), tell the pages the names."""
+        """The bridge's sensor list: keep the IMUs' ranges (for their filters) and the encoder names, tell the pages."""
         try:
             msg = json.loads(raw)
             self.sensors = {i['name']: {'accel_range': float(i['accel_range']), 'gyro_range': float(i['gyro_range'])}
                             for i in msg.get('imu', [])}
+            self.encoders = [str(n) for n in msg.get('encoders', [])]  # a bridge without them omits it
         except (ValueError, TypeError, KeyError, AttributeError):
             log.warning('unreadable sensors message: %r', raw)
             return
-        log.info('imus: %s', ', '.join(sorted(self.sensors)) or 'none')
+        log.info('imus: %s; wheel encoders: %s', ', '.join(sorted(self.sensors)) or 'none',
+                 ', '.join(self.encoders) or 'none')
         broadcast(self.pages, self.sensors_msg())
 
     async def probe_car(self):

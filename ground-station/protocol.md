@@ -7,15 +7,16 @@ browser page ──ws localhost:8081──▶ helper.py ──UDP :9870──▶
 browser page ──ws localhost:47380/ws──▶ server.py ──ws :8765──▶ bridge  (car, or sim)
 browser page ──ws localhost:47380/scan─▶ server.py ──ws :8765/scan─▶ bridge   one socket per sensor, while shown
 browser page ──ws localhost:47380/imu/<name>─▶ server.py ──ws :8765/imu/<name>─▶ bridge   filtered in the server
+browser page ──ws localhost:47380/encoders/wheel─▶ server.py ──ws :8765/encoders/wheel─▶ bridge   speed computed in the server
 ```
 
 ## Ports
 
 | Port | Owner | Transport | Bound to |
 | --- | --- | --- | --- |
-| 47380 | `ground-station/server.py` | HTTP (page) + websockets `/ws`, `/scan`, `/imu/<name>` | `127.0.0.1` |
+| 47380 | `ground-station/server.py` | HTTP (page) + websockets `/ws`, `/scan`, `/imu/<name>`, `/encoders/wheel` | `127.0.0.1` |
 | 8081 | `ground-station/helper.py` | websocket | `127.0.0.1` |
-| 8765 | bridge (sim: `simulator/.../bridge.py`) | HTTP + websockets `/ws`, `/scan`, `/imu/<name>` | sim container, published on `127.0.0.1:8765` |
+| 8765 | bridge (sim: `simulator/.../bridge.py`) | HTTP + websockets `/ws`, `/scan`, `/imu/<name>`, `/encoders/wheel` | sim container, published on `127.0.0.1:8765` |
 | 9870 | car_link (sim: `simulator/.../car_link.py`) | UDP | sim container, published on `127.0.0.1:9870/udp` |
 
 The sim is reached at `127.0.0.1`. The real car's address is a config value in the ground station, `TBD` until the car runs a bridge and car_link.
@@ -83,10 +84,12 @@ The sim's bridge also sends, once on connect and on every change:
 The bridge also sends, once on connect and whenever the list changes, the sensors it can stream besides `/scan`:
 
 ```json
-{"type": "sensors", "imu": [{"name": "cg", "accel_range": 156.9, "gyro_range": 34.91}]}
+{"type": "sensors", "imu": [{"name": "cg", "accel_range": 156.9, "gyro_range": 34.91}],
+ "encoders": ["wheel_fl", "wheel_fr", "wheel_rl", "wheel_rr"]}
 ```
 
 - `imu`: every `/imu/<name>` topic of type `sensor_msgs/Imu` (found by name, so a second IMU in the car model appears here without code changes). `accel_range` (m/s²) and `gyro_range` (rad/s) are the part's configured full scale; the server flags samples at 98 % of it as saturated. Sim: `IMU_ACCEL_RANGE_G`, `IMU_GYRO_RANGE_DPS` in `simulator/.env`.
+- `encoders`: the wheel encoders' names, in the order of their index in `/encoders/wheel` frames (`ARC_ANGLE_WHEEL_*` order: front left, front right, rear left, rear right), when a `/encoders/wheel` topic of type `sensor_msgs/JointState` exists; empty otherwise, so a car without them shows no panel. A bridge that predates them omits the field, which means the same as empty.
 
 Server → bridge (sim only):
 
@@ -130,6 +133,18 @@ At the sim's defaults (1081 rays, 40 Hz) that is about 4.4 kB per scan, 175 kB/s
 
 The relay is not one to one for IMUs: the server reads every frame itself (see below) and sends the page summaries, not samples. At 1 kHz that is 32 kB/s per IMU.
 
+`/encoders/wheel`: the four wheel encoders' angle samples (`/encoders/wheel`, `sensor_msgs/JointState`, one message per sensor per sample), all sensors in one stream, in batches. Sent like `/imu/<name>`: **every sample, in order**, never skipped (the server takes speed from consecutive angles); a client 200 frames behind is disconnected (close code 1013); a frame holds up to 50 samples and is sent when full or every 0.05 s. Closed at once (1008) when the bridge announces no encoders. Little-endian, 16 bytes per sample (Python `struct` `<dBxxxf`):
+
+| Offset | Type | Field |
+| --- | --- | --- |
+| 0 | uint32 | count |
+| 4 + 16·i | float64 | stamp, s (the message's header stamp; sim time in the sim) |
+| 12 + 16·i | uint8 | sensor index into `sensors.encoders`: 0 front left, 1 front right, 2 rear left, 3 rear right |
+| 13 + 16·i | 3 bytes | padding, zero |
+| 16 + 16·i | float32 | angle, rad, absolute in [0, 2π), as published (14-bit steps in the sim) |
+
+A failed read is not sent: it is a gap in that sensor's stamps. Samples of different sensors interleave in arrival order. At 1 kHz per sensor with 10 % of reads dropped (the sim's default) that is about 58 kB/s.
+
 ## Server websocket (server → page), `ws://localhost:47380/ws`
 
 Server → page:
@@ -138,7 +153,7 @@ Server → page:
 - `{"type": "link", "mode": "sim"|"real", "connected": bool, "car_found": bool, "sim": "stopped"|"starting"|"running", "udp": {"host": "127.0.0.1", "port": 9870}|null}`, sent on every change and once on connect. `udp` is where the helper should send, null when not connected.
 - `{"type": "tracks", "names": ["oval", ...], "selected": "oval"}`, once on connect: the sim tracks the page may pick, from `simulator/src/arc_sim/tracks/*.yaml`. `selected` starts as config `sim.track`.
 - The bridge's `track_status`, relayed unchanged, and to pages that connect later while connected.
-- `{"type": "sensors", "imu": ["cg", ...]}`: the IMU names the bridge announced, on connect and on every change; empty with no bridge. The page shows one IMU panel per name.
+- `{"type": "sensors", "imu": ["cg", ...], "encoders": ["wheel_fl", ...]}`: the IMU names and wheel encoder names the bridge announced, on connect and on every change; empty with no bridge. The page shows one IMU panel per name, and the wheel encoders panel while `encoders` is not empty.
 - `{"type": "track", "meta": {...}|null, "png": "<base64>"|null}`: the bridge's `/track.json` and `/track.png` after each (re)connect and after each finished track load, and to pages that connect later. The image is embedded so the page needs no separate request (Firefox failed to load it from `/track.png`). `/track.png` is still proxied for other tools.
 
 Page → server:
@@ -168,6 +183,28 @@ Page → server:
 
 - `{"type": "step", "s": 0.1|0.05|0.02|0.01}`: the step between summaries. Other values are ignored.
 - `{"type": "reset_yaw"}`: zero the relative yaw.
+
+## Server wheel encoder websocket (server ↔ page), `ws://localhost:47380/encoders/wheel`
+
+Opened by the page while the wheel encoders panel is shown; the server opens `/encoders/wheel` on the bridge for it, so the encoders stream only then. Closed at once with no bridge or no encoders announced; the page retries every 1 s. Each page socket has its own state (`ground-station/encoders.py`), fed every sample.
+
+Server → page, one JSON message per step (0.1 s unless the page asks for another), even if no samples arrived. Arrays are per sensor, in `names` order:
+
+```json
+{"type": "encoders", "names": ["wheel_fl", "wheel_fr", "wheel_rl", "wheel_rr"],
+ "speed": [19.69, 19.71, 19.70, 19.70], "rate": [902, 897, 899, 905],
+ "dropped": [0.098, 0.103, 0.101, 0.095], "period": 0.001, "age": 0.01}
+```
+
+- `speed` (rad/s): measured angular speed over the step, sign as the encoder gives it (in the sim forward is positive on every wheel). Consecutive angles are unwrapped by the shortest jump (|Δ| ≤ π, so up to half a revolution between reads), and the speed is the sum of the step's angle changes over the sum of their time changes: a dropped read only widens one interval. Null for a sensor with no new interval in the step (with batches of 50 samples, steps of 0.02 s and 0.01 s often have none).
+- `rate`: samples received in the last second (wall clock). `age`: seconds since the last batch arrived, null before the first.
+- `period` (s): the sample period, the median spacing of consecutive stamps over the last 1 s of stamps, all sensors pooled. With most reads succeeding the median is one period; it isn't hard-coded, so another sample rate works unchanged. Null before two samples.
+- `dropped`: share of reads lost over the last 1 s of stamps: each interval between received samples counts round(Δt / `period`) expected samples, and the share is (expected − received) / expected. Null until known.
+- A gap over 0.1 s, or a stamp going backwards, restarts that sensor: no speed or drops are counted across it (the sim paused, or the stream restarted).
+
+Page → server:
+
+- `{"type": "step", "s": 0.1|0.05|0.02|0.01}`: the step between summaries, the same choices as an IMU. Other values are ignored.
 
 ## Helper websocket (page ↔ helper), `ws://localhost:8081`
 

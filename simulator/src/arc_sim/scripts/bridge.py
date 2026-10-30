@@ -7,6 +7,7 @@ ws://<host>:<port>/ws            JSON at 30 Hz, the `state` message in ground-st
                                  `track_status` on connect and on change; takes `load_track`
 ws://<host>:<port>/scan          /scan as binary frames (protocol.md), newest only per client
 ws://<host>:<port>/imu/<name>    /imu/<name> as binary batches of raw samples (protocol.md), every sample
+ws://<host>:<port>/encoders/wheel  /encoders/wheel as binary batches of angle samples (protocol.md), every sample
 
 The sim starts with no track. `load_track` (from the ground station) loads a bundled track
 while the sim runs: the old walls are removed and the new ones spawned through Gazebo's
@@ -29,6 +30,10 @@ IMUs are found by name: every /imu/<name> topic of type sensor_msgs/Imu, announc
 `sensors` message on connect and whenever the list changes. Unlike scans, IMU samples are never skipped
 (the ground station integrates the gyro, so a lost batch is a lasting yaw error): each client gets every
 batch in order, and one that falls too far behind is disconnected so it can reconnect fresh.
+
+The wheel encoders (/encoders/wheel, sensor_msgs/JointState, one message per wheel per sample) are announced
+in the same `sensors` message when the topic exists, so a car without them shows no panel. Their socket
+works like an IMU's: every sample, in order, batched, all four wheels in one stream.
 """
 
 import asyncio
@@ -51,7 +56,7 @@ from PIL import Image
 from rclpy.node import Node
 from rclpy.time import Time
 from ros_gz_interfaces.msg import WorldStatistics
-from sensor_msgs.msg import Imu, LaserScan
+from sensor_msgs.msg import Imu, JointState, LaserScan
 from std_msgs.msg import String
 from tf2_ros import Buffer, TransformException, TransformListener
 
@@ -68,6 +73,10 @@ IMU_SAMPLE = struct.Struct('<dffffff')  # stamp, gyro x y z (rad/s), accel x y z
 IMU_BATCH = 50  # samples per frame; also sent every IMU_FLUSH_S if fewer have arrived
 IMU_FLUSH_S = 0.05
 IMU_QUEUE = 200  # frames a client may fall behind (10 s at 1 kHz) before it is disconnected
+ENCODER_TOPIC = '/encoders/wheel'
+ENCODER_NAMES = ('wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr')  # index in the frame: ARC_ANGLE_WHEEL_* order
+ENCODER_SAMPLE = struct.Struct('<dBxxxf')  # stamp, sensor index, 3 bytes padding, angle (rad): 16 bytes
+ENCODER_DEPTH = 400  # 0.1 s of four sensors at 1 kHz; batching and the client queue are the IMU's
 G = 9.80665
 
 
@@ -117,18 +126,31 @@ class Bridge(Node):
         self.imu_subs = {}
         self.imu_buf = {}  # name -> packed samples not yet sent; ROS thread only
         self.on_imu_frame = None  # set by serve()
-        self.create_timer(1.0, self.discover_imus)
+        # Wheel encoders: announced if /encoders/wheel exists; subscribed only while a client wants them.
+        self.encoders = False
+        self.encoders_wanted = False  # set by the websocket side
+        self.encoder_sub = None
+        self.encoder_buf = []  # packed samples not yet sent; ROS thread only
+        self.on_encoder_frame = None  # set by serve()
+        self.create_timer(1.0, self.discover_sensors)
         self.create_timer(IMU_FLUSH_S, self.sync_imus)
+        self.create_timer(IMU_FLUSH_S, self.sync_encoders)
 
     def sensors_msg(self):
-        return {'type': 'sensors', 'imu': [{'name': n, **self.imu_ranges} for n in self.imus]}
+        return {'type': 'sensors', 'imu': [{'name': n, **self.imu_ranges} for n in self.imus],
+                'encoders': list(ENCODER_NAMES) if self.encoders else []}
 
-    def discover_imus(self):
-        names = sorted(t[len('/imu/'):] for t, types in self.get_topic_names_and_types()
+    def discover_sensors(self):
+        topics = self.get_topic_names_and_types()
+        names = sorted(t[len('/imu/'):] for t, types in topics
                        if t.startswith('/imu/') and '/' not in t[len('/imu/'):] and 'sensor_msgs/msg/Imu' in types)
-        if names != self.imus:
-            self.imus = names
-            self.get_logger().info(f'IMUs: {names}')
+        encoders = any(t == ENCODER_TOPIC and 'sensor_msgs/msg/JointState' in types for t, types in topics)
+        if names != self.imus or encoders != self.encoders:
+            if names != self.imus:
+                self.get_logger().info(f'IMUs: {names}')
+            if encoders != self.encoders:
+                self.get_logger().info(f'wheel encoders: {"found" if encoders else "gone"}')
+            self.imus, self.encoders = names, encoders
             if self.on_sensors:
                 self.on_sensors(json.dumps(self.sensors_msg()))
 
@@ -158,6 +180,33 @@ class Bridge(Node):
         buf = self.imu_buf.get(name)
         if buf and self.on_imu_frame:
             self.on_imu_frame(name, struct.pack('<I', len(buf)) + b''.join(buf))
+            buf.clear()
+
+    def sync_encoders(self):
+        if self.encoders_wanted and self.encoder_sub is None:
+            self.encoder_buf = []
+            self.encoder_sub = self.create_subscription(JointState, ENCODER_TOPIC, self.on_encoder, ENCODER_DEPTH)
+            self.get_logger().info(f'encoder client connected: subscribing to {ENCODER_TOPIC}')
+        elif not self.encoders_wanted and self.encoder_sub is not None:
+            self.destroy_subscription(self.encoder_sub)
+            self.encoder_sub = None
+            self.encoder_buf = []
+            self.get_logger().info(f'no encoder clients: unsubscribed from {ENCODER_TOPIC}')
+        self.flush_encoders()
+
+    def on_encoder(self, msg):
+        # One sensor per message (wheel_encoder_noise.py); the loop also takes a message carrying several.
+        stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
+        for name, angle in zip(msg.name, msg.position):
+            if name in ENCODER_NAMES:
+                self.encoder_buf.append(ENCODER_SAMPLE.pack(stamp, ENCODER_NAMES.index(name), angle))
+        if len(self.encoder_buf) >= IMU_BATCH:
+            self.flush_encoders()
+
+    def flush_encoders(self):
+        buf = self.encoder_buf
+        if buf and self.on_encoder_frame:
+            self.on_encoder_frame(struct.pack('<I', len(buf)) + b''.join(buf))
             buf.clear()
 
     def sync_scan(self):
@@ -313,16 +362,27 @@ async def serve(node):
 
     imu_clients = {}  # name -> {ws: Queue of frames}
 
+    def queue_frame(q, frame):
+        try:
+            q.put_nowait(frame)
+        except asyncio.QueueFull:  # too far behind: drop what's queued and tell it to go
+            while not q.empty():
+                q.get_nowait()
+            q.put_nowait(None)
+
     def new_imu(name, frame):  # on the asyncio loop
         for q in imu_clients.get(name, {}).values():
-            try:
-                q.put_nowait(frame)
-            except asyncio.QueueFull:  # too far behind: drop what's queued and tell it to go
-                while not q.empty():
-                    q.get_nowait()
-                q.put_nowait(None)
+            queue_frame(q, frame)
 
     node.on_imu_frame = lambda name, frame: loop.call_soon_threadsafe(new_imu, name, frame)
+
+    encoder_clients = {}  # ws -> Queue of frames
+
+    def new_encoder(frame):  # on the asyncio loop
+        for q in encoder_clients.values():
+            queue_frame(q, frame)
+
+    node.on_encoder_frame = lambda frame: loop.call_soon_threadsafe(new_encoder, frame)
     node.on_sensors = lambda msg: loop.call_soon_threadsafe(
         lambda: websockets.broadcast(clients, msg) if clients else None)
 
@@ -360,7 +420,7 @@ async def serve(node):
                 set_status(status='ready' if name else 'none')
 
     async def process_request(path, headers):
-        if path in ('/ws', '/scan') or path.startswith('/imu/'):
+        if path in ('/ws', '/scan', ENCODER_TOPIC) or path.startswith('/imu/'):
             return None  # continue the websocket handshake
         if path == '/track.json':
             return HTTPStatus.OK, [('Content-Type', 'application/json')], files['json']
@@ -404,7 +464,29 @@ async def serve(node):
         q = asyncio.Queue(IMU_QUEUE)
         imu_clients.setdefault(name, {})[ws] = q
         node.imu_wanted = frozenset(imu_clients)
+        try:
+            await send_queued(ws, q, '/imu/' + name)
+        finally:
+            del imu_clients[name][ws]
+            if not imu_clients[name]:
+                del imu_clients[name]
+            node.imu_wanted = frozenset(imu_clients)
 
+    async def encoder_handler(ws):
+        """Send every batch of /encoders/wheel, in order, like an IMU's."""
+        if not node.encoders:
+            await ws.close(1008, 'no wheel encoders')
+            return
+        q = encoder_clients[ws] = asyncio.Queue(IMU_QUEUE)
+        node.encoders_wanted = True
+        try:
+            await send_queued(ws, q, ENCODER_TOPIC)
+        finally:
+            del encoder_clients[ws]
+            node.encoders_wanted = bool(encoder_clients)
+
+    async def send_queued(ws, q, topic):
+        """Send `q`'s frames in order until the client closes; a None in it means it fell behind: close it."""
         async def drain():  # notices the client closing
             try:
                 async for _ in ws:
@@ -421,7 +503,7 @@ async def serve(node):
                     break
                 frame = getter.result()
                 if frame is None:
-                    node.get_logger().warn(f'/imu/{name} client fell behind: disconnecting it')
+                    node.get_logger().warn(f'{topic} client fell behind: disconnecting it')
                     await ws.close(1013, 'too far behind')
                     break
                 await ws.send(frame)
@@ -429,10 +511,6 @@ async def serve(node):
             pass
         finally:
             closed.cancel()
-            del imu_clients[name][ws]
-            if not imu_clients[name]:
-                del imu_clients[name]
-            node.imu_wanted = frozenset(imu_clients)
 
     async def handler(ws, path=None):
         path = path or getattr(ws, 'path', '/ws')
@@ -440,6 +518,8 @@ async def serve(node):
             return await scan_handler(ws)
         if path.startswith('/imu/'):
             return await imu_handler(ws, path[len('/imu/'):])
+        if path == ENCODER_TOPIC:
+            return await encoder_handler(ws)
         clients.add(ws)
         try:
             await ws.send(json.dumps(status))

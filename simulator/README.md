@@ -30,7 +30,7 @@ Sensors are off until something subscribes to them, normally the ground station'
 ```
 page panel on ─▶ bridge /scan socket ─▶ /scan ─▶ lidar_noise (lazy) ─▶ /sim/scan ─▶ ros_gz_bridge (lazy) ─▶ Gazebo renders
 page panel open ─▶ bridge /imu/cg socket ─▶ /imu/cg ─▶ imu_noise (lazy) ─▶ /sim/imu/cg ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
-any subscriber ─▶ /encoders/wheel ─▶ wheel_encoder_noise (lazy) ─▶ /sim/wheel_joints ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
+page panel open ─▶ bridge /encoders/wheel socket ─▶ /encoders/wheel ─▶ wheel_encoder_noise (lazy) ─▶ /sim/wheel_joints ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
 ```
 
 So a sensor nobody watches costs nothing, and `ros2 topic echo /scan` (or a bag) switches it on as well. Turning one on takes a moment while each link subscribes.
@@ -124,7 +124,7 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 
 | Path | What |
 | --- | --- |
-| `urdf/racecar.urdf.xacro` | Car model: joints, inertia, collision, Ackermann plugin, ground-truth publisher. Swap it to swap the car |
+| `urdf/racecar.urdf.xacro` | Car model: joints, inertia, collision, Ackermann plugin, ground-truth publisher, wheel joint states. Swap it to swap the car |
 | `meshes/chassis.stl` | Visual only. OpenRC F1 body, reduced to 20k triangles, metres, nose on +x |
 | `worlds/empty.sdf` | Blank plane with a sun (the light is only used by the 3D viewer); the bridge spawns a track's walls into it |
 | `tracks/` | Bundled tracks: map yaml + image |
@@ -132,14 +132,15 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 | `config/bridge.yaml` | Gazebo ↔ ROS 2 topics. Add one entry per new topic; sensors are `lazy: true` |
 | `scripts/lidar_noise.py` | `/sim/scan` → `/scan`, subscribing upstream only while `/scan` has subscribers. Pass-through until noise is designed |
 | `scripts/imu_noise.py` | `/sim/imu/<name>` → `/imu/<name>` for every IMU, lazy like `lidar_noise.py`. Drops orientation; otherwise pass-through |
+| `scripts/wheel_encoder_noise.py` | `/sim/wheel_joints` → `/encoders/wheel` (E-22), lazy like `lidar_noise.py`. Nonlinearity, jitter, wrap, 14-bit quantization, dropped failed reads |
 | `config/gui.config` | Gazebo 3D GUI layout for `--gui3d`: window size, starting camera |
 | `launch/sim.launch.py` | Server, spawn, topic bridge, car_link. `bridge:=true` adds the ground-station bridge; `gui:=true` the 3D GUI (needs a display) |
 | `scripts/car_link.py` | The car's receiving end: session handshake, UDP heartbeat + teleop on port 9870 and `/sim/auto/cmd_vel` in, heartbeat gate and speed ramp, `/sim/cmd_vel` and `/sim/link/status` out |
-| `scripts/bridge.py` | Loads tracks into the running sim on request, serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), plus one websocket per sensor (`/scan`, `/imu/<name>`), for the ground station |
+| `scripts/bridge.py` | Loads tracks into the running sim on request, serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), plus one websocket per sensor (`/scan`, `/imu/<name>`, `/encoders/wheel`), for the ground station |
 
 ## Topics
 
-Internal names, except `/scan` and `/imu/<name>`. Noise nodes own the public names such as `/drive` and `/odom`; the LiDAR's, `lidar_noise.py`, runs in the sim for now so the ground station can read `/scan` as an algorithm would.
+Internal names, except `/scan`, `/imu/<name>` and `/encoders/wheel`. Noise nodes own the public names such as `/drive` and `/odom`; the LiDAR's, `lidar_noise.py`, runs in the sim for now so the ground station can read `/scan` as an algorithm would.
 
 The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays separate from the car's (default domain 0) even if the container shares the host network. A node outside the container must set the same ID to see these topics.
 
@@ -154,6 +155,8 @@ The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays
 | `/scan` | out (lidar_noise) | `sensor_msgs/LaserScan`, what algorithms and the ground station read. Lazy |
 | `/sim/imu/cg` | out (Gazebo → imu_noise) | `sensor_msgs/Imu`, 1 kHz sim time, frame `imu_cg`, with Gazebo's true orientation. Lazy |
 | `/imu/cg` | out (imu_noise) | `sensor_msgs/Imu` without orientation, what algorithms and the ground station read. Lazy |
+| `/sim/wheel_joints` | out (Gazebo → wheel_encoder_noise) | `sensor_msgs/JointState`, the four wheel joints' true continuous angles, 1 kHz sim time. Lazy |
+| `/encoders/wheel` | out (wheel_encoder_noise) | `sensor_msgs/JointState`, one message per sensor per sample: `name` `wheel_fl`/`fr`/`rl`/`rr`, `position` the absolute angle in [0, 2π), 14-bit steps. A gap in a sensor's stamps is a failed read. Lazy |
 | `/clock` | out | sim time |
 
 ## Placeholders and assumptions

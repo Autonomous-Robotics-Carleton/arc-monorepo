@@ -391,6 +391,8 @@ const PANELS = {
   topics:    { title: 'Topics', group: 'sensors', w: 400, meta: () => `${streams.size} topics`, build: buildTopics, update: updateTopics },
   plots:     { title: 'Plots', group: 'sensors', w: 400, meta: () => `${opts.plotWindow} s`, build: buildPlots, update: updatePlots },
   lidar:     { title: 'LiDAR', group: 'sensors', w: 264, meta: lidarMeta, build: buildLidar, update: updateLidar },
+  encoders:  { title: 'wheel encoders', group: 'sensors', w: 320, available: () => encoderNames.length > 0, note: 'not found',
+               meta: encoderMeta, build: buildEncoders, update: updateEncoders },
   camera:    { title: 'Camera', group: 'sensors', w: 360, available: () => false, note: 'no image topic', build: () => {} },
   computer:  { title: 'Computer', group: 'machine', w: 448, available: () => false, note: 'needs server stats', build: () => {} },
   settings:  { title: 'Settings', group: 'settings', w: 264, build: buildSettings },
@@ -1108,7 +1110,8 @@ function updateImu(b, name) {
   }
 }
 // The last IMU_WINDOW seconds as smooth lines (quadratic curves through the midpoints between summaries).
-function drawImuPlot(c, pts, series, dashed = []) {
+// A null value breaks the line, unless `joinNulls` (then the point is skipped).
+function drawImuPlot(c, pts, series, dashed = [], joinNulls = false) {
   if (!c) return;
   const dpr = devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
   if (!W || !H) return;
@@ -1139,12 +1142,86 @@ function drawImuPlot(c, pts, series, dashed = []) {
       }
       run = [];
     };
-    for (const p of shown) { const val = f(p); if (val === null) flush(); else run.push([x(p.t), y(val)]); }
+    for (const p of shown) { const val = f(p); if (val !== null) run.push([x(p.t), y(val)]); else if (!joinNulls) flush(); }
     flush();
   });
   g.setLineDash([]);
   g.fillStyle = css('--ink-muted'); g.font = `10px ${css('--font-mono')}`;
   g.fillText(hi.toFixed(2), 4, 11); g.fillText(lo.toFixed(2), 4, H - 4);
+}
+
+// ---------- wheel encoders ----------
+// One panel for the four wheel encoders, available when the bridge announces them (`sensors`). While it is
+// open the page holds the /encoders/wheel socket; the server takes every angle sample and sends per wheel
+// the measured speed over each step, the received rate and the share of reads dropped. The plot is the
+// last second of measured speed, sign as the encoders give it (forward is positive on every wheel in the sim).
+// A step with no frame from the bridge has null speeds: the plot skips those points rather than breaking.
+let encoderNames = [];
+const enc = { ws: null, retryAt: 0, pts: [], last: null }; // pts: [{t, m}]
+const encCfg = () => {
+  const c = layout.encoders ||= {};
+  if (!IMU_STEPS.includes(c.step)) c.step = IMU_STEPS[0];
+  return c;
+};
+const encLabel = (name) => name.replace(/^wheel_/, '');
+function setEncoders(names) {
+  encoderNames = Array.isArray(names) ? names : [];
+  mountPanels();
+}
+function syncEncoders() {
+  const want = !!els.encoders && serverUp && encoderNames.length > 0;
+  if (want && !enc.ws && performance.now() >= enc.retryAt) {
+    const ws = new WebSocket(`ws://${location.host}/encoders/wheel`);
+    ws.onopen = () => ws.send(JSON.stringify({ type: 'step', s: encCfg().step }));
+    ws.onmessage = (e) => {
+      const m = JSON.parse(e.data);
+      if (m.type !== 'encoders') return;
+      const t = nowS();
+      enc.last = m;
+      enc.pts.push({ t, m });
+      while (enc.pts.length && enc.pts[0].t < t - IMU_WINDOW - 0.5) enc.pts.shift();
+    };
+    ws.onclose = () => { if (enc.ws === ws) { enc.ws = null; enc.last = null; enc.pts = []; enc.retryAt = performance.now() + 1000; } };
+    enc.ws = ws;
+  } else if (!want && enc.ws) {
+    const ws = enc.ws; enc.ws = null; enc.last = null; enc.pts = []; ws.close();
+  }
+}
+function encoderMeta() {
+  const m = enc.last;
+  return !serverUp ? 'no server' : !m ? 'waiting' : imuStale(m) ? 'stale' : `step ${encCfg().step} s`;
+}
+function buildEncoders(b) {
+  const c = encCfg();
+  b.innerHTML = `<dl class="kv">
+      <dt>step</dt><dd><div class="seg">${IMU_STEPS.map((s) => `<button data-step="${s}">${s}</button>`).join('')}</div></dd></dl>
+    <div class="mod"><div class="sub">measured speed <span class="unit">rad/s · last ${IMU_WINDOW} s · y axis is dynamic</span></div>
+      ${imuPlot('speed')}${imuLegend(encoderNames.map((n, i) => [esc(encLabel(n)), i % 4 + 1]))}</div>
+    <div class="mod"><div class="sub">per wheel <span class="unit">speed · received · dropped</span></div>
+      <dl class="kv">${encoderNames.map((n, i) => `<dt>${esc(encLabel(n))}</dt><dd data-v="w${i}"></dd>`).join('')}</dl></div>`;
+  b.addEventListener('click', (e) => {
+    const s = e.target.closest('button[data-step]');
+    if (!s) return;
+    c.step = +s.dataset.step; saveLayout();
+    if (enc.ws && enc.ws.readyState === WebSocket.OPEN) enc.ws.send(JSON.stringify({ type: 'step', s: c.step }));
+  });
+}
+function updateEncoders(b) {
+  const c = encCfg(), m = enc.last, stale = imuStale(m);
+  for (const el of b.querySelectorAll('button[data-step]')) el.setAttribute('aria-pressed', String(+el.dataset.step === c.step));
+  encoderNames.forEach((_, i) => {
+    const el = q(b, `[data-v=w${i}]`);
+    if (!el) return;
+    const sp = m && m.speed[i] !== undefined ? m.speed[i] : null;
+    const dr = m && m.dropped[i] !== undefined ? m.dropped[i] : null;
+    // The last non-null speed: a step without a frame shouldn't blank the readout.
+    const lastSp = sp !== null ? sp : (enc.pts.findLast((p) => p.m.speed[i] !== null) || { m: { speed: [] } }).m.speed[i];
+    const pad = (text, n) => text.padStart(n, '\u2007'); // figure spaces: the columns stay put as digits come and go
+    el.innerHTML = !m ? '—' : `${fmt(lastSp === undefined ? null : lastSp, 2, 'rad/s')} · ${pad(String(m.rate[i]), 4)}<span class="unit"> Hz</span> · ${
+      dr === null ? '—' : `${pad((dr * 100).toFixed(1), 5)}<span class="unit"> %</span>`}`;
+    el.className = m && stale ? 'is-warn' : '';
+  });
+  drawImuPlot(q(b, 'canvas[data-plot=speed]'), enc.pts, encoderNames.map((_, i) => (p) => p.m.speed[i] ?? null), [], true);
 }
 
 // ---------- server websocket ----------
@@ -1159,7 +1236,7 @@ function connectServer() {
   ws.onclose = () => {
     serverUp = false;
     // Without the server we know nothing about the car: drop stale pose and stop the helper's UDP.
-    state = null; link = null; trackStatus = null; onLink(); setImus([]);
+    state = null; link = null; trackStatus = null; onLink(); setImus([]); setEncoders([]);
     setTimeout(connectServer, 1000);
   };
   ws.onmessage = (e) => {
@@ -1169,7 +1246,7 @@ function connectServer() {
     else if (msg.type === 'track') loadTrack(msg.meta, msg.png);
     else if (msg.type === 'tracks') setTracks(msg.names, msg.selected);
     else if (msg.type === 'track_status') onTrackStatus(msg);
-    else if (msg.type === 'sensors') setImus(msg.imu);
+    else if (msg.type === 'sensors') { setImus(msg.imu); setEncoders(msg.encoders); }
   };
 }
 
@@ -1455,6 +1532,7 @@ function frame() {
   updateTopbar();
   syncLidar();
   syncImus();
+  syncEncoders();
   for (const [id, el] of Object.entries(els)) {
     const def = PANELS[id];
     if (def.meta) setText(q(el, '.panel__meta'), def.meta());
