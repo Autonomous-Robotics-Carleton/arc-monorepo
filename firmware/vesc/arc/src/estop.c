@@ -43,6 +43,7 @@ void arc_estop_init(struct arc_estop *e)
 {
 	e->mode = ARC_ESTOP_ENGAGED;
 	e->ramp = 0.0f;
+	e->quiet_s = 0.0f;
 }
 
 bool arc_estop_blocks_commands(const struct arc_estop *e)
@@ -56,11 +57,16 @@ struct arc_estop_output arc_estop_step(struct arc_estop *e, bool line_high,
 	struct arc_estop_output out = { true, false, 0.0f };
 
 	/* A corrupted state brakes, like an engaged one. */
-	if (e->mode != ARC_ESTOP_RELEASED && e->mode != ARC_ESTOP_DRIVE) {
+	if (e->mode != ARC_ESTOP_RELEASED && e->mode != ARC_ESTOP_DRIVE &&
+	    e->mode != ARC_ESTOP_TIMEOUT) {
 		e->mode = ARC_ESTOP_ENGAGED;
 	}
 	if (!(e->ramp >= 0.0f && e->ramp <= 1.0f)) {
 		e->ramp = 1.0f;
+	}
+	/* A corrupted quiet time counts as timed out. */
+	if (!(e->quiet_s >= 0.0f && e->quiet_s <= ARC_ESTOP_COMMAND_TIMEOUT_S_TBC)) {
+		e->quiet_s = ARC_ESTOP_COMMAND_TIMEOUT_S_TBC;
 	}
 
 	if (!line_high) {
@@ -72,9 +78,22 @@ struct arc_estop_output arc_estop_step(struct arc_estop *e, bool line_high,
 		/* Released this step: a command seen in the same step may have
 		 * arrived before the release, so it doesn't count. */
 		e->mode = ARC_ESTOP_RELEASED;
-	} else if (e->mode == ARC_ESTOP_RELEASED && command_seen) {
+	} else if ((e->mode == ARC_ESTOP_RELEASED || e->mode == ARC_ESTOP_TIMEOUT) &&
+		   command_seen) {
 		e->mode = ARC_ESTOP_DRIVE;
 		e->ramp = 0.0f;
+		e->quiet_s = 0.0f;
+	} else if (e->mode == ARC_ESTOP_DRIVE) {
+		/* The command timeout (ADR-0035) */
+		if (command_seen) {
+			e->quiet_s = 0.0f;
+		} else if (positive(dt_s)) {
+			e->quiet_s += dt_s;
+		}
+		if (!(e->quiet_s < ARC_ESTOP_COMMAND_TIMEOUT_S_TBC)) {
+			e->mode = ARC_ESTOP_TIMEOUT;
+			e->ramp = 0.0f;
+		}
 	}
 
 	if (e->mode == ARC_ESTOP_DRIVE) {
@@ -82,8 +101,9 @@ struct arc_estop_output arc_estop_step(struct arc_estop *e, bool line_high,
 		return out;
 	}
 
-	/* Engaged or released: the ramp carries on, never back down, so a
-	 * release and re-engage doesn't drop the brake. */
+	/* Engaged, released or timed out: the ramp carries on, never back
+	 * down, so a release and re-engage (or a press during a timeout)
+	 * doesn't drop the brake. */
 	if (positive(dt_s)) {
 		e->ramp += dt_s / ARC_ESTOP_RAMP_S_TBC;
 		if (!(e->ramp <= 1.0f)) {
@@ -99,5 +119,11 @@ struct arc_estop_output arc_estop_step(struct arc_estop *e, bool line_high,
 bool arc_estop_engaged(void)
 {
 	return arc_estop_state.mode != ARC_ESTOP_RELEASED &&
-	       arc_estop_state.mode != ARC_ESTOP_DRIVE;
+	       arc_estop_state.mode != ARC_ESTOP_DRIVE &&
+	       arc_estop_state.mode != ARC_ESTOP_TIMEOUT;
+}
+
+bool arc_estop_command_timeout(void)
+{
+	return arc_estop_state.mode == ARC_ESTOP_TIMEOUT;
 }

@@ -323,6 +323,114 @@ static void test_bad_dt(void)
 	assert(near(out.brake_current_a, target()));
 }
 
+static int timeout_steps(void)
+{
+	return (int)lroundf(ARC_ESTOP_COMMAND_TIMEOUT_S_TBC / DT);
+}
+
+/* ADR-0035: driving with no command for the timeout brakes on the e-stop
+ * ramp, from zero, and reports it. */
+static void test_command_timeout_brakes(void)
+{
+	struct arc_estop e;
+	struct arc_estop_output out;
+	int quiet = 0;
+
+	drive(&e);
+	do {
+		out = arc_estop_step(&e, HIGH, NO_CMD, DT);
+		quiet++;
+	} while (!out.block_commands && quiet < 10 * timeout_steps());
+	/* within a step of the timeout either way (float time) */
+	assert(quiet >= timeout_steps() - 1 && quiet <= timeout_steps() + 1);
+	assert(e.mode == ARC_ESTOP_TIMEOUT);
+	assert(out.brake && near(out.brake_current_a, DT / ARC_ESTOP_RAMP_S_TBC * target()));
+	/* then the same ramp as the e-stop, to the full target, held */
+	float last = out.brake_current_a;
+	for (int i = 0; i < 2 * ramp_steps(); i++) {
+		const float now = braking(&e, HIGH, NO_CMD);
+		assert(now >= last);
+		last = now;
+	}
+	assert(near(last, target()));
+
+	/* reported as a command timeout, not as the e-stop */
+	struct arc_estop saved = arc_estop_state;
+	arc_estop_state = e;
+	assert(arc_estop_command_timeout());
+	assert(!arc_estop_engaged());
+	arc_estop_state = saved;
+}
+
+/* Commands closer together than the timeout keep it driving. */
+static void test_commands_keep_it_driving(void)
+{
+	struct arc_estop e;
+
+	drive(&e);
+	for (int i = 0; i < 20 * timeout_steps(); i++) {
+		driving(&e, i % (timeout_steps() - 2) == 0 ? CMD : NO_CMD);
+	}
+}
+
+/* A fresh command ends the timeout and drives at once, as after a release. */
+static void test_command_ends_the_timeout(void)
+{
+	struct arc_estop e;
+
+	drive(&e);
+	for (int i = 0; i < 2 * timeout_steps(); i++) {
+		arc_estop_step(&e, HIGH, NO_CMD, DT);
+	}
+	assert(e.mode == ARC_ESTOP_TIMEOUT);
+	driving(&e, CMD);
+	/* and the timeout starts over */
+	for (int i = 0; i < timeout_steps() - 2; i++) {
+		driving(&e, NO_CMD);
+	}
+}
+
+/* A press during a timeout keeps the brake and needs a release and a fresh
+ * command after it, as any press. */
+static void test_press_during_a_timeout(void)
+{
+	struct arc_estop e;
+	float before;
+
+	drive(&e);
+	for (int i = 0; i < timeout_steps() + ramp_steps() / 2; i++) {
+		arc_estop_step(&e, HIGH, NO_CMD, DT);
+	}
+	assert(e.mode == ARC_ESTOP_TIMEOUT);
+	before = e.ramp * target();
+	assert(braking(&e, LOW, CMD) >= before);
+	assert(e.mode == ARC_ESTOP_ENGAGED);
+	/* a command in the release step doesn't count */
+	braking(&e, HIGH, CMD);
+	assert(e.mode == ARC_ESTOP_RELEASED);
+	driving(&e, CMD);
+}
+
+/* Time that isn't time doesn't count toward the timeout; a long gap (a
+ * stalled thread) times out at once. */
+static void test_timeout_and_bad_dt(void)
+{
+	struct arc_estop e;
+	struct arc_estop_output out;
+	const float bad[] = { NAN, -1.0f, -INFINITY, INFINITY, 0.0f };
+
+	for (unsigned int i = 0; i < sizeof(bad) / sizeof(bad[0]); i++) {
+		drive(&e);
+		out = arc_estop_step(&e, HIGH, NO_CMD, bad[i]);
+		assert(!out.block_commands);
+		assert(e.quiet_s == 0.0f);
+	}
+	drive(&e);
+	out = arc_estop_step(&e, HIGH, NO_CMD, 0.2f);
+	assert(out.brake && out.block_commands);
+	assert(e.mode == ARC_ESTOP_TIMEOUT);
+}
+
 /* A corrupted state brakes. */
 static void test_corrupted_state(void)
 {
@@ -346,6 +454,11 @@ static void test_corrupted_state(void)
 	e.ramp = -3.0f;
 	out = arc_estop_step(&e, LOW, NO_CMD, DT);
 	assert(out.brake && near(out.brake_current_a, target()));
+	/* A quiet time that isn't in 0..timeout while driving times out. */
+	drive(&e);
+	e.quiet_s = NAN;
+	out = arc_estop_step(&e, HIGH, NO_CMD, DT);
+	assert(out.brake && e.mode == ARC_ESTOP_TIMEOUT);
 }
 
 int main(void)
@@ -365,6 +478,11 @@ int main(void)
 	test_reengage_keeps_the_brake();
 	test_bad_dt();
 	test_corrupted_state();
+	test_command_timeout_brakes();
+	test_commands_keep_it_driving();
+	test_command_ends_the_timeout();
+	test_press_during_a_timeout();
+	test_timeout_and_bad_dt();
 
 	puts("arc e-stop: ok");
 	return 0;
