@@ -1,6 +1,6 @@
 # ADR-0056: Each run logs a profile; camera images only when it asks for them
 
-- **Status:** Proposed (2026-10-29)
+- **Status:** Accepted (2026-10-29)
 - **Date:** 2026-10-29
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-03, SYS-09, SYS-19, SYS-21, SYS-23, SYS-24, E-04, ADR-0046, ICD-ros2-msgs
@@ -58,4 +58,5 @@ Option B:
 - **The 10-bit packing is decided with the camera drivers,** before the first `full` run. Until then, the 296 MB/s figure assumes a packing step that doesn't exist.
 - **New image types join the `minimal` list when they appear** (v1.1's event cameras, ADR-0046). A heavy topic that isn't an image (say a dense point cloud from an experiment) is still logged in `minimal`; the running free-space warning catches it.
 - **On `full` runs, image_transport's compressed topics are recorded too,** and a driver encodes each frame for them on the CPU. The camera drivers should publish raw images without those plugins.
+- **Replay (#86) names the car's topics a log doesn't have,** in a warning when it starts, so a pipeline replayed from a `minimal` log is told there are no camera images rather than waiting on them.
 - **Reopen if:** the measured `minimal` rate is far from the estimate, or the drive can't hold enough `full` runs between offloads for the team's dataset work.
