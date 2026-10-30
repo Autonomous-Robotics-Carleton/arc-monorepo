@@ -31,8 +31,9 @@
  * see arc_estop_brake_current_a()). Each is TBC until measured; the brake
  * current itself is confirmed on the R2 motor bench.
  */
-/* Car mass, kg: TBC 4-5 kg (ADR-0044); the upper end, so the deceleration is
- * at least the target anywhere in that range. */
+/* Car mass, kg: TBC 4-5 kg, nominal 4.2 kg; the brake is sized for the upper
+ * end (ADR-0057), so the deceleration is at least the target anywhere in that
+ * range. */
 #define ARC_ESTOP_CAR_MASS_KG_TBC 5.0f
 /* Tyre rolling diameter, m: rolling_diameter in config/cars/nominal.yaml. */
 #define ARC_ESTOP_WHEEL_DIAMETER_M_TBC 0.100f
