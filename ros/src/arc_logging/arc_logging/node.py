@@ -96,6 +96,8 @@ class Logger(Node):
         # the log this run replays, if any: the run record points back to it (#205)
         source, self.source_problem = source_record(
             self.declare_parameter('source_log', '').value)
+        # the ROS workspace's git version, from bringup (#160)
+        ros_version = self.declare_parameter('ros_version', '').value
 
         self.root = log_root(log_dir, os.environ.get('ARC_LOG_DIR', ''), must_log)
         self.min_free_gb = (min_free_gb if min_free_gb >= 0
@@ -106,7 +108,7 @@ class Logger(Node):
         self.warn_free_gb = (warn_free_gb if warn_free_gb >= 0
                              else PROFILES[self.plan.profile].warn_free_gb)
         record = run_record(target, sim, sensors, car, config_hash(load(car)), self.exclude,
-                            self.plan.profile, source)
+                            self.plan.profile, source, ros_version)
         self.must_log = must_log
         self.proc = None
         self.recording = threading.Event()  # set once rosbag2 shows it is recording

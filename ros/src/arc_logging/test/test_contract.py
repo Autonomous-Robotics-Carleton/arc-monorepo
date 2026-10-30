@@ -342,6 +342,16 @@ def test_bringup_logs_a_replay_without_the_replayed_topics_and_names_its_source(
         assert args['log_exclude'] == '/camera' and args['source_log'] == ''
 
 
+def test_bringup_passes_the_ros_version_to_logging():
+    """#160: bringup reads arc_version's stamp and hands it to the run record."""
+    logging = _module(PACKAGE / 'launch/logging.launch.py', 'logging_launch')
+    assert 'ros_version' in logging.ARGS
+    source = (REPO / 'ros/src/arc_bringup/launch/platform.launch.py').read_text()
+    assert "args['ros_version'] = ros_version()" in source
+    node = (PACKAGE / 'arc_logging/node.py').read_text()
+    assert "declare_parameter('ros_version'" in node
+
+
 def test_bringup_passes_bag_to_logging_and_logging_takes_source_log():
     from launch.actions import DeclareLaunchArgument
     bringup = _module(REPO / 'ros/src/arc_bringup/launch/platform.launch.py', 'platform_launch')

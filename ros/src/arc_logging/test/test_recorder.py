@@ -117,8 +117,15 @@ def test_free_gb_measures_where_the_directory_would_be(tmp_path):
 def test_run_record_passes_its_fields_through():
     assert run_record('car', '', 'all', 'v1.0', 'abc') == {
         'target': 'car', 'sim': '', 'sensors': 'all', 'car': 'v1.0', 'car_config': 'abc',
-        'log_profile': '', 'log_exclude': ''}
+        'log_profile': '', 'log_exclude': '', 'ros_version': ''}
     assert run_record('sim', 'gym', 'lidar', 'twin', 'abc')['sim'] == 'gym'
+
+
+def test_run_record_names_the_software_version():
+    record = run_record('car', '', 'all', 'v1.0', 'abc', ros_version='0123456789ab-dirty')
+    assert record['ros_version'] == '0123456789ab-dirty'
+    cmd = record_command('/logs/run', record, 60)
+    assert 'ros_version=0123456789ab-dirty' in cmd[cmd.index('--custom-data') + 1:]
 
 
 def test_run_record_says_what_the_log_left_out():

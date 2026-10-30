@@ -96,6 +96,7 @@ class TestReplayLogRecord(unittest.TestCase):
         metadata = rosbag2_py.Info().read_metadata(str(runs[0]), 'mcap')
         record = dict(metadata.custom_data)
         self.assertEqual(record['target'], 'replay')
+        self.assertRegex(record['ros_version'], r'^([0-9a-f]{12}(-dirty)?|unknown)$')
         self.assertEqual(record['source_log'], str(SOURCE))
         for key, value in SOURCE_RECORD.items():
             self.assertEqual(record[f'source_{key}'], value)
