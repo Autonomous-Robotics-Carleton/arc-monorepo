@@ -3,6 +3,22 @@
 cmake_minimum_required(VERSION 3.20)
 project(arc_vesc C)
 
+# The host tests run under AddressSanitizer and UndefinedBehaviorSanitizer
+# (#159): an out-of-bounds access, overflow or other undefined behaviour fails
+# the test even when the value it checks comes out right. Off for the
+# coverage build, which counts lines rather than finding errors.
+option(ARC_SANITIZE "Build the host tests with ASan and UBSan" ON)
+option(ARC_COVERAGE "Instrument the host build for coverage (gcov)" OFF)
+if(ARC_SANITIZE)
+  add_compile_options(-fsanitize=address,undefined -fno-sanitize-recover=all
+                      -fno-omit-frame-pointer -g)
+  add_link_options(-fsanitize=address,undefined)
+endif()
+if(ARC_COVERAGE)
+  add_compile_options(--coverage -O0 -g)
+  add_link_options(--coverage)
+endif()
+
 add_library(arc_vesc src/estop.c src/telemetry.c src/speed_limit.c)
 target_include_directories(arc_vesc PUBLIC include)
 target_compile_options(arc_vesc PRIVATE -Wall -Wextra -Werror)
