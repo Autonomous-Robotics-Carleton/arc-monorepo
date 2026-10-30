@@ -37,7 +37,7 @@ Physical connector IDs, pin numbers, contact current ratings, positive-lock rete
 | --- | --- |
 | Initial power / reset | Load power sequencing follows the frozen carrier and component requirements. Drive remains inhibited until safety / steering / power-on checks pass; power application alone does not authorize motion |
 | Battery ↔ wall handover | Preserve low-voltage operation without Orin / sync / sensor resets (SYS-14 / SYS-31). Record transient and supply margins at the actual loads |
-| Physical e-stop | Controlled braked stop, then the motor-bus cut at T = 2.4 s and steering at T + 1 s (TBC; ADR-0012, ADR-0019, ADR-0034). Keep required logic / logging alive; Aux survival is open |
+| Physical e-stop | Controlled braked stop, then the motor-bus cut at T = 2.8 s and steering at T + 1 s (TBC; ADR-0012, ADR-0019, ADR-0034, ADR-0057). Keep required logic / logging alive; Aux survival is open |
 | Latched fault / reset | Follow ADR-0039 / SYS-25: operator e-stop cycle, power-on checks, explicit re-arm and restart from zero/default envelope. Restoring bus power does not clear the latch |
 | Lowest-cell low battery | Warn, request clean Orin shutdown, acknowledge the actual halted/power-removal condition, then remove compute power; thresholds and timeout are TBD under proposed ADR-0022. Independent pack-protection cutoff must not rely on one healthy MCU |
 | Rail fuse / fault / undervoltage | Report source / state to sync, retain fault evidence and enter the specified safe state. Recovery / latch / reset policy and behavior with the reporting rail absent are TBD for the selected circuits |
