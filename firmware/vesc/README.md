@@ -44,4 +44,4 @@ npx nx test vesc    # arc/: host tests with CMake and CTest
 
 Upstream's Makefile warns that the ARM SDK isn't in `bldc/tools`: ignore it. The container's GCC is on `PATH`; don't run `make arm_sdk_install`, which downloads a second copy.
 
-Flash the `.bin` with VESC Tool over USB.
+Flash the `.bin` with VESC Tool over USB, following [the flashing procedure](../../systems/tests/a50s-flashing.md): one controller at a time, with the configuration backed up and the e-stop checked again after each, and how to recover a controller over SWD.
