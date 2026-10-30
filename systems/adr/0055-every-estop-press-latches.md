@@ -1,6 +1,6 @@
 # ADR-0055: Every e-stop press latches the stop, fault or not
 
-- **Status:** Proposed (2026-10-29). Accepted once Ashwin, who implements the sync MCU's latch (#148), has reviewed it
+- **Status:** Accepted (2026-10-30)
 - **Date:** 2026-10-29
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-05, SYS-22, SYS-25, E-32, ADR-0012, ADR-0019, ADR-0035, ADR-0039, ADR-0052, ADR-0053, ICD-sync-link

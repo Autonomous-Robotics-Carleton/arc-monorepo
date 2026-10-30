@@ -1,6 +1,6 @@
 # ADR-0039: A fault stop latches, and only an e-stop cycle on the car resets it
 
-- **Status:** Accepted, amended by ADR-0052 (the operator's re-arm also ends a heartbeat stop, without an e-stop cycle) ADR-0053 (a 3 s check window, a stopped-wheel threshold, the steering check deferred until a steering driver exists) and ADR-0055, proposed (every e-stop press latches, not only a fault stop; driving resumes after the release, the power-on checks and the operator's re-arm)
+- **Status:** Accepted, amended by ADR-0052 (the operator's re-arm also ends a heartbeat stop, without an e-stop cycle) ADR-0053 (a 3 s check window, a stopped-wheel threshold, the steering check deferred until a steering driver exists) and ADR-0055 (every e-stop press latches, not only a fault stop; driving resumes after the release, the power-on checks and the operator's re-arm)
 - **Date:** 2026-10-08
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-05, SYS-18, SYS-19, SYS-22, SYS-25, ADR-0012, ADR-0035, ADR-0038
