@@ -20,6 +20,8 @@ if(BUILD_TESTING)
       ARGS "target:=${target}"
       TIMEOUT 60)
   endforeach()
+  # a replay's log holds only what the live platform produces, and names its source (#205)
+  add_launch_test(test/test_replay_log.py TIMEOUT 90)
 endif()
 
 ament_package()

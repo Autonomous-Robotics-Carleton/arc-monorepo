@@ -295,6 +295,65 @@ def test_bringup_logs_the_car_and_only_the_car_by_default():
             assert args['sim'] == ('gym' if target == 'sim' else '')
 
 
+def _replay_backend_topics():
+    """The replay player's topic pattern and its named car topics, from its source."""
+    source = (REPO / 'ros/src/arc_backend_replay/src/backend.cpp').read_text()
+    pattern = re.search(r'kCarTopics\[\]\s*=\s*((?:\s*"[^"]*")+);', source)
+    names = re.search(r'kCarTopicNames = \{(.*?)\};', source, re.S)
+    assert pattern and names, 'backend.cpp changed: update this test'
+    return (re.compile(''.join(re.findall(r'"([^"]*)"', pattern.group(1)))),
+            re.findall(r'"([^"]*)"', names.group(1)))
+
+
+def test_a_replays_log_leaves_out_what_the_player_publishes_and_only_that():
+    """#205: the replay player's topics and its /clock are left out of a replay's
+    log; /diagnostics and the platform's own topics are recorded."""
+    bringup = _module(REPO / 'ros/src/arc_bringup/launch/platform.launch.py', 'platform_launch')
+    replayed = re.compile(bringup.REPLAYED_TOPICS)
+    player, names = _replay_backend_topics()
+    assert len(names) >= 30
+    # rosbag2's --exclude-regex leaves out a topic the pattern matches anywhere in
+    left_out = [t for t in names if replayed.search(t)]
+    assert set(left_out) == set(names) - {'/diagnostics'}
+    assert replayed.search('/clock')
+    for topic in ('/diagnostics', '/control/mode', '/car/cmd/drive', '/car/cmd/heartbeat',
+                  '/car/cmd/envelope', '/tf', '/estimate/odom', '/rosout', '/experiment/x'):
+        assert not replayed.search(topic), topic
+    # the same pattern as the player's, but for /diagnostics and /clock
+    for topic in [*names, '/sensors/new/thing', '/car/motor/xx', '/car/steering2', '/clock']:
+        if topic not in ('/diagnostics', '/clock'):
+            assert bool(replayed.search(topic)) == bool(player.fullmatch(topic)), topic
+
+
+def test_bringup_logs_a_replay_without_the_replayed_topics_and_names_its_source():
+    bringup = _module(REPO / 'ros/src/arc_bringup/launch/platform.launch.py', 'platform_launch')
+    args = bringup.logging_args('replay', 'gym', 'true', '', 'run.mcap')
+    assert args['log_exclude'] == bringup.REPLAYED_TOPICS and args['source_log'] == 'run.mcap'
+    # an exclude of the run's own still applies, with the replayed topics
+    args = bringup.logging_args('replay', 'gym', 'true', '/camera|/lidar', 'run.mcap')
+    combined = re.compile(args['log_exclude'])
+    assert check_exclude(args['log_exclude']) is None
+    for topic in ('/camera', '/lidar', '/sensors/imu/cg', '/clock'):
+        assert combined.search(topic), topic
+    assert not combined.search('/control/mode')
+    # other targets: the exclude as given, no source
+    for target in ('sim', 'car'):
+        args = bringup.logging_args(target, 'gym', '', '/camera', 'run.mcap')
+        assert args['log_exclude'] == '/camera' and args['source_log'] == ''
+
+
+def test_bringup_passes_bag_to_logging_and_logging_takes_source_log():
+    from launch.actions import DeclareLaunchArgument
+    bringup = _module(REPO / 'ros/src/arc_bringup/launch/platform.launch.py', 'platform_launch')
+    logging = _module(PACKAGE / 'launch/logging.launch.py', 'logging_launch')
+    declared = {e.name for e in bringup.generate_launch_description().entities
+                if isinstance(e, DeclareLaunchArgument)}
+    assert 'bag' in declared
+    assert 'source_log' in logging.ARGS
+    source = (REPO / 'ros/src/arc_bringup/launch/platform.launch.py').read_text()
+    assert "arg('bag')" in source
+
+
 def test_bringup_passes_the_profile_on_with_the_same_choices():
     from launch import LaunchContext
     from launch.actions import DeclareLaunchArgument
