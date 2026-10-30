@@ -228,6 +228,17 @@
       <odom_publish_frequency>50</odom_publish_frequency>
       <dimensions>3</dimensions>
     </plugin>
+    <!-- Wheel encoders, E-22 (AS5047P on each wheel): the four wheel joints' true angles every physics
+         step (1 ms). config/bridge.yaml carries them to /sim/wheel_joints and wheel_encoder_noise.py
+         to /encoders/wheel, one message per sensor; the real part is sampled at 2 kHz. -->
+    <plugin filename="gz-sim-joint-state-publisher-system" name="gz::sim::systems::JointStatePublisher">
+      <joint_name>front_left_wheel_joint</joint_name>
+      <joint_name>front_right_wheel_joint</joint_name>
+      <joint_name>rear_left_wheel_joint</joint_name>
+      <joint_name>rear_right_wheel_joint</joint_name>
+      <topic>/model/racecar/wheel_joints</topic>
+      <update_rate>1000</update_rate>
+    </plugin>
   </gazebo>
 
 </robot>

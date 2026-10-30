@@ -125,4 +125,12 @@ def generate_launch_description():
             executable='imu_noise.py',
             parameters=[{'use_sim_time': True}],
         ),
+
+        # /sim/wheel_joints -> /encoders/wheel (E-22), subscribing only while it has subscribers.
+        # Its noise settings come from the container's environment (simulator/.env).
+        Node(
+            package='arc_sim',
+            executable='wheel_encoder_noise.py',
+            parameters=[{'use_sim_time': True}],
+        ),
     ])

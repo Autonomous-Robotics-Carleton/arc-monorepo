@@ -44,3 +44,14 @@
   lazy: true
   publisher_queue: 100
   subscriber_queue: 100
+
+# The four wheel joints' angles (E-22's source); wheel_encoder_noise.py turns them into /encoders/wheel.
+# Lazy like the IMU, with the same deeper queues for a 1 kHz stream.
+- ros_topic_name: "/sim/wheel_joints"
+  gz_topic_name: "/model/racecar/wheel_joints"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+  lazy: true
+  publisher_queue: 100
+  subscriber_queue: 100

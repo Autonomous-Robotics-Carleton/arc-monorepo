@@ -30,6 +30,7 @@ Sensors are off until something subscribes to them, normally the ground station'
 ```
 page panel on ─▶ bridge /scan socket ─▶ /scan ─▶ lidar_noise (lazy) ─▶ /sim/scan ─▶ ros_gz_bridge (lazy) ─▶ Gazebo renders
 page panel open ─▶ bridge /imu/cg socket ─▶ /imu/cg ─▶ imu_noise (lazy) ─▶ /sim/imu/cg ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
+any subscriber ─▶ /encoders/wheel ─▶ wheel_encoder_noise (lazy) ─▶ /sim/wheel_joints ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
 ```
 
 So a sensor nobody watches costs nothing, and `ros2 topic echo /scan` (or a bag) switches it on as well. Turning one on takes a moment while each link subscribes.
@@ -40,12 +41,24 @@ Settings are in [`.env`](.env), passed to the container by `run.sh` and read by 
 | --- | --- | --- | --- | --- |
 | 2D LiDAR | E-10, Hokuyo UST-10LX (ADR-0001) | `gpu_lidar` on link `lidar` | `/scan` (`/sim/scan` before noise) | `LIDAR_RATE`, `LIDAR_SAMPLES`, `LIDAR_FOV_DEG`, `LIDAR_RANGE_MIN`, `LIDAR_RANGE_MAX` |
 | IMU | E-20, ST ISM330DHCX at the CG | `imu` on link `imu_cg` (`gz-sim-imu-system`) | `/imu/cg` (`/sim/imu/cg` before noise) | `IMU_RATE`, `IMU_ACCEL_RANGE_G`, `IMU_GYRO_RANGE_DPS` |
+| Wheel encoders ×4 | E-22, AS5047P, 14-bit absolute | `JointStatePublisher` on the four wheel joints | `/encoders/wheel` (`/sim/wheel_joints` before noise) | `ENCODER_JITTER_DEG`, `ENCODER_NONLINEARITY_DEG`; `SENSOR_NOISE_SCALE`, `SENSOR_FAIL_PROB`, `SENSOR_SEED` |
 
 Sensors render on the CPU (Mesa llvmpipe through EGL, `--headless-rendering`), since Docker on macOS has no GPU. The LiDAR's mount pose (front of the chassis, above the body) is TBC until the ARC CAD places it. The bridge reads it from `/tf_static` (the URDF, through `robot_state_publisher`) and sends it with every scan, so the ground station follows the URDF. No noise is added yet: `lidar_noise.py` passes scans through unchanged.
 
 **IMU.** Sampled every 1 ms (`IMU_RATE=1000`): once per physics step (`max_step_size` 0.001 in `worlds/empty.sdf`), the fastest Gazebo can produce new data. The real part is specified at ≥ 4 kHz (E-20); simulating that would mean a 0.25 ms physics step and a sim about 4× slower, so it isn't. Its rate is sim time: with the sim below real time, fewer samples arrive per wall-clock second. The IMU sits at the chassis centre of mass with base_link's axes (TBC until the CAD places it). `imu_noise.py` drops Gazebo's orientation, which is ground truth no real 6-axis IMU gives (quaternion zeroed, `orientation_covariance[0] = -1`), and otherwise passes samples through: no noise or bias yet, and no clipping at the part's range. The ranges in `.env` go to the ground station, which flags saturation and estimates attitude itself.
 
 To add an IMU: a link and `<sensor type="imu">` publishing `/model/racecar/imu/<name>` in the xacro, and its `/sim/imu/<name>` entry in `config/bridge.yaml`. `imu_noise.py`, the bridge and the ground station find it by name.
+
+**Wheel encoders.** Gazebo's `JointStatePublisher` reports the four wheel joints' true angles every physics step (1 ms); the real car samples its AS5047Ps at 2 kHz (`systems/architecture.md`, SYS-06), which the sim doesn't, for the IMU's reason. For every sample, `wheel_encoder_noise.py` takes each wheel's true continuous angle through, in order:
+
+1. nonlinearity and jitter: a fixed error as a function of angle, the sum of a 1× and a 2× per-revolution sine with a phase drawn once per sensor at startup (each term half of `ENCODER_NONLINEARITY_DEG`, so the sum stays within it), plus gaussian jitter (sigma `ENCODER_JITTER_DEG`), both times `SENSOR_NOISE_SCALE`
+2. wrap to [0, 2π)
+3. quantize to 16384 steps (floor)
+4. back to a float in radians, a multiple of 2π/16384
+
+With probability `SENSOR_FAIL_PROB` a sensor's sample is dropped instead, as the firmware discards a read with its parity or error flag set: nothing is published for it, so its stamps have a gap, and consumers treat a gap as no data. Output is one `sensor_msgs/JointState` per sensor per sample on `/encoders/wheel`, carrying exactly the fields of `ARC_ANGLE_SAMPLE` (`systems/icd/sync-link.xml`): `header.stamp` the sample's sim time, `name` one of `wheel_fl`, `wheel_fr`, `wheel_rl`, `wheel_rr`, `position` the absolute angle; `velocity` and `effort` are empty, since the encoder measures angle only. The sign is the joint's own (axis +y on every wheel), so a right wheel's angle runs the same way as the left's and isn't flipped.
+
+The three `SENSOR_*` knobs in `.env` are global, meant for every sensor's noise model, though only the wheel encoders read them so far: `SENSOR_NOISE_SCALE` multiplies each sensor's datasheet baseline (0 = no noise), `SENSOR_FAIL_PROB` is the chance per sample per sensor of a failed read (0 = none), and `SENSOR_SEED` (an integer) makes the noise and drops repeatable, empty drawing a new seed each run. The encoder baselines come from the AS5047P datasheet (v2-00, Figure 8): 0.068° rms output noise and ±0.8° INL, both maxima, the INL with the magnet in the optimum position at 25 °C. The datasheet gives totals only, so the 1× + 2× sine shape is an assumption of the sim, not the part's measured error.
 
 ## Tracks
 
