@@ -16,7 +16,12 @@
         "commands": [
           "cmake -S firmware/vesc/arc -B firmware/vesc/build/arc",
           "cmake --build firmware/vesc/build/arc",
-          "ctest --test-dir firmware/vesc/build/arc --output-on-failure"
+          "ctest --test-dir firmware/vesc/build/arc --output-on-failure",
+          "cmake -S firmware/vesc/arc -B firmware/vesc/build/arc-coverage -DARC_SANITIZE=OFF -DARC_COVERAGE=ON",
+          "cmake --build firmware/vesc/build/arc-coverage",
+          "find firmware/vesc/build/arc-coverage -name '*.gcda' -delete",
+          "ctest --test-dir firmware/vesc/build/arc-coverage",
+          "gcovr -r firmware/vesc/arc --object-directory firmware/vesc/build/arc-coverage --filter firmware/vesc/arc/src/ --fail-under-line 100 --fail-under-branch 100 --print-summary"
         ],
         "parallel": false
       }
