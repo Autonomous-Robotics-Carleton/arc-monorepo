@@ -8,6 +8,10 @@
  * Releasing ESTOP doesn't restart motion: the brake stays on until a fresh
  * command arrives after the release.
  *
+ * The command timeout (ADR-0035) shares the ramp: while driving, no command
+ * for ARC_ESTOP_COMMAND_TIMEOUT_S_TBC brakes the same way, ignoring commands
+ * until a fresh one arrives. A low ESTOP takes over from it at any time.
+ *
  * The logic here is plain C, tested on the host; port/estop_vesc.c reads the
  * pin, applies the brake and runs it every millisecond on the controller.
  * Safety function: its own tests, and a second reviewer on every change.
@@ -25,6 +29,11 @@
 /* Time to ramp the brake current from 0 to the target, s: TBC ~150 ms
  * (ADR-0012), so braking isn't immediate. Confirmed on the R2 motor bench. */
 #define ARC_ESTOP_RAMP_S_TBC 0.150f
+
+/* Time without a command, while driving, before braking on the ramp, s: TBC
+ * 150 ms, the same as SYS-04's watchdog (ADR-0035). Replaces upstream's
+ * timeout (1000 ms, then 0 A), which can't act while this routine brakes. */
+#define ARC_ESTOP_COMMAND_TIMEOUT_S_TBC 0.150f
 
 /*
  * What turns the deceleration into a brake current per corner (open loop;
@@ -68,12 +77,17 @@ enum arc_estop_mode {
 	ARC_ESTOP_RELEASED,
 	/* Commands drive the motor; the routine applies nothing. */
 	ARC_ESTOP_DRIVE,
+	/* No command for ARC_ESTOP_COMMAND_TIMEOUT_S_TBC while driving: brake,
+	 * ignore commands, until a fresh command arrives (ADR-0035). */
+	ARC_ESTOP_TIMEOUT,
 };
 
 struct arc_estop {
 	enum arc_estop_mode mode;
 	/* Fraction of the target brake current reached, 0..1. */
 	float ramp;
+	/* Time since the last command while driving, s. */
+	float quiet_s;
 };
 
 /* What the routine wants for one step. */
@@ -106,5 +120,9 @@ extern struct arc_estop arc_estop_state;
 /* True while ESTOP is low or hasn't been read yet (the ESTOP bit of
  * ARC_MOTOR_STATUS, ADR-0035). */
 bool arc_estop_engaged(void);
+
+/* True while braking on command loss (the COMMAND_TIMEOUT bit of
+ * ARC_MOTOR_STATUS, ADR-0035). */
+bool arc_estop_command_timeout(void);
 
 #endif /* ARC_ESTOP_H */
