@@ -25,6 +25,12 @@ def car_topics_regex():
     return re.compile(''.join(re.findall(r'"([^"]*)"', m.group(1))))
 
 
+def car_topic_names():
+    m = re.search(r'kCarTopicNames = \{(.*?)\};', BACKEND, re.S)
+    assert m, 'kCarTopicNames not found in backend.cpp'
+    return re.findall(r'"([^"]*)"', m.group(1))
+
+
 def expand(name):
     """`/a/{x,y}` -> `/a/x`, `/a/y` (the ICD's shorthand)."""
     m = re.search(r'\{([^}]*)\}', name)
@@ -65,6 +71,17 @@ def test_nothing_else_is_played():
     assert '/car/cmd/drive' in others and '/clock' in others
     played = [t for t in others if regex.fullmatch(t)]
     assert not played, f'replayed but not the car\'s to publish: {played}'
+
+
+def test_the_named_car_topics_are_the_icds():
+    """The list the backend reports missing topics from: the ICD's, each played."""
+    names = car_topic_names()
+    played = [t for s in PLAYED for t in topics(s)]
+    assert len(names) == len(set(names)), 'a topic is named twice'
+    assert set(names) == set(played), {'not in the ICD': set(names) - set(played),
+                                       'not named': set(played) - set(names)}
+    regex = car_topics_regex()
+    assert all(regex.fullmatch(t) for t in names)
 
 
 def test_every_command_topic_is_listened_on():
