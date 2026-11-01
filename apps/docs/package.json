@@ -13,7 +13,7 @@
   "dependencies": {
     "@arc/systems-model": "workspace:*",
     "fumadocs-core": "15.7.12",
-    "fumadocs-docgen": "^3.0.1",
+    "fumadocs-docgen": "^3.2.0",
     "fumadocs-mdx": "11.10.0",
     "fumadocs-ui": "15.7.12",
     "mermaid": "^11.17.2",
