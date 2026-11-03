@@ -1,6 +1,6 @@
 # ADR-0034: Off-the-shelf motor controllers (A50S) on the deck; telemetry over UART; top speed 9 m/s
 
-- **Status:** Accepted, amended by ADR-0035 (the telemetry reports each controller's state; the controllers brake on command loss). Set on 2026-10-08: telemetry link rate 2 Mbit/s, not 3 Mbit/s (ICD-controller-telemetry); T 2.4 s (TBC), since the ~1.8 s below is the stop time without the ramp and T must come after the stop (ICD-corner-connector).
+- **Status:** Accepted, amended by ADR-0035 (the telemetry reports each controller's state; the controllers brake on command loss). Set on 2026-10-08: telemetry link rate 2 Mbit/s, not 3 Mbit/s (ICD-controller-telemetry); T 2.4 s (TBC), since the ~1.8 s below is the stop time without the ramp and T must come after the stop (ICD-corner-connector). Amended by ADR-0057 (T is 2.8 s, TBC, sized from the speed cap rather than 9 m/s).
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-01, SYS-04, SYS-05, SYS-06, SYS-07, SYS-13, SYS-19, SYS-24, SYS-25, SYS-29, RSK-02, RSK-03, RSK-11, RSK-12, RSK-18, RSK-19, RSK-20

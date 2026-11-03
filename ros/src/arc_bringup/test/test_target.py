@@ -1,10 +1,16 @@
-"""The platform comes up on a target: the target's backend starts and stays up.
+"""The platform comes up on a target: the target's backend and the platform
+nodes start and stay up. Logging follows the target's default: the car's run
+is recorded (into a temporary directory), the others are not. It also checks
+the default car configuration (twin): if that fails to load, the launch stops
+before anything starts.
 
 Run once per backend by CMakeLists.txt: target:=sim with each sim:=, then
 target:=replay and target:=car.
 """
 
+import re
 import sys
+import tempfile
 import unittest
 
 import launch_testing
@@ -29,7 +35,8 @@ def generate_test_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(platform),
             launch_arguments={'target': LaunchConfiguration('target'),
-                              'sim': LaunchConfiguration('sim')}.items()),
+                              'sim': LaunchConfiguration('sim'),
+                              'log_dir': tempfile.mkdtemp(prefix='arc_bringup_test_')}.items()),
         launch_testing.actions.ReadyToTest(),
     ])
 
@@ -44,7 +51,20 @@ def expected_backend():
 class TestBackendStarts(unittest.TestCase):
 
     def test_chosen_backend_reports_in(self, proc_output):
-        proc_output.assertWaitFor(f'{expected_backend()}: not implemented yet', timeout=30)
+        # its startup line; what follows the name depends on the backend
+        proc_output.assertWaitFor(f'{expected_backend()}: ', timeout=30)
+
+    def test_arc_control_reports_in(self, proc_output):
+        proc_output.assertWaitFor('arc_control: operator mode, waiting for teleop', timeout=30)
+
+    def test_arc_logging_follows_the_targets_default(self, proc_output):
+        on_car = dict(a.split(':=', 1) for a in sys.argv if ':=' in a).get('target') == 'car'
+        # the car logs by default: it records, or (on a test machine with less free
+        # space than min_free_gb, a full run's log) says it can't
+        expected = (re.compile(r'\[arc_logging_recorder\]: Recording\.\.\.'
+                               r'|arc_logging: NOT LOGGING: .* below min_free_gb')
+                    if on_car else 'arc_logging: not logging (log:=false)')
+        proc_output.assertWaitFor(expected_output=expected, timeout=30)
 
 
 @launch_testing.post_shutdown_test()

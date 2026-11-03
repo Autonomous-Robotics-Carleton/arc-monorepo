@@ -1,0 +1,5 @@
+# The ROS workspace's C++ follows the ROS 2 style as ament_uncrustify checks
+# it (ROS 2 developer guide, "Code style and language versions"), not
+# clang-format: the two disagree on wrapping, so clang-format stays off here.
+DisableFormat: true
+SortIncludes: Never

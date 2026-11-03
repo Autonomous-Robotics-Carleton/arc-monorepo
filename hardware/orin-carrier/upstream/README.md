@@ -1,11 +1,14 @@
 # Antmicro Baseboard for Jetson Orin
 
+> [!NOTE]
+> Historical upstream overview retained for provenance. The local reference CAD was removed on 2026-10-25; design-file descriptions below refer to the [pinned upstream source](https://github.com/antmicro/jetson-orin-baseboard/tree/34f0e7f5fbca441191e20ed55d93cf8614e12bed), not files currently vendored here.
+
 Copyright (c) 2022-2026 [Antmicro](https://www.antmicro.com)
 
 [![image](https://img.shields.io/badge/View%20on-Antmicro%20Open%20Hardware%20Portal-332d37?style=flat-square)](https://openhardware.antmicro.com/boards/jetson-orin-baseboard)
 [![image](https://img.shields.io/badge/View%20on-Antmicro%20Open%20Source%20Portal-332d37?style=flat-square)](https://opensource.antmicro.com/projects/jetson-orin-baseboard)
 
-![](img/jetson-orin-baseboard-photo.png)
+![](https://github.com/antmicro/jetson-orin-baseboard/blob/34f0e7f5fbca441191e20ed55d93cf8614e12bed/img/jetson-orin-baseboard-photo.png?raw=true)
 
 ## Overview
 

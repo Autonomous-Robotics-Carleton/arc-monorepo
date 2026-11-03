@@ -7,13 +7,13 @@ It's stock VESC firmware plus four additions:
 - **E-stop brake routine** (ADR-0012): reads ESTOP on a spare input (PPM, TBC) with the MCU's pull-down, ramps brake current to a target deceleration, and ignores CAN commands while the e-stop is active. This is a safety function: it needs its own test cases, and changes get extra review.
 - **Command timeout** (ADR-0035): no command on the CAN bus for 150 ms (TBC) brakes on the same ramp as the e-stop, replacing upstream's timeout (1000 ms, then 0 A: coasting). Also a safety function.
 - **UART telemetry** (ADR-0024, ADR-0034, ICD-controller-telemetry): MAVLink 2 `ARC_MOTOR_STATUS` at 1 kHz, including a `state` field that reports braking on e-stop or command timeout (ADR-0035), and `ARC_LINK_STATUS` at 1 Hz (message set in `systems/icd/sync-link.xml`), on the A50S's UART (USART3, PB10/PB11) to the sync MCU at 2 Mbit/s (exact with 16× oversampling from its 42 MHz clock); motor commands stay on the classic CAN bus. Each frame is built from the latest motor-control values at send time, with `time_ns` in the controller's clock. The telemetry thread runs at high thread priority; motor control runs in the ADC interrupt, which preempts every thread, and RSK-12 tracks what's left of the risk. UART transfers are to be DMA-driven, which needs upstream's serial driver off USART3. The MAVLink code isn't generated into this firmware yet.
-- **Speed limit** (ADR-0034): maximum eRPM ~75k (TBC), which keeps ≥ 10 control-loop samples per electrical cycle; stability up to it is checked on rig R2 (RSK-18).
+- **Speed limit** (ADR-0034): maximum eRPM ~75k (TBC), which keeps ≥ 10 control-loop samples per electrical cycle; stability up to it is checked on rig R2 (RSK-18). The firmware clamps the configured eRPM limits to it on every configuration change and timer tick, whatever VESC Tool or a configuration message sets. Upstream's eRPM limit is soft: it cuts back the motor current as the motor approaches the limit and truncates speed-mode setpoints. It doesn't brake, so it can't stop overspeed driven from outside (rolling downhill, being pushed). The bench sweep on rig R2 confirms how the motor behaves at the limit (RSK-18).
 
 **Don't touch the USB, CAN or firmware-upload code.** The running firmware receives uploads, so a build that breaks them can only be recovered over SWD (RSK-20).
 
 ## Upstream and updates (ADR-0033)
 
-Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. `bldc/` is unmodified so far: our additions are developed as modules in `arc/`, and the edits that join them to the build will be ordinary commits in `bldc/` (ADR-0037).
+Upstream `vedderb/bldc` is vendored into `bldc/` as a plain snapshot, at `release_7_00` (SQ-3). `UPSTREAM` records the repository, ref and commit it's based on. Our additions are modules in `arc/`; `bldc/` carries only the ordinary commits that join them to the build (ADR-0037): one line in `make/fw.mk` that includes `arc/arc.mk`, and the call sites, each marked with an `ARC` comment.
 
 ```bash
 tools/vesc-upstream.sh import <ref>   # first import: done, at release_7_00 (SQ-3)
@@ -28,9 +28,10 @@ The script stages its result but doesn't commit it; on conflicts it lists the fi
 
 | Path | What |
 | --- | --- |
-| `bldc/` | Upstream VESC firmware (unmodified so far; our edits will be ordinary commits) |
-| `arc/` | Our additions (e-stop, UART telemetry, speed limit; the command timeout to come) as modules with host tests. Stubs so far, fail-safe; each joins the firmware build in `bldc/` as it's implemented |
+| `bldc/` | Upstream VESC firmware, plus the hooks that join `arc/` to the build (marked `ARC`) |
+| `arc/` | Our additions (e-stop, UART telemetry, speed limit; the command timeout to come) as modules with host tests; `arc.mk` joins them to the firmware build. A module not implemented yet is a fail-safe stub |
 | `UPSTREAM` | The upstream commit `bldc/` is based on |
+| `motors/` | Each drive motor's detected configuration, by the label on the motor, and how to load it with VESC Tool after a corner swap (SYS-13) |
 
 ## Build and test
 

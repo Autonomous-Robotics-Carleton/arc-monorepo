@@ -1,0 +1,6 @@
+#!/usr/bin/env python3
+"""The arc_logging node (arc_logging/node.py)."""
+
+from arc_logging.node import main
+
+main()

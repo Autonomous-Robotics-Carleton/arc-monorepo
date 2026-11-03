@@ -2,6 +2,13 @@
   "title": "Software",
   "pages": [
     "index",
+    "handoff",
+    "architecture",
+    "simulation",
+    "renode-investigation",
+    "platform-plan",
+    "setup-plan",
+    "---Software code---",
     "ros",
     "firmware",
     "sync-mcu",

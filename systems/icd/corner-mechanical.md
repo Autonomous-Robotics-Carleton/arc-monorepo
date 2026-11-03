@@ -44,4 +44,11 @@ A corner is swapped as a unit (SYS-13). This document fixes everything the two s
 
 ## Swap procedure (SYS-13)
 
-TBD: tools, steps and time, demonstrated per the verification plan. Known step since ADR-0034: the controller stays on the deck, so after a swap it loads the new motor's saved configuration (resistance, inductance, flux, Hall table) with VESC Tool, or re-runs motor detection with the wheel off the ground (~1 min). Each motor is labelled and its configuration kept in the repo.
+TBD: tools, the mechanical steps and time, demonstrated per the verification plan.
+
+Known since ADR-0034: the controller stays on the deck, so the swap ends with a configuration step on the controller the new corner's motor is wired to. Each motor is labelled, and its detected configuration (resistance, inductance, flux, Hall table) is kept in the repo by that label, in [`firmware/vesc/motors/`](../../firmware/vesc/motors/README.md).
+
+1. *(Mechanical steps: TBD.)*
+2. Read the label on the new corner's motor and find its row in `motors.csv`.
+3. Load that motor's configuration into the controller with VESC Tool over USB, as [`firmware/vesc/motors/README.md`](../../firmware/vesc/motors/README.md) describes.
+4. A motor with no row (new, or rewound): run motor detection with the wheel off the ground (~1 min) instead, and add its row in a PR.

@@ -15,9 +15,10 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | `simulator/` | Gazebo simulator in Docker, standing in for the car; `run.sh --bridge` serves the ground station | Docker, ROS 2 |
 | `experiments/` | Team experiments and their template (scaffold) | |
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
-| `hardware/` | Board designs and mechanical exports (no boards started yet) | |
+| `hardware/` | Board designs and mechanical exports; Altium scaffolds (no circuitry yet) for the motherboard and sensor boards, imported by `tools/altium-sync/` | |
 | `platform/` | Jetson image and services; `dev-kit/` has notes for the Orin Nano dev kit (v1.0's computer) | |
-| `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, the firmware-in-the-loop test | Node, Bash |
+| `config/cars/` | One configuration file per car (ADR-0051): geometry, tyre, gearing, steering; read by ROS now, the sync MCU build later | YAML + JSON Schema |
+| `tools/` | Repo scripts: the `systems/` checker and ID lookup, interface code generation, VESC vendoring, Altium source sync, the firmware-in-the-loop test | Node, Bash |
 | `libs/systems-model/` | Parser for `systems/`: IDs, definitions, references, ADRs, checks | TypeScript |
 | `apps/docs/` | Docs site (Fumadocs on Next.js), docs.arcarleton.ca | MDX |
 | `apps/web/` | Club website (Next.js); its docs are in `apps/web/docs/` | |
@@ -28,7 +29,7 @@ Node 22 (`.nvmrc`); pnpm via `corepack enable`. It's an Nx workspace: run things
 
 ```bash
 pnpm install
-npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop
+npx nx show projects                     # docs, web, systems, systems-model, sync-mcu, vesc, ros, firmware-in-loop, altium-sync, car-config
 npx nx affected -t lint test check build # what CI runs, for your changes
 npx nx check systems                     # validate systems/ (links, IDs, ADRs, verification)
 npx nx test systems-model
@@ -75,7 +76,7 @@ Gotchas:
 
 ## Docs site
 
-- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology, the software overview and reference; MDX), `systems/` (→ `/docs/car`; its sidebar is `carSidebar` in `lib/source.ts`), the software READMEs in `ros/`, `firmware/`, `experiments/`, `platform/`, `tools/` and `libs/*/` (→ `/docs/software`; their page names and titles are `softwareReadmes` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
+- Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology, the software overview and reference; MDX), `systems/` (→ `/docs/car`, except the pages one discipline reads, which go to `/docs/electrical`, `/docs/mechanical` or `/docs/software`: `systemsPages`, their titles `systemsTitles` and their sidebars `systemsSidebar` in `lib/source.ts`; a moved page gets a redirect in `next.config.mjs`), the software READMEs in `ros/`, `firmware/`, `experiments/`, `platform/`, `tools/` and `libs/*/` (→ `/docs/software`; their page names and titles are `softwareReadmes` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
 - **A new source of pages** also goes in the docs build's `inputs` in `apps/docs/project.json`: that's how `nx affected` knows to rebuild the site when it changes.
 - **Software reference pages are generated at build time**: the message tables from `systems/icd/sync-link.xml` and `can-command.dbc`, and the project list from every `project.json` (`apps/docs/components/reference/`).
 - **Format:** MDX for site-written pages; plain Markdown for `systems/`, READMEs and `CONTRIBUTING.md`. Don't convert between them.
@@ -99,3 +100,4 @@ Gotchas:
 - Rebase on `origin/main`; never merge `main` into a branch, and don't use GitHub's "Update branch" (it creates a merge commit).
 - PRs use the template in `.github/pull_request_template.md`. They're merged **once**, with "Rebase and merge" (or "Squash and merge" for messy branches). If a PR's commits are already on `main`, close it instead.
 - Check `git status` before committing: files already staged by `git mv` or `git rm` get swept into the next commit.
+- **Engineering practices** (flaky tests, incidents become tests, releases, hardware runners, coverage) are in [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md#engineering-practices). Never re-run a flaky test until it passes: fix it or quarantine it.

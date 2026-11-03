@@ -62,7 +62,7 @@ BO_ 2147485956 STATUS_1_RR: 8 CTRL_RR
  SG_ current : 39|16@0- (0.1,0) [-3276.8|3276.7] "A" SYNC_MCU
  SG_ duty : 55|16@0- (0.001,0) [-1|1] "" SYNC_MCU
 
-CM_ "can-command: the classic CAN command bus between the sync MCU and the four motor controllers (ADR-0009, ADR-0034). Stock VESC frames from the vendored VESC firmware (release_7_00, comm/comm_can.c): extended IDs, big-endian. Controller IDs 1-4 = FL, FR, RL, RR (draft). The controllers send STATUS_1 only; STATUS_4 and STATUS_5 are not sent (2026-10-08): everything in them is in the UART telemetry.";
+CM_ "can-command: the classic CAN command bus between the sync MCU and the four motor controllers (ADR-0009, ADR-0034). Stock VESC frames from the vendored VESC firmware (release_7_00, comm/comm_can.c): extended IDs, big-endian. Controller IDs 1-4 = FL, FR, RL, RR (set 2026-10-26, #73). The controllers send STATUS_1 only; STATUS_4 and STATUS_5 are not sent (2026-10-08): everything in them is in the UART telemetry.";
 CM_ BO_ 2147483905 "VESC CAN_PACKET_SET_CURRENT: motor current (torque) command. Extended ID = (1 << 8) | controller ID.";
 CM_ BO_ 2147484161 "VESC CAN_PACKET_SET_CURRENT_BRAKE: braking current command.";
 CM_ BO_ 2147484417 "VESC CAN_PACKET_SET_RPM: electrical speed command.";

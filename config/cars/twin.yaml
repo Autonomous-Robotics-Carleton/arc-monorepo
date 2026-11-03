@@ -1,0 +1,5 @@
+# The digital twin's car (ADR-0047): the design values, unchanged. Overrides
+# here would make the twin differ from the design, so it has none.
+
+extends: nominal
+name: twin

@@ -1,6 +1,6 @@
 # ADR-0028: Every software component builds for simulation, development hardware and the car, from the same source
 
-- **Status:** Accepted, amended by ADR-0034 (VESC firmware targets: a stock A50S as development hardware, the A50S with our firmware on the car)
+- **Status:** Accepted, amended by ADR-0034 (VESC firmware targets: a stock A50S as development hardware, the A50S with our firmware on the car) and ADR-0047 (the targets split at the devices, not at the car interface: the same stack, firmware included, runs on every target)
 - **Date:** 2026-10-07
 - **Deciders:** Shrikar Vempati
 - **Traces to:** SYS-07, SYS-21, SYS-22, SYS-24, SYS-29, SYS-33, ADR-0011, ADR-0016, ADR-0017, ADR-0024, ADR-0030

@@ -1,0 +1,8 @@
+# ROS 2 Jazzy's apt packages, in one place for the dev container
+# (Dockerfile) and CI's arm64 ROS job (.github/workflows/ci-and-publish.yml).
+# One package per line; `#` starts a comment.
+ros-jazzy-ros-base
+ros-dev-tools
+ros-jazzy-rosbag2-storage-mcap
+ros-jazzy-launch-testing-ament-cmake
+python3-jsonschema

@@ -35,15 +35,30 @@ const config = {
       'tutorial-3': '',
       'knowledge-base': '',
       'linux-cheat': '',
+      // systems/ pages moved out of car/ into their discipline's section (2026-10-25)
+      'car/handoff/electrical': 'electrical',
+      'car/bom/electrical': 'electrical/bom',
+      'car/bom/motherboard-wiring': 'electrical/motherboard-wiring',
+      'car/bom/pcb-parts-selection': 'electrical/pcb-parts-selection',
+      'car/bom/pcb-component-breakdown': 'electrical/pcb-component-breakdown',
+      'car/bom/sensor-candidate-review': 'electrical/sensor-candidate-review',
+      'car/bom/jetson-carrier-reference-parts': 'electrical/jetson-carrier-parts',
+      'car/bom/total-electrical-cost': 'electrical/cost',
+      'car/bom/jlc-pcba-cost-estimate': 'electrical/pcb-funding-estimate',
+      'car/mechanical/layout-brief': 'mechanical/layout-brief',
+      'car/mechanical/cad-workflow': 'mechanical/cad-workflow',
+      'car/bom/mechanical': 'mechanical/bom',
+      'car/software/architecture': 'software/architecture',
+      'car/software/setup-plan': 'software/setup-plan',
     };
     return [
       // the site is all docs for now; not permanent, so / can become a landing page later
       { source: '/', destination: '/docs', permanent: false },
-      ...Object.entries(moved).map(([from, to]) => ({
-        source: `/docs/${from}`,
-        destination: to ? `/docs/${to}` : '/docs',
-        permanent: true,
-      })),
+      ...Object.entries(moved).flatMap(([from, to]) => [
+        { source: `/docs/${from}`, destination: to ? `/docs/${to}` : '/docs', permanent: true },
+        // the page as Markdown (rewrites below)
+        ...(from.startsWith('car/') ? [{ source: `/docs/${from}.md`, destination: `/docs/${to}.md`, permanent: true }] : []),
+      ]),
     ];
   },
   // /docs/<page>.md: each page as Markdown (app/docs-md)

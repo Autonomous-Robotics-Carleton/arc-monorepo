@@ -53,8 +53,8 @@ Options in `app/Kconfig`, set with `west build … -- -DCONFIG_<name>=<value>`:
 | Option | Default | |
 | --- | --- | --- |
 | `ARC_HEARTBEAT_TIMEOUT_MS` | 150 | Operator heartbeat timeout (SYS-04, TBC) |
-| `ARC_SYNC_LINK_PORT_RX` | 52000 | UDP port the sync MCU listens on (ICD-sync-link, TBC) |
-| `ARC_SYNC_LINK_PORT_TX` | 52001 | UDP port the Orin listens on (ICD-sync-link, TBC) |
+| `ARC_SYNC_LINK_PORT_RX` | 52000 | UDP port the sync MCU listens on (ICD-sync-link) |
+| `ARC_SYNC_LINK_PORT_TX` | 52001 | UDP port the Orin listens on (ICD-sync-link) |
 | `ARC_SYNC_LINK_PEER` | `127.0.0.1` | The Orin's address: localhost for `native_sim`; the car's is TBD |
 
 ## Flash (from your own computer, not the container)

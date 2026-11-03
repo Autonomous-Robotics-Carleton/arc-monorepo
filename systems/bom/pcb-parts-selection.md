@@ -23,7 +23,7 @@ This is the main-component selection list for schematic capture. It supplements 
 
 **PCB estimate per build (2026-10-16), before tax and including 30% contingency:** v1.0 (motherboard, optional clamp and the 17 sensor boards) **CAD $1,950.29**, a $2,000 allowance; v1.1 (the carrier) **CAD $1,201.54**, a $1,300 allowance. JLC's two-board minimum per factory-assembled design leaves one surplus board, not a second car. All 17 sensor boards are assembled in house. Bought compute, controllers, cameras, LiDAR, magnets and the external dump load are excluded. See the [PCB estimate and JLC pricing screenshots](jlc-pcba-cost-estimate.md#fabrication-evidence-and-design-assumptions) and the [USD/CAD model](../budgets/jlc-pcba-cost.csv); final BOM/CPL quotes remain TBC.
 
-The estimate separates [bare PCB fabrication, purchased parts and assembly costs](jlc-pcba-cost-estimate.md#bare-pcb-parts-and-assembly-cost-breakdown), with CAD working totals and the 30% contingency shown by category.
+The estimate separates [bare PCB fabrication, purchased parts and assembly costs](jlc-pcba-cost-estimate.md#v10-boards), with CAD working totals and the 30% contingency shown by category.
 
 ## Board map
 

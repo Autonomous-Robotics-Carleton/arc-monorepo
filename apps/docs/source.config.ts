@@ -5,6 +5,7 @@ import {
   frontmatterSchema,
   metaSchema,
 } from 'fumadocs-mdx/config';
+import { remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { resolve } from 'node:path';
 import { remarkSystemIds } from './lib/remark-system-ids';
 
@@ -69,6 +70,7 @@ export const toolsDocs = readmes('tools');
 export const libsDocs = readmes('libs', ['*/README.md']);
 export const platformDocs = readmes('platform');
 export const experimentsDocs = readmes('experiments');
+export const configDocs = readmes('config', ['cars/README.md']);
 
 // The page title is rendered by the layout, so a leading `# heading`
 // (which Markdown files keep for GitHub) would show twice. Its text is
@@ -132,6 +134,8 @@ export default defineConfig({
     remarkPlugins: [
       remarkLeadingH1,
       remarkGithubAlerts,
+      // ```mermaid blocks, drawn by components/Mermaid.tsx
+      remarkMdxMermaid,
       [remarkSystemIds, { systemsRoot: resolve('../../systems') }],
     ],
     valueToExport: ['headingTitle'],

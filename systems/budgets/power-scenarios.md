@@ -8,7 +8,7 @@
 
 | Quantity | Value | Source |
 | --- | --- | --- |
-| Car mass | 4–5 kg | A guess (2026-10-09). Every figure below that depends on mass rests on it; the mass budget (SYS-16) replaces it |
+| Car mass | 4.2 kg nominal, 4–5 kg range | A guess (2026-10-09; nominal 4.2 kg TBC, ADR-0057). Every figure below that depends on mass rests on it; the mass budget (SYS-16) replaces it. Braking current, stop time and braking energy use 5 kg, the safe side |
 | Top speed | 9 m/s | SYS-01 (ADR-0034) |
 | Wheel | ~Ø100 mm; rolling diameter not measured | ADR-0040, MQ-6 |
 | Gearing | 18:1: stage 1 16/64, stage 2 ~4.5:1 | `architecture.md` |
@@ -37,14 +37,14 @@
 - Per-rail fuse, switch and current sense; battery voltage and current monitoring; all logged (SYS-19).
 - Wall/battery ideal-diode OR-ing with no reboot on handover (SYS-14); wall feeds LV only.
 - Every regulator rated ≥ 30 V input, with TVS (RSK-06). Reverse-polarity protection.
-- E-stop circuit sources ESTOP to the four motor controllers (ADR-0012, ICD-corner-connector rev F), and after the delay T (TBC 2.4 s, after the ~1.9 s stop) switches off the motor bus to them (ADR-0034); the switched steering output goes off at T + ~1 s (ADR-0019).
+- E-stop circuit sources ESTOP to the four motor controllers (ADR-0012, ICD-corner-connector rev F), and after the delay T (TBC 2.8 s, after the ~2.3 s stop from the speed cap; ADR-0057) switches off the motor bus to them (ADR-0034); the switched steering output goes off at T + ~1 s (ADR-0019).
 - Aero fan, when it exists, comes off the motor bus with its own controller and fuse (SYS-15).
 
 **EE reconciliation (ADR-0044):** these are scenario inputs, not released component ratings. Recheck the Castle 1010's kV, pole count, current/gearing and runtime against them. The inherited resistor pair is not qualified for the revised upper regen estimate.
 
 ## Still needed from others
 
-- Mass and CG (SYS-16) to replace the 4–5 kg guess.
+- Mass and CG (SYS-16) to replace the 4.2 kg nominal and the 4–5 kg range.
 - Steering motor peak current (from the actuator design).
 - Actual camera/switch demand and selected supply rails; the Hokuyo current limits are now recorded in E-10. Recompute the LV load table after the carrier, UART interfaces and sensor supplies are selected.
 - Aero fan power (capstone).

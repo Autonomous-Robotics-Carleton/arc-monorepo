@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "project": "angle",
+  "source": "https://americas-carleton-university-autonomous-robotics-carle.365.altium.com/designs/B0EECA79-5052-4095-B203-15090846669F#design",
+  "files": {
+    "Angle-Sensor.SchDoc": "1f7817cd311db8d3872c84077b7e323eadd115af3e97dbb8914cce0a05e9ff4b",
+    "ARC-Sensor-Angle-AS5047P.PcbDoc": "e68b0eb99be65e2837b0b54e50961f53a98ed02a16b1acf9ac626ffe1c527b83",
+    "ARC-Sensor-Angle-AS5047P.PrjPcb": "b47e81102396e10aaef658eb69e0193c107f0bd2b42a7c8243651b8687c909b5"
+  }
+}

@@ -1,0 +1,4 @@
+# Upstream VESC firmware (ADR-0033): never reformat it, so upstream updates
+# (tools/vesc-upstream.sh) keep applying cleanly. Ours, not upstream's.
+DisableFormat: true
+SortIncludes: Never

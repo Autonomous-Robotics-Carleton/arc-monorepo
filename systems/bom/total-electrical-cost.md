@@ -85,7 +85,7 @@ Rates are screening modes from the vendors, not qualified operating points; the 
 | Quad OV9281 (v1.1) | 5120 × 720 RAW10, 40 fps | 1.475 | The stock kit's two 1 Gbit/s lanes are ~81% loaded with 10%, over SYS-24's 50%; interface fix and cost TBD |
 | GenX320 ×2 (v1.1) | Event stream | TBD | Rate depends on scene and settings |
 
-**v1.0 logging:** the stereo pair and B0223 packed losslessly to 10 bits write about **296 MB/s**, or **178 GB per 10-minute run**. SYS-24's 50% rule needs **≥ 591 MB/s sustained** from the 1 TB drive at installed temperature and fill. Check the drive's speed after its cache fills before buying. **v1.1 logging** depends on the GenX320 rate; size the 4 TB drive's sustained speed once it's known.
+**v1.0 logging:** the stereo pair and B0223 packed losslessly to 10 bits write about **296 MB/s**, or **178 GB per 10-minute run**, on runs that log the cameras (ADR-0056's `full` profile; other runs log a few MB/s). Nothing packs the frames to 10 bits yet: at 16 bits per pixel it's 1.6× this. SYS-24's 50% rule needs **≥ 591 MB/s sustained** from the 1 TB drive at installed temperature and fill. Check the drive's speed after its cache fills before buying. **v1.1 logging** depends on the GenX320 rate; size the 4 TB drive's sustained speed once it's known.
 
 ## Open items
 
@@ -96,6 +96,7 @@ Rates are screening modes from the vendors, not qualified operating points; the 
 | Quad camera bandwidth (RSK-01) | The stock kit exceeds SYS-24's 50% at full resolution; interface fix and cost TBD (v1.1) |
 | Castle 1010 stock | Only one shown in stock at GalliMods; confirm four before the v1.0 order |
 | 1 TB SSD | Choose a drive with DRAM and verified sustained writes |
+| Camera log bit depth | 10-bit packed or 16-bit frames in the log (ADR-0056); decide with the camera drivers, before the first `full` run |
 | Imports | Shipping, duty and brokerage on the UK and US orders TBC |
 | Contingency | Only the PCBs carry 30%; adding 10% on bought hardware would add about CAD $400 to v1.0 and $550 to v1.1 before tax |
 

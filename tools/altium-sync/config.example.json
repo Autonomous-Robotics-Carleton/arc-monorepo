@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "projects": {
+    "motherboard": "C:/Users/Public/Documents/Altium/ARC-Motherboard",
+    "angle": "C:/Users/Public/Documents/Altium/ARC-Sensor-Angle-AS5047P",
+    "imu": "C:/Users/Public/Documents/Altium/ARC-Sensor-IMU-ISM330DHCX",
+    "tof": "C:/Users/Public/Documents/Altium/ARC-Sensor-ToF"
+  }
+}

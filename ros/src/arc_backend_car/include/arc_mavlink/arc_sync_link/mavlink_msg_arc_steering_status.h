@@ -13,15 +13,16 @@ typedef struct __mavlink_arc_steering_status_t {
  float torque; /*< [N.m] Output torque estimate from q-axis current.*/
  float temp; /*< [degC] Controller temperature.*/
  uint8_t fault; /*<  moteus fault code; 0 is none.*/
+ uint8_t mode; /*<  The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.*/
 } mavlink_arc_steering_status_t;
 
-#define MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN 25
-#define MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN 25
-#define MAVLINK_MSG_ID_52005_LEN 25
-#define MAVLINK_MSG_ID_52005_MIN_LEN 25
+#define MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN 26
+#define MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN 26
+#define MAVLINK_MSG_ID_52005_LEN 26
+#define MAVLINK_MSG_ID_52005_MIN_LEN 26
 
-#define MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC 76
-#define MAVLINK_MSG_ID_52005_CRC 76
+#define MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC 95
+#define MAVLINK_MSG_ID_52005_CRC 95
 
 
 
@@ -29,25 +30,27 @@ typedef struct __mavlink_arc_steering_status_t {
 #define MAVLINK_MESSAGE_INFO_ARC_STEERING_STATUS { \
     52005, \
     "ARC_STEERING_STATUS", \
-    6, \
+    7, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_steering_status_t, time_ns) }, \
          { "angle", NULL, MAVLINK_TYPE_FLOAT, 0, 8, offsetof(mavlink_arc_steering_status_t, angle) }, \
          { "velocity", NULL, MAVLINK_TYPE_FLOAT, 0, 12, offsetof(mavlink_arc_steering_status_t, velocity) }, \
          { "torque", NULL, MAVLINK_TYPE_FLOAT, 0, 16, offsetof(mavlink_arc_steering_status_t, torque) }, \
          { "temp", NULL, MAVLINK_TYPE_FLOAT, 0, 20, offsetof(mavlink_arc_steering_status_t, temp) }, \
          { "fault", NULL, MAVLINK_TYPE_UINT8_T, 0, 24, offsetof(mavlink_arc_steering_status_t, fault) }, \
+         { "mode", NULL, MAVLINK_TYPE_UINT8_T, 0, 25, offsetof(mavlink_arc_steering_status_t, mode) }, \
          } \
 }
 #else
 #define MAVLINK_MESSAGE_INFO_ARC_STEERING_STATUS { \
     "ARC_STEERING_STATUS", \
-    6, \
+    7, \
     {  { "time_ns", NULL, MAVLINK_TYPE_UINT64_T, 0, 0, offsetof(mavlink_arc_steering_status_t, time_ns) }, \
          { "angle", NULL, MAVLINK_TYPE_FLOAT, 0, 8, offsetof(mavlink_arc_steering_status_t, angle) }, \
          { "velocity", NULL, MAVLINK_TYPE_FLOAT, 0, 12, offsetof(mavlink_arc_steering_status_t, velocity) }, \
          { "torque", NULL, MAVLINK_TYPE_FLOAT, 0, 16, offsetof(mavlink_arc_steering_status_t, torque) }, \
          { "temp", NULL, MAVLINK_TYPE_FLOAT, 0, 20, offsetof(mavlink_arc_steering_status_t, temp) }, \
          { "fault", NULL, MAVLINK_TYPE_UINT8_T, 0, 24, offsetof(mavlink_arc_steering_status_t, fault) }, \
+         { "mode", NULL, MAVLINK_TYPE_UINT8_T, 0, 25, offsetof(mavlink_arc_steering_status_t, mode) }, \
          } \
 }
 #endif
@@ -64,10 +67,11 @@ typedef struct __mavlink_arc_steering_status_t {
  * @param torque [N.m] Output torque estimate from q-axis current.
  * @param temp [degC] Controller temperature.
  * @param fault  moteus fault code; 0 is none.
+ * @param mode  The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_steering_status_pack(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg,
-                               uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault)
+                               uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault, uint8_t mode)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN];
@@ -77,6 +81,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack(uint8_t system_id, u
     _mav_put_float(buf, 16, torque);
     _mav_put_float(buf, 20, temp);
     _mav_put_uint8_t(buf, 24, fault);
+    _mav_put_uint8_t(buf, 25, mode);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);
 #else
@@ -87,6 +92,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack(uint8_t system_id, u
     packet.torque = torque;
     packet.temp = temp;
     packet.fault = fault;
+    packet.mode = mode;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);
 #endif
@@ -108,10 +114,11 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack(uint8_t system_id, u
  * @param torque [N.m] Output torque estimate from q-axis current.
  * @param temp [degC] Controller temperature.
  * @param fault  moteus fault code; 0 is none.
+ * @param mode  The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_steering_status_pack_status(uint8_t system_id, uint8_t component_id, mavlink_status_t *_status, mavlink_message_t* msg,
-                               uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault)
+                               uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault, uint8_t mode)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN];
@@ -121,6 +128,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack_status(uint8_t syste
     _mav_put_float(buf, 16, torque);
     _mav_put_float(buf, 20, temp);
     _mav_put_uint8_t(buf, 24, fault);
+    _mav_put_uint8_t(buf, 25, mode);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);
 #else
@@ -131,6 +139,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack_status(uint8_t syste
     packet.torque = torque;
     packet.temp = temp;
     packet.fault = fault;
+    packet.mode = mode;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);
 #endif
@@ -155,11 +164,12 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack_status(uint8_t syste
  * @param torque [N.m] Output torque estimate from q-axis current.
  * @param temp [degC] Controller temperature.
  * @param fault  moteus fault code; 0 is none.
+ * @param mode  The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.
  * @return length of the message in bytes (excluding serial stream start sign)
  */
 static inline uint16_t mavlink_msg_arc_steering_status_pack_chan(uint8_t system_id, uint8_t component_id, uint8_t chan,
                                mavlink_message_t* msg,
-                                   uint64_t time_ns,float angle,float velocity,float torque,float temp,uint8_t fault)
+                                   uint64_t time_ns,float angle,float velocity,float torque,float temp,uint8_t fault,uint8_t mode)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN];
@@ -169,6 +179,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack_chan(uint8_t system_
     _mav_put_float(buf, 16, torque);
     _mav_put_float(buf, 20, temp);
     _mav_put_uint8_t(buf, 24, fault);
+    _mav_put_uint8_t(buf, 25, mode);
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), buf, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);
 #else
@@ -179,6 +190,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack_chan(uint8_t system_
     packet.torque = torque;
     packet.temp = temp;
     packet.fault = fault;
+    packet.mode = mode;
 
         memcpy(_MAV_PAYLOAD_NON_CONST(msg), &packet, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);
 #endif
@@ -197,7 +209,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_pack_chan(uint8_t system_
  */
 static inline uint16_t mavlink_msg_arc_steering_status_encode(uint8_t system_id, uint8_t component_id, mavlink_message_t* msg, const mavlink_arc_steering_status_t* arc_steering_status)
 {
-    return mavlink_msg_arc_steering_status_pack(system_id, component_id, msg, arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault);
+    return mavlink_msg_arc_steering_status_pack(system_id, component_id, msg, arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault, arc_steering_status->mode);
 }
 
 /**
@@ -211,7 +223,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_encode(uint8_t system_id,
  */
 static inline uint16_t mavlink_msg_arc_steering_status_encode_chan(uint8_t system_id, uint8_t component_id, uint8_t chan, mavlink_message_t* msg, const mavlink_arc_steering_status_t* arc_steering_status)
 {
-    return mavlink_msg_arc_steering_status_pack_chan(system_id, component_id, chan, msg, arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault);
+    return mavlink_msg_arc_steering_status_pack_chan(system_id, component_id, chan, msg, arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault, arc_steering_status->mode);
 }
 
 /**
@@ -225,7 +237,7 @@ static inline uint16_t mavlink_msg_arc_steering_status_encode_chan(uint8_t syste
  */
 static inline uint16_t mavlink_msg_arc_steering_status_encode_status(uint8_t system_id, uint8_t component_id, mavlink_status_t* _status, mavlink_message_t* msg, const mavlink_arc_steering_status_t* arc_steering_status)
 {
-    return mavlink_msg_arc_steering_status_pack_status(system_id, component_id, _status, msg,  arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault);
+    return mavlink_msg_arc_steering_status_pack_status(system_id, component_id, _status, msg,  arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault, arc_steering_status->mode);
 }
 
 /**
@@ -238,10 +250,11 @@ static inline uint16_t mavlink_msg_arc_steering_status_encode_status(uint8_t sys
  * @param torque [N.m] Output torque estimate from q-axis current.
  * @param temp [degC] Controller temperature.
  * @param fault  moteus fault code; 0 is none.
+ * @param mode  The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.
  */
 #ifdef MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
-static inline void mavlink_msg_arc_steering_status_send(mavlink_channel_t chan, uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault)
+static inline void mavlink_msg_arc_steering_status_send(mavlink_channel_t chan, uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault, uint8_t mode)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char buf[MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN];
@@ -251,6 +264,7 @@ static inline void mavlink_msg_arc_steering_status_send(mavlink_channel_t chan, 
     _mav_put_float(buf, 16, torque);
     _mav_put_float(buf, 20, temp);
     _mav_put_uint8_t(buf, 24, fault);
+    _mav_put_uint8_t(buf, 25, mode);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_STEERING_STATUS, buf, MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC);
 #else
@@ -261,6 +275,7 @@ static inline void mavlink_msg_arc_steering_status_send(mavlink_channel_t chan, 
     packet.torque = torque;
     packet.temp = temp;
     packet.fault = fault;
+    packet.mode = mode;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_STEERING_STATUS, (const char *)&packet, MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC);
 #endif
@@ -274,7 +289,7 @@ static inline void mavlink_msg_arc_steering_status_send(mavlink_channel_t chan, 
 static inline void mavlink_msg_arc_steering_status_send_struct(mavlink_channel_t chan, const mavlink_arc_steering_status_t* arc_steering_status)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
-    mavlink_msg_arc_steering_status_send(chan, arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault);
+    mavlink_msg_arc_steering_status_send(chan, arc_steering_status->time_ns, arc_steering_status->angle, arc_steering_status->velocity, arc_steering_status->torque, arc_steering_status->temp, arc_steering_status->fault, arc_steering_status->mode);
 #else
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_STEERING_STATUS, (const char *)arc_steering_status, MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC);
 #endif
@@ -288,7 +303,7 @@ static inline void mavlink_msg_arc_steering_status_send_struct(mavlink_channel_t
   is usually the receive buffer for the channel, and allows a reply to an
   incoming message with minimum stack space usage.
  */
-static inline void mavlink_msg_arc_steering_status_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault)
+static inline void mavlink_msg_arc_steering_status_send_buf(mavlink_message_t *msgbuf, mavlink_channel_t chan,  uint64_t time_ns, float angle, float velocity, float torque, float temp, uint8_t fault, uint8_t mode)
 {
 #if MAVLINK_NEED_BYTE_SWAP || !MAVLINK_ALIGNED_FIELDS
     char *buf = (char *)msgbuf;
@@ -298,6 +313,7 @@ static inline void mavlink_msg_arc_steering_status_send_buf(mavlink_message_t *m
     _mav_put_float(buf, 16, torque);
     _mav_put_float(buf, 20, temp);
     _mav_put_uint8_t(buf, 24, fault);
+    _mav_put_uint8_t(buf, 25, mode);
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_STEERING_STATUS, buf, MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC);
 #else
@@ -308,6 +324,7 @@ static inline void mavlink_msg_arc_steering_status_send_buf(mavlink_message_t *m
     packet->torque = torque;
     packet->temp = temp;
     packet->fault = fault;
+    packet->mode = mode;
 
     _mav_finalize_message_chan_send(chan, MAVLINK_MSG_ID_ARC_STEERING_STATUS, (const char *)packet, MAVLINK_MSG_ID_ARC_STEERING_STATUS_MIN_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN, MAVLINK_MSG_ID_ARC_STEERING_STATUS_CRC);
 #endif
@@ -380,6 +397,16 @@ static inline uint8_t mavlink_msg_arc_steering_status_get_fault(const mavlink_me
 }
 
 /**
+ * @brief Get field mode from arc_steering_status message
+ *
+ * @return  The moteus-c1's mode register: 0 stopped, 1 fault, 10 position, 11 position timeout, 15 brake; the full list is mjbots' reference.
+ */
+static inline uint8_t mavlink_msg_arc_steering_status_get_mode(const mavlink_message_t* msg)
+{
+    return _MAV_RETURN_uint8_t(msg,  25);
+}
+
+/**
  * @brief Decode a arc_steering_status message into a struct
  *
  * @param msg The message to decode
@@ -394,6 +421,7 @@ static inline void mavlink_msg_arc_steering_status_decode(const mavlink_message_
     arc_steering_status->torque = mavlink_msg_arc_steering_status_get_torque(msg);
     arc_steering_status->temp = mavlink_msg_arc_steering_status_get_temp(msg);
     arc_steering_status->fault = mavlink_msg_arc_steering_status_get_fault(msg);
+    arc_steering_status->mode = mavlink_msg_arc_steering_status_get_mode(msg);
 #else
         uint8_t len = msg->len < MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN? msg->len : MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN;
         memset(arc_steering_status, 0, MAVLINK_MSG_ID_ARC_STEERING_STATUS_LEN);

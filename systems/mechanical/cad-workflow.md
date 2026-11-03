@@ -25,13 +25,17 @@ One top-level assembly, with each subsystem as its own design inserted by refere
 ARC Car (project)
 ├── 00 Car                 top-level assembly: references only, no geometry
 ├── 01 Parameters          the shared dimensions below, as user parameters
-├── 10 Corner FL / FR / RL / RR   motor, gearbox, CVD, encoders (FL/FR also steering)
-├── 20 Lower tub           printed tub sections, splice plates, battery bay, floor window
+├── 10 Corner FL / FR / RL / RR
+│                          motor, gearbox, CVD, encoders (FL/FR also steering)
+├── 20 Lower tub           printed tub sections, splice plates, battery bay,
+│                          floor window
 ├── 30 Upper deck          hole grid, compute bay
 ├── 40 Steering            actuator, belt, linkage
 ├── 50 Sensor mounts       LiDAR + crash guard, stereo bar, cameras, antennas
-├── 60 Electronics         board envelopes (STEP from the EE's KiCad; the A50S motor controllers from Triforce's), harness routing space
-└── 90 Purchased parts     motors, suspension parts, wheels, bearings: vendor models or envelopes
+├── 60 Electronics         board envelopes (STEP from the EE's KiCad; the A50S
+│                          motor controllers from Triforce's), harness routing space
+└── 90 Purchased parts     motors, suspension parts, wheels, bearings: vendor
+                           models or envelopes
 ```
 
 - **One owner per design.** Change someone else's design by asking them, or through the ICD.

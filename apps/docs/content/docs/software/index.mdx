@@ -3,48 +3,34 @@ title: Overview
 description: How the car's software fits together, what runs where, and where each part is documented.
 ---
 
-The car's software runs on four kinds of computer, plus the operator's laptop. This page is the map. The design and the decisions behind it are in the [software architecture](../../../../../systems/software/architecture.md); each part's own page in this section is the README next to its code.
+The car's software, from the sync MCU's firmware to the operator's ground station. Start with the design pages below; each code page after them is the README next to that code.
 
 <Callout type="warn" title="Mostly scaffolding">
-Every component builds, starts and runs in CI, and the sync MCU firmware and the ROS car backend already link up over the sync link. Almost nothing else is implemented yet: each page says what works and what's a stub. Open work is indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110).
+Every component builds, starts and runs in CI, and the sync MCU firmware and the ROS car backend already link up over the sync link. Almost nothing else is implemented yet: each page says what works and what's a stub. What's left, in order, is the [platform plan](../../../../../systems/software/platform-plan.md); open work is indexed in [#110](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/110).
 </Callout>
+
+## Where to start
+
+<Cards>
+  <Card title="Software architecture" href="../../../../../systems/software/architecture.md" description="New here? What runs where, how a command and a sensor sample travel, what happens when the heartbeat stops, and a glossary." />
+  <Card title="Software handoff" href="../../../../../systems/handoff/software.md" description="Per component: what's decided, what exists, what's open. Where to pick up work." />
+  <Card title="Simulation (digital twin)" href="../../../../../systems/software/simulation.md" description="How the whole car runs on a laptop: the real software against models of the devices and the world." />
+  <Card title="Platform plan" href="../../../../../systems/software/platform-plan.md" description="What needs to get done, in four phases, and which issue to start with for what you like working on." />
+</Cards>
+
+The [setup plan](../../../../../systems/software/setup-plan.md) records how the repo was scaffolded.
 
 ## What runs where
 
 | Computer | Software | Page |
 | --- | --- | --- |
-| Operator's laptop | Ground station: teleop and the operator heartbeat. Nothing exists yet ([#71](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/71)) | — |
-| Jetson Orin (the Orin Nano Super dev kit on v1.0, the Orin NX on v1.1) | ROS 2 Jazzy platform software, with one backend per target; experiments in containers | [ROS workspace](../../../../../ros/README.md), [Experiments](../../../../../experiments/README.md), [Platform](../../../../../platform/README.md) |
+| Operator's laptop | The ground station: teleop, the operator heartbeat, telemetry. Not in the repo yet ([#71](https://github.com/Autonomous-Robotics-Carleton/arc-monorepo/issues/71)); a working version is on branch `yufeng/ground-station` | — |
+| Jetson Orin (the Orin Nano Super dev kit on v1.0, the Orin NX on v1.1) | ROS 2 Jazzy platform software; experiments in containers | [ROS workspace](../../../../../ros/README.md), [Experiments](../../../../../experiments/README.md), [Platform](../../../../../platform/README.md) |
 | Sync MCU (STM32H723) | Zephyr firmware: the time base, sensor sampling, the safety functions, both CAN buses, the links to the Orin and the motor controllers | [Sync MCU firmware](../../../../../firmware/sync-mcu/README.md) |
 | 4 × A50S motor controllers | Upstream VESC firmware plus our e-stop routine, command timeout, UART telemetry and speed limit | [Motor controller firmware](../../../../../firmware/vesc/README.md) |
 | moteus-c1 steering controller | mjbots' firmware; only its configuration is ours (ADR-0019) | [Firmware](../../../../../firmware/README.md) |
 
 Developer tools (code generation, the `systems/` checker, the firmware-in-the-loop test) are in [Tools](../../../../../tools/README.md) and the [systems-model library](../../../../../libs/systems-model/README.md).
-
-## How data and commands move
-
-**Sensor data**
-
-1. The vehicle-state sensors (IMUs, wheel, suspension and steering encoders, ride height) are wired to the sync MCU, which timestamps every sample in its own clock (ADR-0021).
-2. Each motor controller streams its full status at 1 kHz over its own UART; the steering controller answers on the steering bus.
-3. The sync MCU forwards every sample to the Orin within 0.25 ms (ADR-0024), over Ethernet: UDP, encoded as MAVLink 2 (ADR-0031). The ROS car backend receives it; that's where sensor latency is measured (SYS-29).
-4. The cameras and the LiDAR connect to the Orin directly. The sync MCU triggers the cameras, so their frames line up with its clock.
-
-**Commands**
-
-1. A policy (an experiment or the classical controller) commands through the car interface, the ROS messages in `arc_msgs` (not defined yet). Experiments never command the motors directly (SYS-22).
-2. The car backend sends `ARC_DRIVE_COMMAND` to the sync MCU.
-3. The sync MCU clamps it to the safety envelope and sends it on: to the motor controllers on the classic CAN command bus, and to the steering controller on the CAN-FD steering bus.
-
-**Safety.** Nothing safety-related runs on the Orin. Each layer works without the ones above it:
-
-| Layer | Runs on | What it does |
-| --- | --- | --- |
-| E-stop | The button on the car, each motor controller's firmware, the power board | Brakes on a ramp, then the power board cuts motor power (ADR-0012, ADR-0034) |
-| Command timeout | Each motor controller | Brakes on the same ramp when commands stop arriving, e.g. if the sync MCU hangs (ADR-0035) |
-| Heartbeat watchdog | Sync MCU | Brakes when the operator's heartbeat stops (SYS-04) |
-| Safety envelope | Sync MCU | Limits speed, acceleration and steering, whatever is commanded (SYS-22) |
-| Any-corner stop | Sync MCU | Stops all four corners when one corner, the command bus or the steering fails, and stays stopped until it's reset at the car (SYS-25, ADR-0035, ADR-0038, ADR-0039) |
 
 ## Running it
 

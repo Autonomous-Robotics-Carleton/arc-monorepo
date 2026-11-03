@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "project": "tof",
+  "source": "https://americas-carleton-university-autonomous-robotics-carle.365.altium.com/designs/1CE3083D-9559-41D0-BFD7-DBE654C9101D#design",
+  "files": {
+    "ARC-Sensor-ToF.PcbDoc": "0dcf4f855365526fc199c83cb7c6b9a1c9aed8058730aad25ebed581d15a8d3b",
+    "ARC-Sensor-ToF.PrjPcb": "28b288aeaae74e93f9aa55622a5bd3e21fe95f9ab22fad81a28b334f05930a3e",
+    "ToF-Sensor.SchDoc": "37ad3d2224ddf3e48fc5e1bb782daa7b466716fbdb503fcc3e94a0ea4be8cbab"
+  }
+}

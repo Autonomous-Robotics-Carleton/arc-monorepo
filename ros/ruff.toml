@@ -1,0 +1,17 @@
+# The ROS workspace's Python follows the ROS 2 style that ament_flake8 checks
+# (single quotes, Google import order) and isn't auto-formatted: ruff's
+# formatter would rewrap every LaunchDescription([...]) list.
+extend = "../ruff.toml"
+
+[format]
+exclude = ["**"]
+quote-style = "single"  # unused while excluded; keeps it consistent with the lint rule
+
+[lint]
+extend-select = ["Q"]
+
+[lint.flake8-quotes]
+inline-quotes = "single"
+
+[lint.isort]
+force-sort-within-sections = true  # Google order: `import x` and `from x import y` sorted together

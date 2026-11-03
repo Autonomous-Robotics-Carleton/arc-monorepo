@@ -6,15 +6,17 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 | --- | --- | --- | --- | --- |
 | [corner-connector](corner-connector.md) | Corner (motor, gearbox) | Chassis harness / motor controllers on the deck / sync board / e-stop | Markdown | Draft (rev F; approvals pending) |
 | [corner-mechanical](corner-mechanical.md) | Corner (motor, gearbox) | Chassis | Markdown + CAD | Draft (outline) |
-| [can-command](can-command.dbc) | Sync MCU | Motor controllers (classic CAN, ADR-0009) | `can-command.dbc`: stock VESC frames | Draft |
-| [controller-telemetry](controller-telemetry.md) | Motor controllers | Sync MCU (four independent UARTs; ADR-0034) | Markdown; MAVLink 2, the ARC message set in `sync-link.xml` | Draft active UART interface; implementation / qualification pending |
+| [can-command](can-command.dbc) | Sync MCU | Motor controllers (classic CAN, ADR-0009) | `can-command.dbc`: stock VESC frames | Reviewed (2026-10-26, #73) |
+| [controller-telemetry](controller-telemetry.md) | Motor controllers | Sync MCU (four independent UARTs; ADR-0034) | Markdown; MAVLink 2, the ARC message set in `sync-link.xml` | Message set and IDs reviewed (2026-10-26, #73); implementation / qualification pending |
 | [power-rails](power-rails.md) | Power board | Every load | Markdown (voltage, current, sequencing, fusing) | Draft (rev A; approvals pending) |
 | [power-sync-stack](power-sync-stack.md) | Motherboard power section | Motherboard sync section | Markdown (internal signals; ADR-0042) | Draft (rev B; approvals pending) |
 | [carrier-sync](carrier-sync.md) | Orin carrier | Sync board | Markdown (triggers, PPS/PTP, Ethernet) | Draft (rev A; approvals pending) |
-| [sync-link](sync-link.md) | Sync MCU firmware | Sync bridge on the Orin (`arc_backend_car`) | UDP; MAVLink 2 (ADR-0031), message set in `sync-link.xml` | Draft |
-| ros2-msgs | Backends (sim, replay, car; ADR-0028) | ROS 2 stack | `.msg` files | TBD |
+| [sync-link](sync-link.md) | Sync MCU firmware | Sync bridge on the Orin (`arc_backend_car`) | UDP; MAVLink 2 (ADR-0031), message set in `sync-link.xml` | Message set reviewed (2026-10-26, #73) |
+| [network](network.md) | The car (Orin, sync MCU, LiDAR, switch) | Ground equipment (team router, laptops; ADR-0015) | Markdown (networks, addresses, ports, rates) | Draft (rev A) |
+| [ros2-msgs](ros2-msgs.md) | The car backend and the Orin's drivers (ADR-0028, ADR-0047) | Platform nodes, experiments, the ground station | ROS 2 topics; `.msg` files in `ros/src/arc_msgs/` | Topics, types and QoS reviewed (2026-10-29, #84); measured values TBC |
 | steering-bus | Sync MCU | Steering controller (moteus-c1, CAN-FD, ADR-0019) | Markdown (moteus register protocol, rates, timeout mode) | TBD |
 | operator-link | Laptop | Orin (heartbeat, teleop; ADR-0015, SYS-04) | Markdown | TBD |
+| sim-link | Simulator (device models) | Sync MCU firmware on `native_sim` only (ADR-0047; `software/simulation.md`) | MAVLink 2 or Zephyr device emulators, TBD | TBD |
 | battery-pack | Car (battery bay, power input, per-cell monitor) | Charging station | Markdown (pack form factor, main connector, balance connector (4S JST-XH 5-pin assumed, TBC) which the car also uses for cell monitoring, chemistry and cell count) | TBD |
 | [deck-grid](deck-grid.md) | Chassis | Sensor mounts | Markdown + CAD | Draft (outline) |
 

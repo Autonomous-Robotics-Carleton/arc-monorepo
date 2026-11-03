@@ -1,0 +1,89 @@
+// NUCLEO-H723ZG for Renode, derived from Renode's own NUCLEO-H753ZI.
+// Renode has no STM32H723 platform; this reuses its STM32H7 model and adds
+// what the H723 and this board need. Findings and what's still missing:
+// systems/software/renode-investigation.md.
+using "platforms/boards/nucleo_h753zi.repl"
+
+// FDCAN3 (H72x/H73x only). Addresses and interrupts from Zephyr's
+// stm32h723.dtsi; it shares FDCAN1/2's message RAM.
+fdcan3: CAN.MCAN @ sysbus 0x4000D400
+    Line0 -> nvic@159
+    Line1 -> nvic@160
+    Calibration -> nvic@63
+    messageRAM: canMessageRAM
+
+// SPI1, the one the NUCLEO-H723ZG devicetree enables (Renode's H7 platform
+// models only SPI4; SPI2, 3, 5 and 6 are still unmodelled).
+// Transfers complete; mode, speed and timing aren't modelled.
+spi1: SPI.STM32H7_SPI @ {
+        sysbus 0x40013000;
+        rcc RegistrationPeripheralAlias.SPI1
+    }
+    IRQ -> nvic@35
+
+// Renode's PWR stub, plus CR2 reading back BREN (bit 0) set: Zephyr's backup
+// SRAM driver (enabled in the NUCLEO-H723ZG's devicetree) waits on it at boot.
+pwr:
+    script: '''
+if request.Offset == 0x00: # CR1: reset value + DBP (b8)
+    request.Value = 0xF000C100
+elif request.Offset == 0x04: # CSR1: ACTVOSRDY (b13)
+    request.Value = 0x6000
+elif request.Offset == 0x08: # CR2: BREN (b0)
+    request.Value = 0x1
+elif request.Offset == 0x0C: # CR3: USB33RDY (b26)
+    request.Value = 0x4000000
+elif request.Offset == 0x18: # D3CR: VOSRDY (b13)
+    request.Value = 0x2000
+else:
+    self.WarningLog("Unhandled access to offset 0x{0:X}", request.Offset)
+'''
+
+// Clocks. Renode's STM32H7 model fixes the timer clocks at 250 MHz; Zephyr's
+// NUCLEO-H723ZG devicetree sets APB1 and APB2 to 137.5 MHz, so their timers
+// run at 275 MHz. The DWT cycle counter runs at the 550 MHz core clock. SysTick needs nothing here: Renode's RCC model derives it from
+// the PLL settings the firmware writes.
+dwt:
+    frequency: 550000000
+
+timer1:
+    frequency: 275000000
+
+timer2:
+    frequency: 275000000
+
+timer3:
+    frequency: 275000000
+
+timer4:
+    frequency: 275000000
+
+timer5:
+    frequency: 275000000
+
+timer6:
+    frequency: 275000000
+
+timer7:
+    frequency: 275000000
+
+timer8:
+    frequency: 275000000
+
+timer12:
+    frequency: 275000000
+
+timer13:
+    frequency: 275000000
+
+timer14:
+    frequency: 275000000
+
+timer15:
+    frequency: 275000000
+
+timer16:
+    frequency: 275000000
+
+timer17:
+    frequency: 275000000

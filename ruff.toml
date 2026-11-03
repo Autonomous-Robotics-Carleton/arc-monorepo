@@ -1,0 +1,11 @@
+# Python style for tools/ and experiments/: ruff's defaults (the Black style,
+# double quotes) at the ROS 2 line length. ros/ has its own ruff.toml.
+line-length = 99
+target-version = "py312"  # Ubuntu 24.04, ROS 2 Jazzy
+
+# Never ours to format: upstream VESC (ADR-0033)
+extend-exclude = ["firmware/vesc/bldc"]
+
+[lint]
+# A small rule set to start: pycodestyle, pyflakes, import order
+select = ["E", "W", "F", "I"]

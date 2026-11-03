@@ -46,7 +46,7 @@ The starting point for the electrical engineer. It collects, per board, what's d
   - Wall (19 V) / battery ideal-diode OR-ing with no reboot.
   - Regulators rated ≥ 30 V with TVS.
   - E-stop circuit sourcing ESTOP to the four A50S (ADR-0012).
-  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC 2.4 s: after the ~1.9 s stop from 9 m/s, with margin), rated for peak pack current (`budgets/power-scenarios.md`).** This is the hardware torque cut (ADR-0034). **It opens when unpowered**, so a dead e-stop circuit also cuts the bus. A broken ESTOP wire to one controller brakes that corner, which reports it in its telemetry, and the sync MCU stops the car (SYS-25, ADR-0035) without the cut; accepted, so no per-line wire detection is needed.
+  - **Switched motor bus to the four drive controllers, cut by the delayed e-stop line at T (TBC 2.8 s: after the ~2.3 s stop from the speed cap, with margin; ADR-0057. Its tolerance is TBD, with the longest delay within SYS-05's 3 s), rated for peak pack current (`budgets/power-scenarios.md`).** This is the hardware torque cut (ADR-0034). **It opens when unpowered**, so a dead e-stop circuit also cuts the bus. A broken ESTOP wire to one controller brakes that corner, which reports it in its telemetry, and the sync MCU stops the car (SYS-25, ADR-0035) without the cut; accepted, so no per-line wire detection is needed.
   - Switched, fused motor-bus output for steering, cut at T + ~1 s (ADR-0019).
   - Bus clamp on the motor distribution bus.
   - Per-cell battery monitor through the balance lead, ≥ 100 Hz to ±10 mV, data to the sync MCU (SYS-32, E-46).
@@ -167,4 +167,4 @@ The [wiring diagram and count schedule](../bom/motherboard-wiring.md) propose 17
 | **Mass and CG** (SYS-16) | Mechanical | Power scenarios, bus clamp, pack choice |
 | Steering motor peak current | Mechanical (actuator design) | Steering switched output |
 | Aero fan power (SYS-15) | Capstone | Motor bus reserve |
-| ICD owners and sign-offs (corner connector, controller telemetry, can-command, sync link, corner mechanical, deck grid, power-rails, power-sync-stack and carrier-sync; the last three now have draft logical contracts) | Team | Fab gate |
+| ICD owners and sign-offs (corner connector, corner mechanical, deck grid, power-rails, power-sync-stack and carrier-sync; the last three now have draft logical contracts) | Team | Fab gate |

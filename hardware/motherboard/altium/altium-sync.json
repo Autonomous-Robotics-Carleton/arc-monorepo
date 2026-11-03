@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "project": "motherboard",
+  "source": "https://americas-carleton-university-autonomous-robotics-carle.365.altium.com/designs/435E9B62-9567-4537-918E-7E4772E07F96#design",
+  "files": {
+    "00-System-Overview.SchDoc": "60f306eaf79e92ea310c0f1e446e2b65a0f01ee3e028146c85a3b59080bf8abc",
+    "01-Input-Protection-ORing.SchDoc": "c5ff683cd902699befea337538acd5933e72c6f5434e1067296fdabfc8ab7fd3",
+    "02-Power-Rails.SchDoc": "919d914170927e647de4526b9e5b4254c9ebd9413ea3cdbc998215340066bb40",
+    "03-Drive-Steering-Power.SchDoc": "b72ab6dbd76d3ffea11d5bf2058abe923fe4fadc34eb32d4474cca9602cac3a3",
+    "04-EStop-Watchdog.SchDoc": "652871b3984adadc615c75e15a8a2368efc84bca8f4bf4e54bb4bc5ad2a0f208",
+    "05-Battery-Power-Monitoring.SchDoc": "1ef2a133eeb52c6629cd90eb74247d51d5afb1197fe2c893ac15d3814e0da3bd",
+    "06-Compute-Shutdown.SchDoc": "fd3cc353ef744b4351e748674efb293bff76f4903ec738d809354a1c66ab55a9",
+    "07-Sync-MCU.SchDoc": "09eacb1e5e3cc207184d1bbb6cc64a17186015f05f77f0470ab409bc11eb62af",
+    "08-Ethernet.SchDoc": "e42e81040c5c8e0d0b5f446bf50518e0996395c66d705b0075dc67fdfb42ef0c",
+    "09-Drive-CAN-UART.SchDoc": "d58d7e52edd5e781de606729217f67ac16e0457d853c5a8875d8e8d2f32be65d",
+    "10-Steering-CANFD.SchDoc": "b4b6c62b89b74280bdd2915394cefeba19bbf874b9a4bec709ecd1e1021b7760",
+    "11-Angle-IMU-Interfaces.SchDoc": "a25c9f609dc028f283e52345f4bf8592d1e4563f374b352015fd0c240c0d060d",
+    "12-ToF-Interfaces.SchDoc": "0b332f64eb915bc1c7729d67520defbf9bb99aba2aa9bbcee99b4638a994369b",
+    "13-Camera-Carrier-Sync.SchDoc": "19b0103f9dc9bbd1ab3bcb214e0acfff1620ee599183cd58b8b95c8965d9306d",
+    "14-Lighting-Status-Controls.SchDoc": "08383917d871b5d80b47d9fcf71eea5c2d61a2ef6134e62106fd465dce352771",
+    "ARC-Motherboard.PcbDoc": "05f0bef03e612864ecfaa687a152befdcd640b6697b759390d7cb6a95c379fcc",
+    "ARC-Motherboard.PrjPcb": "fa23050879f926095072c66aeb011c91e8f08a1bf92f11e83779fc9b9fcddf92"
+  }
+}

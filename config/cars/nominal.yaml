@@ -1,0 +1,26 @@
+# The car as designed: every car file extends this one and overrides what it
+# measured (README.md). SI units: m, rad.
+#
+# Each value says where it comes from. "Placeholder" means nothing in systems/
+# sets it yet: replace it when the CAD block layout (#103) or a measurement does.
+
+name: nominal
+build: v1.1  # the design; v1.0 differs only where its own file says so
+
+geometry:
+  wheelbase: 0.340    # placeholder: M2's starting range, 330-350 mm (mechanical/cad-workflow.md)
+  track_front: 0.280  # placeholder: inside SYS-02's 238-341 mm width with ~42 mm tyres (ADR-0027)
+  track_rear: 0.280   # placeholder: as the front
+
+wheels:
+  rolling_diameter: 0.100  # ADR-0040's ~100 mm wheel; the real tyre's diameter is MQ-6 (#117)
+
+drivetrain:
+  gear_ratio_front: 18.0  # 16/64 x ~12/54, the baseline in architecture.md's gearbox table
+  gear_ratio_rear: 18.0   # front and rear may differ on purpose (architecture.md)
+  motor_pole_pairs: 2     # Castle 1010, 4 poles (ADR-0026): 37,500 rpm is 75k eRPM
+  erpm_max: 75000         # the controllers' cap, ~75k TBC (ADR-0034, RSK-18)
+
+steering:
+  max_angle: 0.4363     # ~25 deg at the wheels each way, TBC (ADR-0019)
+  centre_offset: 0.0    # measured on each car
