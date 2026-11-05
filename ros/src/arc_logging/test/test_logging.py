@@ -9,6 +9,7 @@ While recording, arc_logging reports OK on /diagnostics.
 
 import os
 from pathlib import Path
+import re
 import sys
 import tempfile
 import unittest
@@ -36,6 +37,7 @@ EXPERIMENT = 'test/experiment'
 LEFT_OUT = 'test/left_out'  # matches log_exclude: never recorded
 CRASH_AFTER = 10  # messages, half a second at 20 Hz
 CHUNK_S = 2  # so a few seconds' run is split
+AFTER_CRASH = 80  # platform messages to wait for after the crash, at 20 Hz
 
 
 def talker(topic, *args):
@@ -73,8 +75,12 @@ class TestRun(unittest.TestCase):
 
     def test_platform_outlives_the_experiment(self, proc_output, proc_info, experiment):
         proc_info.assertWaitForShutdown(process=experiment, timeout=30)
-        # three seconds of the platform after the experiment started
-        proc_output.assertWaitFor(f'{PLATFORM}: 60 sent', timeout=30, stream='stdout')
+        # four seconds of the platform after the crash, counted from the crash:
+        # the recorder can find the experiment's topic well after the platform's
+        output = ''.join(o.text.decode() for o in proc_output)
+        sent = re.findall(rf'{PLATFORM}: (\d+) sent', output)
+        target = max(map(int, sent), default=0) + AFTER_CRASH
+        proc_output.assertWaitFor(f'{PLATFORM}: {target} sent', timeout=30, stream='stdout')
 
 
 def read_log():
