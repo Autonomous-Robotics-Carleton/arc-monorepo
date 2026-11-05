@@ -1,7 +1,7 @@
 export const SITE_URL = 'https://arcarleton.ca'; // TBC: the domain CSES serves the site on
 export const INSTAGRAM_URL = 'https://instagram.com/arcarleton';
 export const INSTAGRAM_HANDLE = '@arcarleton';
-export const DISCORD_URL = 'https://discord.gg/7Vcy79VDqV';
+export const DISCORD_URL = 'https://discord.gg/jPyvn2DEYz';
 export const GITHUB_ORG_URL = 'https://github.com/Autonomous-Robotics-Carleton';
 export const GITHUB_REPO_URL = `${GITHUB_ORG_URL}/arc-monorepo`;
 export const LINKEDIN_URL = ''; // TODO: the club's LinkedIn page; add it to SOCIAL_LINKS once it exists
