@@ -13,7 +13,7 @@
   "dependencies": {
     "@arc/systems-model": "workspace:*",
     "fumadocs-core": "15.7.12",
-    "fumadocs-docgen": "^3.0.1",
+    "fumadocs-docgen": "^3.2.0",
     "fumadocs-mdx": "11.10.0",
     "fumadocs-ui": "15.7.12",
     "mermaid": "^11.17.2",
@@ -24,7 +24,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4.1.13",
+    "@tailwindcss/postcss": "^4.3.4",
     "@types/mdx": "^2.0.13",
     "@types/node": "24.3.3",
     "@types/react": "^19.1.13",
@@ -34,7 +34,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "postcss": "^8.5.23",
     "rimraf": "^5.0.0",
-    "tailwindcss": "^4.1.13",
+    "tailwindcss": "^4.3.4",
     "typescript": "^5.9.2",
     "vite": "^7.3.7"
   }
