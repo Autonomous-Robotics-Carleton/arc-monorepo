@@ -1,0 +1,1551 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>arc ground station</title>
+<style>
+  /* Tokens from the ARC Ground Station design system. Dark is primary; light for daylight use. */
+  :root {
+    --bg: #1a1a1c; --grid: #242428; --grid-axis: #303036; --panel: #131315; --panel-raised: #232327; --line: #34343a;
+    --ink: #e8e8e6; --ink-muted: #8e8e94; --ink-faint: #5f5f66; --accent: #2d6fd2; --on-accent: #ffffff;
+    --car: #d2452d; --odom: #2d6fd2; --real: #ffffff; --real-edge: #000000;
+    --ok: #4cc764; --ok-bg: #12301b; --warn: #e3a53c; --warn-bg: #3a2a0c; --warn-fill: #e3a53c; --on-warn: #1a1305;
+    --bad: #f0564a; --bad-bg: #3d1512;
+    --series-1: #5aa9e6; --series-2: #e8975a; --series-3: #b48ae6; --series-4: #d9cf5a;
+    --overlay-1: #3cc6d6; --overlay-2: #d65ab4; --overlay-3: #9a7cf0; --overlay-4: #a8b43c;
+    --shadow-panel: 0 4px 16px rgba(0,0,0,0.45);
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --space-1: 2px; --space-2: 4px; --space-3: 6px; --space-4: 8px; --space-5: 12px; --space-6: 16px;
+    --radius-sm: 2px; --radius-md: 4px; --topbar-h: 36px; --panel-min-w: 200px;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #e4e4e1; --grid: #d6d6d2; --grid-axis: #c4c4bf; --panel: #f7f7f5; --panel-raised: #ebebe8; --line: #c9c9c4;
+      --ink: #18181a; --ink-muted: #5c5c62; --ink-faint: #8f8f95; --real-edge: #1a1a1a;
+      --ok: #1d7a34; --ok-bg: #dcefe0; --warn: #8a5a00; --warn-bg: #f6e7c6; --bad: #b42318; --bad-bg: #f8dcd8;
+      --series-1: #1f6fb8; --series-2: #a8520f; --series-3: #7a4fc0; --series-4: #7a6c00;
+      --overlay-1: #0e7c8a; --overlay-2: #a3307f; --overlay-3: #6347c4; --overlay-4: #66701a;
+      --shadow-panel: 0 2px 10px rgba(0,0,0,0.12);
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden;
+    font: 12px/16px var(--font-mono); -webkit-font-smoothing: antialiased; }
+  button, input, select { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ---------- viewport ---------- */
+  #c { position: fixed; left: 0; right: 0; top: var(--topbar-h); bottom: 0; width: 100vw; height: calc(100vh - var(--topbar-h));
+    display: block; cursor: grab; touch-action: none; }
+  #c.dragging { cursor: grabbing; }
+  .hint { position: fixed; left: var(--space-5); bottom: var(--space-4); font-size: 11px; color: var(--ink-muted); pointer-events: none; }
+
+  /* ---------- top bar ---------- */
+  .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100000; display: flex; align-items: center; gap: var(--space-4);
+    height: var(--topbar-h); padding: 0 var(--space-5); background: var(--panel); border-bottom: 1px solid var(--line); }
+  .topbar__title { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; margin-right: var(--space-4); }
+  .topbar__spacer { flex: 1; }
+  .menu-wrap { position: relative; }
+  .menu-wrap .menu { position: absolute; right: 0; top: 30px; display: none; }
+  .menu-wrap.open .menu { display: block; }
+
+  /* ---------- pills ---------- */
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: var(--space-1) var(--space-4); height: 22px; flex: none;
+    border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--panel-raised); font-size: 11px; white-space: nowrap; }
+  .pill__k { color: var(--ink-muted); }
+  .pill__dot { width: 6px; height: 6px; background: var(--ink-faint); flex: none; }
+  .pill--ok .pill__dot { background: var(--ok); } .pill--ok .pill__v { color: var(--ok); }
+  .pill--warn { background: var(--warn-bg); border-color: var(--warn); }
+  .pill--warn .pill__dot { background: var(--warn); } .pill--warn .pill__v { color: var(--warn); }
+  .pill--bad { background: var(--bad-bg); border-color: var(--bad); }
+  .pill--bad .pill__dot { background: var(--bad); animation: blink 1s steps(2, start) infinite; }
+  .pill--bad .pill__v { color: var(--bad); font-weight: 700; }
+  @keyframes blink { to { visibility: hidden; } }
+  @media (prefers-reduced-motion: reduce) { .pill--bad .pill__dot { animation: none; } }
+
+  /* ---------- buttons and controls ---------- */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 3px 10px; min-height: 24px;
+    background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); cursor: pointer; white-space: nowrap; }
+  .btn:hover { border-color: var(--ink-muted); }
+  .btn--block { display: flex; width: 100%; }
+  .btn--ghost { background: transparent; border-color: transparent; }
+  .btn--ghost:hover { border-color: var(--line); }
+  .btn--danger { color: var(--bad); border-color: var(--bad); background: var(--bad-bg); }
+  .btn--danger:hover { background: var(--bad); color: var(--panel); }
+  .btn--small { min-height: 18px; padding: 0 6px; font-size: 11px; }
+  .iconbtn { width: 18px; height: 18px; display: inline-grid; place-items: center; padding: 0; background: none; flex: none;
+    border: 1px solid transparent; border-radius: var(--radius-sm); color: var(--ink-muted); cursor: pointer; font-size: 11px; line-height: 1; }
+  .iconbtn:hover { color: var(--ink); border-color: var(--line); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+  .seg button { background: var(--panel-raised); border: 0; padding: 2px 10px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+  .input, .select { height: 22px; padding: 0 6px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); width: 96px; }
+  .check { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .check input, .range { accent-color: var(--accent); margin: 0; }
+  .range { width: 96px; }
+
+  /* ---------- panel ---------- */
+  .panel { position: absolute; display: flex; flex-direction: column; min-width: var(--panel-min-w);
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-panel); }
+  .panel__head { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--line); cursor: grab; user-select: none; touch-action: none; }
+  .panel__head:active { cursor: grabbing; }
+  .panel__title { font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .panel__meta { color: var(--ink-muted); font-size: 11px; white-space: nowrap; }
+  .panel__body { padding: var(--space-4) 10px 10px; overflow: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-5); }
+  .panel.is-collapsed .panel__body, .panel.is-collapsed .panel__grip { display: none; }
+  .panel.is-collapsed .panel__head { border-bottom: 0; }
+  .panel.is-dragging { opacity: .92; outline: 1px dashed var(--accent); }
+  .panel.is-flash { outline: 2px solid var(--accent); }
+  .panel__grip { position: absolute; right: 1px; bottom: 1px; width: 12px; height: 12px; cursor: nwse-resize; touch-action: none;
+    background: linear-gradient(135deg, transparent 0 55%, var(--ink-faint) 55% 62%, transparent 62% 72%, var(--ink-faint) 72% 79%, transparent 79%); }
+
+  /* ---------- readouts ---------- */
+  .sub { font-size: 11px; line-height: 14px; color: var(--ink-muted); margin-bottom: var(--space-2); }
+  .kv { display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: var(--space-1); column-gap: var(--space-5); margin: 0; }
+  .kv dt, .kv dd { margin: 0; }
+  .kv dd { text-align: right; font-variant-numeric: tabular-nums; }
+  .unit { color: var(--ink-muted); }
+  .is-ok { color: var(--ok); } .is-warn { color: var(--warn); } .is-bad { color: var(--bad); } .is-muted { color: var(--ink-muted); } .is-faint { color: var(--ink-faint); }
+  .swatch { display: inline-block; width: 8px; height: 8px; margin-right: 6px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-6); }
+  .split > * + * { border-left: 1px solid var(--line); padding-left: var(--space-6); }
+  .stack { display: flex; flex-direction: column; gap: var(--space-4); }
+
+  /* ---------- status chain ---------- */
+  .chain { display: flex; flex-wrap: wrap; align-items: stretch; gap: var(--space-2); }
+  .chain__arrow { align-self: center; color: var(--ink-faint); font-size: 11px; }
+  .tile { flex: 1; min-width: 64px; padding: var(--space-3) 6px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .tile__k { font-size: 10px; line-height: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .tile__v { color: var(--ok); overflow-wrap: anywhere; } /* wraps: a link problem must be readable in full */
+  .tile__d { font-size: 10px; line-height: 12px; color: var(--ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile.is-warn .tile__v { color: var(--warn); }
+  .tile.is-broken { background: var(--bad-bg); border-color: var(--bad); }
+  .tile.is-broken .tile__v { color: var(--bad); font-weight: 700; }
+  .tile.is-stale { background: transparent; border-style: dashed; }
+  .tile.is-stale .tile__k, .tile.is-stale .tile__v, .tile.is-stale .tile__d { color: var(--ink-faint); }
+
+  /* ---------- timeout bar ---------- */
+  .tbar { display: grid; grid-template-columns: 1fr auto; row-gap: var(--space-1); align-items: center; }
+  .tbar__val { text-align: right; font-variant-numeric: tabular-nums; }
+  .tbar__track { grid-column: 1 / -1; position: relative; height: 8px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .tbar__fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--ok); }
+  .tbar.is-warn .tbar__fill { background: var(--warn); } .tbar.is-warn .tbar__val { color: var(--warn); }
+  .tbar.is-bad .tbar__fill { background: var(--bad); } .tbar.is-bad .tbar__val { color: var(--bad); }
+  .tbar.is-none .tbar__val { color: var(--ink-faint); }
+  .tbar__tick { position: absolute; top: -4px; bottom: -4px; left: 50%; width: 2px; background: var(--bad); }
+
+  /* ---------- state strip ---------- */
+  .strip { padding: var(--space-4) 10px; border: 1px solid; border-radius: var(--radius-sm); font-size: 14px; line-height: 18px; font-weight: 700; letter-spacing: .04em; }
+  .strip small { font-size: 12px; font-weight: 400; letter-spacing: 0; }
+  .strip--armed { color: var(--ok); background: var(--ok-bg); border-color: var(--ok); }
+  .strip--stopping { color: var(--bad); background: var(--bad-bg); border-color: var(--bad); }
+
+  /* ---------- log ---------- */
+  .log summary { cursor: pointer; color: var(--ink-muted); font-size: 11px; list-style: none; }
+  .log summary::-webkit-details-marker { display: none; }
+  .log summary::before { content: "▸ "; }
+  .log[open] summary::before { content: "▾ "; }
+  .log ol { list-style: none; margin: var(--space-2) 0 0; padding: 0; font-size: 11px; line-height: 14px; color: var(--ink-muted); max-height: 84px; overflow: auto; }
+  .log time { color: var(--ink-faint); margin-right: 6px; }
+
+  /* ---------- topics and plots ---------- */
+  .topics { width: 100%; border-collapse: collapse; }
+  .topics td { padding: 3px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .topics tr:last-child td { border-bottom: 0; }
+  .topics .t { max-width: 1px; overflow: hidden; text-overflow: ellipsis; width: 100%; padding-right: var(--space-4); }
+  .topics .ty { color: var(--ink-muted); font-size: 11px; padding-right: var(--space-4); }
+  .topics .hz { text-align: right; font-variant-numeric: tabular-nums; padding-right: var(--space-4); }
+  .topics .hz.is-stale { color: var(--ink-faint); }
+  .plot { display: flex; flex-direction: column; gap: var(--space-2); }
+  .plot__head { display: flex; gap: var(--space-4); align-items: baseline; }
+  .plot__topic { font-weight: 700; }
+  .plot__meta { color: var(--ink-muted); font-size: 11px; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .plot canvas { display: block; width: 100%; height: 110px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .seg button .swatch { margin: 0; vertical-align: 0; }
+  .legend { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: 11px; color: var(--ink-muted); }
+  .legend i { display: inline-block; width: 10px; height: 2px; vertical-align: 3px; margin-right: 4px; }
+  .legend i.dashed { background: none !important; border-top: 2px dashed; height: 0; }
+  .empty { color: var(--ink-muted); }
+
+  /* ---------- imu ---------- */
+  .mods summary { cursor: pointer; color: var(--ink-muted); font-size: 11px; list-style: none; }
+  .mods summary::-webkit-details-marker { display: none; }
+  .mods summary::before { content: "▸ "; }
+  .mods[open] summary::before { content: "▾ "; }
+  .mods__list { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-3); }
+  .mod { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-4); border-top: 1px solid var(--line); }
+  .mod canvas { display: block; width: 100%; height: 80px; background: var(--panel-raised); border: 1px solid var(--line); border-radius: var(--radius-sm); }
+  .mod .sub { margin: 0; }
+
+  /* ---------- menu ---------- */
+  .menu { min-width: 240px; padding: var(--space-2) 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: var(--shadow-panel); }
+  .menu__group { padding: var(--space-3) 10px var(--space-1); font-size: 10px; line-height: 12px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .06em; }
+  .menu__item { display: flex; align-items: center; gap: var(--space-4); width: 100%; padding: 3px 10px; background: none; border: 0; text-align: left; cursor: pointer; }
+  .menu__item:hover { background: var(--panel-raised); }
+  .menu__check { width: 10px; color: var(--accent); font-weight: 700; }
+  .menu__note { margin-left: auto; color: var(--ink-muted); font-size: 11px; }
+  .menu__item[aria-disabled="true"] { color: var(--ink-faint); cursor: not-allowed; }
+  .menu__item[aria-disabled="true"]:hover { background: none; }
+
+  /* ---------- banner, no-car card, toast ---------- */
+  .banner { position: fixed; top: calc(var(--topbar-h) + var(--space-5)); left: 50%; transform: translateX(-50%); z-index: 99999;
+    padding: var(--space-2) 10px; background: var(--warn-fill); color: var(--on-warn); border-radius: var(--radius-md);
+    font-weight: 500; max-width: calc(100vw - 48px); text-align: center; display: none; }
+  .card { position: fixed; z-index: 99998; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-panel); padding: var(--space-5); display: none; flex-direction: column; gap: var(--space-4); }
+  #nocar { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 320px; max-width: calc(100vw - 64px); border-color: var(--bad); }
+  #nocar h2 { margin: 0; font-size: 14px; line-height: 18px; color: var(--bad); letter-spacing: .04em; }
+  #toast { right: var(--space-5); bottom: var(--space-5); flex-direction: row; align-items: center; max-width: calc(100vw - 48px); }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hint">drag to pan · scroll to zoom · grid 1 m</div>
+
+<div class="topbar">
+  <span class="topbar__title">arc ground station</span>
+  <span class="pill" id="pillTarget"><span class="pill__dot"></span><span class="pill__k">target</span><span class="pill__v">—</span></span>
+  <span class="pill" id="pillDrive"><span class="pill__dot"></span><span class="pill__v">idle</span></span>
+  <span class="pill" id="pillHb"><span class="pill__dot"></span><span class="pill__k">heartbeat</span><span class="pill__v">—</span></span>
+  <span class="topbar__spacer"></span>
+  <button class="btn btn--ghost" id="resetLayout">Reset layout</button>
+  <span class="menu-wrap" id="menuWrap">
+    <button class="btn" id="addBtn" aria-haspopup="menu" aria-expanded="false">+ Add panel ▾</button>
+    <div class="menu" id="menu" role="menu"></div>
+  </span>
+</div>
+
+<div id="panels"></div>
+
+<div class="card" id="nocar">
+  <h2>NO CAR FOUND</h2>
+  <div class="is-muted">Real mode is waiting for the car to answer. This page keeps trying and will not switch on its own.</div>
+  <dl class="kv"><dt>sim track</dt><dd><select class="select" id="trackIn2"><option>oval</option></select></dd></dl>
+  <button class="btn btn--block" id="toSim">Switch to sim</button>
+</div>
+
+<div class="card" id="toast">
+  <span>Live car found; switch to real in Settings.</span>
+  <button class="btn" id="toastOpen">Settings</button>
+  <button class="iconbtn" id="toastX" aria-label="Dismiss">✕</button>
+</div>
+<div class="banner" id="banner"></div>
+
+<script>
+// Car outline in base_link (rear axle, x forward), metres. Placeholder racecar.xacro size.
+const CAR = { back: -0.06, front: 0.40, half: 0.12 };
+const MAX_STEER = 0.4189;       // rad, car_link clamps to this too
+const WHEELBASE = 0.3302;       // m, placeholder racecar.xacro; car_link converts steering with it too
+const DEADZONE = 0.1;
+const HB_MS = 50;               // page -> helper heartbeat; helper stops after 0.15 s without one
+const TELEOP_MS = 20;           // 50 Hz
+const TELEOP_TAIL_MS = 200;     // keep sending zeros this long after release so the stop is explicit
+const TIMEOUT_S = 0.15;         // car_link heartbeat / teleop timeout (SYS-04)
+const LOG_LINES = 50;
+const SNAP = 8, INSET = 12, TOPBAR = 36;
+const LAYOUT_KEY = 'arc-gs-layout-v1';
+
+const $ = (id) => document.getElementById(id);
+const canvas = $('c');
+const ctx = canvas.getContext('2d');
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const clock = () => new Date().toTimeString().slice(0, 8);
+const nowS = () => performance.now() / 1000;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const setText = (el, text, cls) => { if (!el) return; el.textContent = text; if (cls !== undefined) el.className = cls; };
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* private window: layout just isn't kept */ } },
+};
+
+let scale = 120; // px per metre
+let state = null; // latest bridge `state` message
+let link = null;  // latest server `link` message
+let trackStatus = null; // latest bridge `track_status` relayed by the server: {name, status, error}
+let trail = [];
+let trailKey = null; // which pose the trail follows; reset when it changes so we don't draw a jump
+let track = null; // {resolution, origin: [x, y, yaw], width, height, name, img}
+let tracks = { names: ['oval'], selected: 'oval' };
+let serverUp = false, helperUp = false;
+let sent = null; // latest helper `sent` report
+const logLines = [];
+const opts = { maxSpeed: 1.0, ghost: true, trail: 30, plotWindow: 20 };
+
+// ---------- data streams ----------
+// Every numeric field the page receives, grouped by the topic it comes from. Today that is what the bridge
+// forwards in `state`; a bridge that forwards more topics only needs to call ingest() for them.
+const TOPICS = {
+  sim: { estimate: ['/sim/odom', 'pose'], truth: ['/sim/ground_truth', 'pose'], link: ['/sim/link/status', 'status'] },
+  car: { estimate: ['odometry', 'pose'], link: ['link status', 'status'] },
+};
+const streams = new Map(); // name -> {type, fields: [], samples: [{t, v: {}}], arrivals: []}
+const MAX_WINDOW = 60;
+
+function flatten(obj, prefix, out) {
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (typeof v === 'number' && Number.isFinite(v)) out[key] = v;
+    else if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, key, out);
+  }
+  return out;
+}
+function ingest(name, type, obj) {
+  if (!obj) return;
+  let s = streams.get(name);
+  if (!s) { s = { type, fields: [], samples: [], arrivals: [] }; streams.set(name, s); }
+  const t = nowS(), v = flatten(obj, '', {});
+  for (const f of Object.keys(v)) if (!s.fields.includes(f)) s.fields.push(f);
+  s.samples.push({ t, v });
+  s.arrivals.push(t);
+  while (s.samples.length && s.samples[0].t < t - MAX_WINDOW - 1) s.samples.shift();
+  while (s.arrivals.length && s.arrivals[0] < t - 1) s.arrivals.shift();
+}
+const streamHz = (s) => {
+  const t = nowS();
+  while (s.arrivals.length && s.arrivals[0] < t - 1) s.arrivals.shift();
+  return s.arrivals.length;
+};
+const streamStale = (s) => !s.samples.length || nowS() - s.samples[s.samples.length - 1].t > 2;
+
+// ---------- track ----------
+// The server sends the walls as an alpha mask; tint it (redone if the theme flips).
+let trackMask = null, trackMeta = null, trackLoads = 0, trackNote = 'none';
+function tintTrack() {
+  if (!trackMask || !trackMeta) return;
+  const c = document.createElement('canvas');
+  c.width = trackMeta.width; c.height = trackMeta.height;
+  const g = c.getContext('2d');
+  g.drawImage(trackMask, 0, 0);
+  g.globalCompositeOperation = 'source-in';
+  g.fillStyle = css('--ink-muted'); g.fillRect(0, 0, c.width, c.height);
+  track = { ...trackMeta, img: c };
+}
+matchMedia('(prefers-color-scheme: light)').addEventListener('change', tintTrack);
+
+async function loadTrack(meta, png) {
+  const n = ++trackLoads; // a newer `track` message wins over a slow older decode
+  if (!meta) { track = trackMeta = trackMask = null; trackNote = 'none'; return; }
+  if (!png) { trackNote = `${meta.name || 'unnamed'} (no image)`; return; }
+  // The image arrives inside the message (base64), so no separate HTTP request can fail.
+  const mask = new Image();
+  try {
+    await new Promise((ok, fail) => { mask.onload = ok; mask.onerror = fail; mask.src = `data:image/png;base64,${png}`; });
+  } catch {
+    if (n !== trackLoads) return;
+    trackNote = `${meta.name || 'unnamed'} (image failed)`;
+    logLine(`track image failed to decode: ${meta.name || 'unnamed'}`);
+    return;
+  }
+  if (n !== trackLoads) return;
+  trackMeta = meta; trackMask = mask;
+  tintTrack();
+  trackNote = meta.name || 'unnamed';
+}
+
+// ---------- canvas ----------
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = innerWidth * dpr; canvas.height = (innerHeight - TOPBAR) * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener('resize', () => { resize(); keepPanelsOnScreen(); });
+resize();
+canvas.addEventListener('wheel', (e) => {
+  scale = Math.min(800, Math.max(10, scale * Math.exp(-e.deltaY * 0.001)));
+}, { passive: true });
+
+// Drag to pan. Panning detaches the camera from the car until "Center camera on car".
+let cam = null; // null: follow the drawn car; {x, y}: fixed world point at the screen centre
+let drag = null;
+function setCam(c) { cam = c; refreshSettings(); }
+canvas.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return;
+  closeMenu();
+  const car = drawnPose();
+  if (!cam) setCam(car ? { x: car.x, y: car.y } : { x: 0, y: 0 });
+  drag = { x: e.clientX, y: e.clientY };
+  canvas.setPointerCapture(e.pointerId);
+  canvas.classList.add('dragging');
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  // Screen y points down, world y up.
+  cam.x -= (e.clientX - drag.x) / scale;
+  cam.y += (e.clientY - drag.y) / scale;
+  drag = { x: e.clientX, y: e.clientY };
+});
+const endDrag = () => { drag = null; canvas.classList.remove('dragging'); };
+canvas.addEventListener('pointerup', endDrag);
+canvas.addEventListener('pointercancel', endDrag);
+
+// ---------- panels ----------
+// Each panel: title, menu group, optional header meta, build(body) once on open, update(body) every frame.
+// `available()` false greys it out in the menu with `note`.
+const PANELS = {
+  status:    { title: 'Status', group: 'status', w: 448, build: buildStatus, update: updateStatus },
+  heartbeat: { title: 'Heartbeat', group: 'status', w: 448, meta: () => '150 ms cutoff', build: buildHeartbeat, update: updateHeartbeat },
+  car:       { title: 'Car', group: 'status', w: 264, build: buildCar, update: updateCar },
+  topics:    { title: 'Topics', group: 'sensors', w: 400, meta: () => `${streams.size} topics`, build: buildTopics, update: updateTopics },
+  plots:     { title: 'Plots', group: 'sensors', w: 400, meta: () => `${opts.plotWindow} s`, build: buildPlots, update: updatePlots },
+  lidar:     { title: 'LiDAR', group: 'sensors', w: 264, meta: lidarMeta, build: buildLidar, update: updateLidar },
+  encoders:  { title: 'wheel encoders', group: 'sensors', w: 320, available: () => encoderNames.length > 0, note: 'not found',
+               meta: encoderMeta, build: buildEncoders, update: updateEncoders },
+  camera:    { title: 'Camera', group: 'sensors', w: 360, available: () => false, note: 'no image topic', build: () => {} },
+  computer:  { title: 'Computer', group: 'machine', w: 448, available: () => false, note: 'needs server stats', build: () => {} },
+  settings:  { title: 'Settings', group: 'settings', w: 264, build: buildSettings },
+  sim:       { title: 'Sim settings', group: 'settings', w: 264, available: () => simMode(), note: 'sim only', build: buildSim },
+};
+const GROUPS = ['status', 'sensors', 'machine', 'settings'];
+
+function defaultLayout() {
+  const right = Math.max(INSET, innerWidth - INSET - 400);
+  return {
+    open: {
+      status: { x: INSET, y: TOPBAR + INSET },
+      heartbeat: { x: INSET, y: TOPBAR + INSET + 120 },
+      topics: { x: right, y: TOPBAR + INSET },
+      plots: { x: right, y: TOPBAR + INSET + 248 },
+    },
+    plotSel: ['/sim/odom', 'odometry'],
+  };
+}
+let layout = store.get(LAYOUT_KEY) || defaultLayout();
+layout.open ||= {}; layout.plotSel ||= [];
+const saveLayout = () => store.set(LAYOUT_KEY, layout);
+
+const els = {}; // id -> panel element
+let zTop = 10;
+const snap = (v) => Math.round(v / SNAP) * SNAP;
+const clampX = (x, w) => Math.min(Math.max(x, -w + 80), innerWidth - 80);
+const clampY = (y) => Math.min(Math.max(y, TOPBAR), innerHeight - 30); // the header always stays reachable
+
+function mountPanels() {
+  for (const id of Object.keys(PANELS)) {
+    const want = !!layout.open[id] && (PANELS[id].available ? PANELS[id].available() : true);
+    if (want && !els[id]) openPanelEl(id);
+    if (!want && els[id]) { els[id].remove(); delete els[id]; }
+  }
+  buildMenu();
+}
+
+function openPanelEl(id) {
+  const def = PANELS[id], L = layout.open[id];
+  const el = document.createElement('div');
+  el.className = 'panel' + (L.collapsed ? ' is-collapsed' : '');
+  el.dataset.id = id;
+  el.innerHTML = `<div class="panel__head">
+      <button class="iconbtn" data-a="collapse" aria-label="Collapse">${L.collapsed ? '▸' : '▾'}</button>
+      <span class="panel__title">${esc(def.title)}</span><span class="panel__meta"></span>
+      <button class="iconbtn" data-a="close" aria-label="Close">✕</button>
+    </div><div class="panel__body"></div><div class="panel__grip"></div>`;
+  place(el, L, def);
+  el.style.zIndex = ++zTop;
+  $('panels').appendChild(el);
+  els[id] = el;
+  def.build(el.querySelector('.panel__body'));
+  wirePanel(el, id);
+}
+
+function place(el, L, def) {
+  const w = L.w || def.w;
+  el.style.width = w + 'px';
+  el.style.left = clampX(L.x, w) + 'px';
+  el.style.top = clampY(L.y) + 'px';
+  // Height follows content until the user resizes; it never runs off the bottom of the screen.
+  el.style.height = L.h ? L.h + 'px' : '';
+  el.style.maxHeight = `calc(100vh - ${clampY(L.y)}px - ${INSET}px)`;
+}
+function keepPanelsOnScreen() { for (const [id, el] of Object.entries(els)) place(el, layout.open[id], PANELS[id]); }
+
+function wirePanel(el, id) {
+  const head = el.querySelector('.panel__head'), grip = el.querySelector('.panel__grip');
+  el.addEventListener('pointerdown', () => { el.style.zIndex = ++zTop; }, true);
+  head.addEventListener('click', (e) => {
+    const a = e.target.closest('button') && e.target.closest('button').dataset.a;
+    if (a === 'close') { delete layout.open[id]; saveLayout(); mountPanels(); }
+    if (a === 'collapse') {
+      const L = layout.open[id]; L.collapsed = !L.collapsed; saveLayout();
+      el.classList.toggle('is-collapsed', L.collapsed);
+      e.target.closest('button').textContent = L.collapsed ? '▸' : '▾';
+    }
+  });
+  head.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0 || e.target.closest('button')) return;
+    const ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
+    head.setPointerCapture(e.pointerId);
+    el.classList.add('is-dragging');
+    const move = (ev) => {
+      const L = layout.open[id];
+      L.x = snap(ev.clientX - ox); L.y = snap(ev.clientY - oy);
+      place(el, L, PANELS[id]);
+    };
+    const up = () => {
+      head.removeEventListener('pointermove', move); head.removeEventListener('pointerup', up);
+      el.classList.remove('is-dragging'); saveLayout();
+    };
+    head.addEventListener('pointermove', move); head.addEventListener('pointerup', up);
+  });
+  grip.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.stopPropagation();
+    const sx = e.clientX, sy = e.clientY, sw = el.offsetWidth, sh = el.offsetHeight;
+    grip.setPointerCapture(e.pointerId);
+    const move = (ev) => {
+      const L = layout.open[id];
+      L.w = Math.max(200, snap(sw + ev.clientX - sx));
+      L.h = Math.max(60, snap(sh + ev.clientY - sy));
+      place(el, L, PANELS[id]);
+    };
+    const up = () => { grip.removeEventListener('pointermove', move); grip.removeEventListener('pointerup', up); saveLayout(); };
+    grip.addEventListener('pointermove', move); grip.addEventListener('pointerup', up);
+  });
+}
+
+// "+ Add panel": closed panels open; an open one comes to front and flashes.
+function buildMenu() {
+  let html = '';
+  for (const g of GROUPS) {
+    html += `<div class="menu__group">${g}</div>`;
+    for (const [id, def] of Object.entries(PANELS)) {
+      if (def.group !== g) continue;
+      const ok = def.available ? def.available() : true;
+      html += `<button class="menu__item" role="menuitem" data-id="${id}" ${ok ? '' : 'aria-disabled="true"'}>
+        <span class="menu__check">${ok && layout.open[id] ? '✓' : ''}</span>${esc(def.title)}
+        ${ok ? '' : `<span class="menu__note">${esc(def.note)}</span>`}</button>`;
+    }
+  }
+  $('menu').innerHTML = html;
+}
+let cascade = 0;
+$('menu').addEventListener('click', (e) => {
+  const item = e.target.closest('.menu__item');
+  if (!item || item.getAttribute('aria-disabled') === 'true') return;
+  const id = item.dataset.id;
+  if (layout.open[id] && els[id]) {
+    const el = els[id];
+    el.style.zIndex = ++zTop;
+    el.classList.add('is-flash'); setTimeout(() => el.classList.remove('is-flash'), 600);
+  } else {
+    const off = (cascade++ % 5) * 24;
+    layout.open[id] = { x: snap(480 + off), y: snap(TOPBAR + 96 + off) };
+    saveLayout(); mountPanels();
+  }
+  closeMenu();
+});
+function closeMenu() { $('menuWrap').classList.remove('open'); $('addBtn').setAttribute('aria-expanded', 'false'); }
+$('addBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const open = !$('menuWrap').classList.contains('open');
+  buildMenu();
+  $('menuWrap').classList.toggle('open', open);
+  $('addBtn').setAttribute('aria-expanded', String(open));
+});
+addEventListener('pointerdown', (e) => { if (!e.target.closest('#menuWrap')) closeMenu(); });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+$('resetLayout').onclick = () => {
+  for (const id of Object.keys(els)) { els[id].remove(); delete els[id]; }
+  layout = defaultLayout(); saveLayout(); mountPanels();
+};
+
+const body = (id) => els[id] && els[id].querySelector('.panel__body');
+const q = (b, sel) => b.querySelector(sel);
+
+// ---------- Status ----------
+function buildStatus(b) { b.innerHTML = '<div class="chain"></div>'; }
+function chainTiles() {
+  const l = link, sim = simMode();
+  const tiles = [];
+  tiles.push({ k: 'target', v: l ? (sim ? 'sim' : 'car') : '—', d: l ? (sim ? trackNote : (l.udp ? l.udp.host : 'address TBD')) : '', st: l ? 'ok' : 'warn' });
+  tiles.push({ k: 'server', v: serverUp ? 'live' : 'down', d: serverUp ? `ws :${location.port || 80}` : 'reconnecting', st: serverUp ? 'ok' : 'bad' });
+  tiles.push({ k: 'helper', v: helperUp ? 'live' : 'down', d: helperUp ? 'ws :8081' : 'reconnecting', st: helperUp ? 'ok' : 'bad' });
+  tiles.push(linkTile(l));
+  if (sim) {
+    // While the sim runs, a track load in progress or failed is what the operator needs to see.
+    const ts = l.sim === 'running' ? trackStatus : null;
+    if (ts && ts.status === 'loading') tiles.push({ k: 'sim', v: 'loading track', d: ts.name || 'none', st: 'warn' });
+    else if (ts && ts.status === 'failed') tiles.push({ k: 'sim', v: 'track failed', d: `${ts.name}: ${ts.error || 'unknown error'}`, st: 'bad' });
+    else tiles.push({ k: 'sim', v: l.sim, d: trackNote, st: l.sim === 'running' ? 'ok' : l.sim === 'starting' ? 'warn' : 'bad' });
+  }
+  // The first failure is broken; everything after it is unknown, so it is shown greyed, not as live.
+  let broken = false;
+  for (const t of tiles) {
+    if (broken) { t.st = 'stale'; t.v = '—'; t.d = ''; }
+    else if (t.st === 'bad') broken = true;
+  }
+  return tiles;
+}
+// The bridge being connected isn't enough: car_link must also accept this helper's session (protocol.md).
+function linkTile(l) {
+  if (!l || !l.connected) return { k: 'link', v: 'not connected', d: '', st: 'bad' };
+  const port = l.udp ? `udp :${l.udp.port}` : '';
+  const h = helperUp ? sent : null;
+  if (h && h.link === 'replaced') return { k: 'link', v: 'Different session detected', d: 'another ground station took over', st: 'bad' };
+  if (h && h.rejected) return { k: 'link', v: 'Rejecting packets sent', d: `car_link: ${h.rejected}`, st: 'bad' };
+  if (h && h.link === 'handshaking') return { k: 'link', v: 'handshaking', d: port, st: 'warn' };
+  return { k: 'link', v: 'connected', d: h ? `${port} · session ${h.session}` : port, st: 'ok' };
+}
+function updateStatus(b) {
+  const html = chainTiles().map((t) => `<div class="tile ${{ ok: '', warn: 'is-warn', bad: 'is-broken', stale: 'is-stale' }[t.st]}">
+      <div class="tile__k">${t.k}</div><div class="tile__v">${esc(t.v)}</div><div class="tile__d">${esc(t.d) || '&nbsp;'}</div></div>`)
+    .join('<span class="chain__arrow">→</span>');
+  const chain = q(b, '.chain');
+  if (chain.innerHTML !== html) chain.innerHTML = html;
+}
+
+// ---------- Heartbeat ----------
+function buildHeartbeat(b) {
+  b.innerHTML = `
+    <div class="split">
+      <div><div class="sub">we send</div><dl class="kv">
+        <dt>rate</dt><dd data-f="rate">—</dd>
+        <dt>last seq</dt><dd data-f="seq">—</dd>
+        <dt>sending</dt><dd data-f="sending">—</dd>
+        <dt>reason</dt><dd data-f="reason">—</dd></dl></div>
+      <div class="stack"><div class="sub" style="margin:0" data-f="reporter">car reports</div>
+        <div class="tbar" data-f="hbAge"><span>heartbeat age</span><span class="tbar__val">—</span>
+          <div class="tbar__track"><div class="tbar__fill"></div><div class="tbar__tick"></div></div></div>
+        <div class="tbar" data-f="teAge"><span>teleop age</span><span class="tbar__val">—</span>
+          <div class="tbar__track"><div class="tbar__fill"></div><div class="tbar__tick"></div></div></div>
+      </div>
+    </div>
+    <div class="strip strip--stopping" data-f="strip">STOPPING <small>· no report</small></div>
+    <button class="btn btn--danger btn--block" data-f="cutoff">Test cutoff</button>
+    <details class="log"><summary data-f="logsum">event log (0)</summary><ol data-f="log"></ol></details>`;
+  q(b, '[data-f=cutoff]').onclick = toggleCutoff;
+  renderLog();
+}
+const fmtAge = (s) => s === null || s === undefined ? '—' : s * 1000 > 9999 ? `${s.toFixed(1)} s` : `${Math.round(s * 1000)} ms`;
+function setBar(el, age) {
+  const none = age === null || age === undefined;
+  el.className = 'tbar ' + (none ? 'is-none' : age >= TIMEOUT_S ? 'is-bad' : age >= TIMEOUT_S / 2 ? 'is-warn' : '');
+  setText(q(el, '.tbar__val'), fmtAge(age));
+  q(el, '.tbar__fill').style.width = none ? '0' : `${Math.min(100, age / (2 * TIMEOUT_S) * 100)}%`;
+}
+const STOP_REASON = { heartbeat: 'heartbeat timeout', teleop: 'teleop timeout', idle: 'nothing received' };
+function carStop() {
+  const lk = state ? state.link : null;
+  if (!lk) return { stopping: true, reason: 'no report' };
+  return { stopping: !!lk.stopping, reason: lk.stopping ? STOP_REASON[lk.reason] || lk.reason : 'not stopping' };
+}
+function updateHeartbeat(b) {
+  const f = (n) => q(b, `[data-f=${n}]`);
+  if (sent && helperUp) {
+    f('rate').innerHTML = `${sent.count * 5} <span class="unit">Hz</span>`; // reports are 5 Hz, count is per report
+    setText(f('seq'), String(sent.last_seq));
+    setText(f('sending'), sent.sending ? 'yes' : 'no', sent.sending ? 'is-ok' : 'is-bad');
+    setText(f('reason'), sent.reason, sent.reason === 'ok' ? '' : 'is-warn');
+  } else {
+    setText(f('rate'), '—'); setText(f('seq'), '—');
+    setText(f('sending'), helperUp ? '—' : 'no helper', helperUp ? '' : 'is-bad'); setText(f('reason'), '—', '');
+  }
+  setText(f('reporter'), simMode() ? 'sim reports' : 'car reports');
+  const lk = state ? state.link : null;
+  setBar(f('hbAge'), lk ? lk.heartbeat_age : null);
+  setBar(f('teAge'), lk ? lk.teleop_age : null);
+  const st = carStop(), strip = f('strip');
+  const html = `${st.stopping ? 'STOPPING' : 'ARMED'} <small>· ${esc(st.reason)}</small>`;
+  if (strip.innerHTML !== html) { strip.innerHTML = html; strip.className = 'strip ' + (st.stopping ? 'strip--stopping' : 'strip--armed'); }
+  setText(f('cutoff'), cutoffOn ? 'Cutoff active · Resume heartbeat' : 'Test cutoff');
+}
+function renderLog() {
+  const b = body('heartbeat'); if (!b) return;
+  setText(q(b, '[data-f=logsum]'), `event log (${logLines.length})`);
+  const ol = q(b, '[data-f=log]');
+  ol.innerHTML = logLines.map(([t, s]) => `<li><time>${t}</time>${esc(s)}</li>`).join('');
+  ol.scrollTop = ol.scrollHeight;
+}
+function logLine(text) {
+  logLines.push([clock(), text]);
+  if (logLines.length > LOG_LINES) logLines.shift();
+  renderLog();
+}
+
+// ---------- Car ----------
+function buildCar(b) {
+  b.innerHTML = `<dl class="kv">
+    <dt>source</dt><dd data-f="source">—</dd>
+    <dt><span class="swatch" data-f="sw"></span><span data-f="poseLabel">pose</span></dt><dd data-f="pose">—</dd>
+    <dt data-sim><span class="swatch" style="background:var(--odom)"></span>odom</dt><dd data-sim data-f="odom">—</dd>
+    <dt data-sim>odom error</dt><dd data-sim data-f="err">—</dd></dl>`;
+}
+const fmtPose = (p) => p ? `${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${(p.yaw * 180 / Math.PI).toFixed(0)}°` : '—';
+function updateCar(b) {
+  const f = (n) => q(b, `[data-f=${n}]`), sim = simMode(), car = drawnPose(), ghost = sim && state ? state.estimate : null;
+  const fromSim = state ? state.source === 'sim' : sim;
+  setText(f('source'), state ? state.source : '—');
+  f('sw').style.background = css(fromSim ? '--car' : '--real');
+  f('sw').style.outline = fromSim ? '' : `1px solid ${css('--real-edge')}`;
+  setText(f('poseLabel'), sim ? 'true pose' : 'odom pose');
+  setText(f('pose'), fmtPose(car));
+  for (const el of b.querySelectorAll('[data-sim]')) el.style.display = sim ? '' : 'none';
+  if (sim) {
+    setText(f('odom'), fmtPose(ghost));
+    f('err').innerHTML = car && ghost ? `${Math.hypot(car.x - ghost.x, car.y - ghost.y).toFixed(3)} <span class="unit">m</span>` : '—';
+  }
+}
+
+// ---------- Topics ----------
+let topicsKey = '';
+function buildTopics(b) { topicsKey = ''; b.innerHTML = '<table class="topics"></table><div class="sub" style="margin:0">rates are as received by this page</div>'; }
+function updateTopics(b) {
+  const names = [...streams.keys()];
+  const key = names.join('|') + '#' + layout.plotSel.join('|');
+  const table = q(b, '.topics');
+  if (key !== topicsKey) {
+    topicsKey = key;
+    table.innerHTML = names.length ? names.map((n) => `<tr><td class="t" title="${esc(n)}">${esc(n)}</td><td class="ty">${esc(streams.get(n).type)}</td>
+      <td class="hz" data-hz="${esc(n)}">—</td><td><input type="checkbox" data-t="${esc(n)}" aria-label="plot ${esc(n)}" ${layout.plotSel.includes(n) ? 'checked' : ''}></td></tr>`).join('')
+      : '<tr><td class="empty">no topics yet: waiting for the bridge</td></tr>';
+    table.onchange = (e) => {
+      const t = e.target.dataset.t; if (!t) return;
+      layout.plotSel = layout.plotSel.filter((x) => x !== t);
+      if (e.target.checked) layout.plotSel.push(t);
+      saveLayout();
+      const pb = body('plots'); if (pb) buildPlots(pb);
+    };
+  }
+  for (const td of table.querySelectorAll('[data-hz]')) {
+    const s = streams.get(td.dataset.hz), stale = streamStale(s);
+    setText(td, stale ? '—' : streamHz(s).toFixed(1), 'hz' + (stale ? ' is-stale' : ''));
+  }
+}
+
+// ---------- Plots ----------
+let plotsKey = '';
+function buildPlots(b) {
+  plotsKey = '';
+  const sel = layout.plotSel.filter((n) => streams.has(n));
+  plotsKey = sel.map((n) => n + ':' + streams.get(n).fields.join(',')).join('|');
+  b.innerHTML = sel.length ? sel.map((n) => {
+    const s = streams.get(n);
+    return `<div class="plot"><div class="plot__head"><span class="plot__topic">${esc(n)}</span><span class="plot__meta" data-hz="${esc(n)}"></span></div>
+      <canvas data-plot="${esc(n)}"></canvas>
+      <div class="legend">${s.fields.map((f, i) => `<span><i class="${i >= 4 ? 'dashed' : ''}" style="background:var(--series-${i % 4 + 1});border-color:var(--series-${i % 4 + 1})"></i>${esc(f)}</span>`).join('')}</div></div>`;
+  }).join('') : '<div class="empty">tick topics in Topics to plot them</div>';
+}
+function updatePlots(b) {
+  const sel = layout.plotSel.filter((n) => streams.has(n));
+  const key = sel.map((n) => n + ':' + streams.get(n).fields.join(',')).join('|');
+  if (key !== plotsKey) buildPlots(b);
+  for (const el of b.querySelectorAll('[data-hz]')) {
+    const s = streams.get(el.dataset.hz);
+    el.textContent = streamStale(s) ? 'stale' : `${streamHz(s).toFixed(1)} Hz`;
+  }
+  for (const c of b.querySelectorAll('canvas[data-plot]')) drawPlot(c, streams.get(c.dataset.plot));
+}
+function drawPlot(c, s) {
+  const dpr = devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
+  if (!W || !H) return;
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const t = nowS(), win = opts.plotWindow, t0 = t - win, x = (ts) => (ts - t0) / win * W;
+  // Vertical gridline every 1 s that moves with the data, plus one horizontal midline.
+  g.strokeStyle = css('--line'); g.lineWidth = 1;
+  for (let k = Math.ceil(t0); k <= t; k++) { const gx = Math.round(x(k)) + 0.5; g.beginPath(); g.moveTo(gx, 0); g.lineTo(gx, H); g.stroke(); }
+  g.beginPath(); g.moveTo(0, Math.round(H / 2) + 0.5); g.lineTo(W, Math.round(H / 2) + 0.5); g.stroke();
+  const pts = s.samples.filter((p) => p.t >= t0 - 0.5);
+  let lo = Infinity, hi = -Infinity;
+  for (const p of pts) for (const f of s.fields) { const v = p.v[f]; if (v !== undefined) { lo = Math.min(lo, v); hi = Math.max(hi, v); } }
+  if (!Number.isFinite(lo)) return;
+  if (hi - lo < 1e-9) { hi += 1; lo -= 1; }
+  const pad = (hi - lo) * 0.08; hi += pad; lo -= pad;
+  const y = (v) => H - (v - lo) / (hi - lo) * H;
+  s.fields.forEach((f, i) => {
+    g.strokeStyle = css(`--series-${i % 4 + 1}`); g.lineWidth = 1.5; g.lineJoin = 'round';
+    g.setLineDash(i >= 4 ? [4, 3] : []);
+    g.beginPath(); let started = false;
+    for (const p of pts) {
+      const v = p.v[f]; if (v === undefined) { started = false; continue; }
+      if (started) g.lineTo(x(p.t), y(v)); else { g.moveTo(x(p.t), y(v)); started = true; }
+    }
+    g.stroke();
+  });
+  g.setLineDash([]);
+  g.fillStyle = css('--ink-muted'); g.font = `10px ${css('--font-mono')}`;
+  g.fillText(hi.toFixed(2), 4, 11); g.fillText(lo.toFixed(2), 4, H - 4);
+}
+
+// ---------- Settings ----------
+function buildSettings(b) {
+  b.innerHTML = `
+    <div><div class="sub">driving</div>
+      <div class="sub" style="margin:var(--space-2) 0 0">W/S or up/down, steer A/D or left/right; gamepad left stick and triggers</div></div>
+    <div><div class="sub">view</div><dl class="kv">
+      <dt>camera</dt><dd><div class="seg"><button data-cam="follow">follow</button><button data-cam="free">free</button></div></dd>
+      <dt>odom ghost</dt><dd><label class="check"><input type="checkbox" data-f="ghost"> <span data-f="ghostWord"></span></label></dd>
+      <dt>trail <span data-f="trailVal"></span></dt><dd><input class="range" type="range" min="0" max="60" step="5" data-f="trail"></dd>
+      <dt>plot window</dt><dd><div class="seg"><button data-win="20">20 s</button><button data-win="60">60 s</button></div></dd></dl></div>
+    <button class="btn btn--block" data-f="recenter">Center camera on car</button>
+    <div><div class="sub">connection</div><dl class="kv">
+      <dt>source</dt><dd><div class="seg"><button data-mode="sim">sim</button><button data-mode="real">real</button></div></dd></dl></div>`;
+  const f = (n) => q(b, `[data-f=${n}]`);
+  f('ghost').onchange = (e) => { opts.ghost = e.target.checked; refreshSettings(); };
+  f('trail').oninput = (e) => { opts.trail = +e.target.value; refreshSettings(); };
+  f('recenter').onclick = () => setCam(null);
+  b.addEventListener('click', (e) => {
+    const t = e.target.closest('button'); if (!t) return;
+    if (t.dataset.cam === 'follow') setCam(null);
+    if (t.dataset.cam === 'free' && !cam) { const car = drawnPose(); setCam(car ? { x: car.x, y: car.y } : { x: 0, y: 0 }); }
+    if (t.dataset.win) { opts.plotWindow = +t.dataset.win; refreshSettings(); }
+    if (t.dataset.mode) switchMode(t.dataset.mode);
+  });
+  refreshSettings();
+}
+function refreshSettings() {
+  const b = body('settings'); if (!b) return;
+  const f = (n) => q(b, `[data-f=${n}]`);
+  const press = (sel, on) => { const el = q(b, sel); if (el) el.setAttribute('aria-pressed', String(on)); };
+  press('[data-cam=follow]', !cam); press('[data-cam=free]', !!cam);
+  press('[data-win="20"]', opts.plotWindow === 20); press('[data-win="60"]', opts.plotWindow === 60);
+  press('[data-mode=sim]', !!link && link.mode === 'sim'); press('[data-mode=real]', !!link && link.mode === 'real');
+  f('ghost').checked = opts.ghost; setText(f('ghostWord'), opts.ghost ? 'on' : 'off');
+  f('trail').value = opts.trail; f('trailVal').innerHTML = `<span class="unit">${opts.trail ? opts.trail + ' s' : 'off'}</span>`;
+}
+
+// ---------- Sim settings ----------
+function buildSim(b) {
+  b.innerHTML = `<div><dl class="kv"><dt>real time</dt><dd id="rtfVal"></dd></dl>
+    <div class="sub" style="margin:var(--space-2) 0 0">sim speed vs the wall clock; below 1.00× when this computer can't keep up</div></div>
+    <div><dl class="kv"><dt>max speed m/s</dt><dd><input class="input" type="number" id="maxSpeedIn" min="0" max="10" step="0.1" style="width:64px"></dd></dl></div>
+    <div><dl class="kv"><dt>track</dt><dd><select class="select" id="trackIn"></select></dd></dl>
+    <div class="sub" style="margin:var(--space-2) 0 0">loads into the running sim; the car moves to its start</div></div>
+    <div><label class="check"><input type="checkbox" id="trackShow"> show track</label>
+    <div class="sub" style="margin:var(--space-2) 0 0">this view only; the walls stay in the sim</div></div>`;
+  $('maxSpeedIn').value = opts.maxSpeed;
+  $('maxSpeedIn').oninput = (e) => { const v = parseFloat(e.target.value); opts.maxSpeed = Number.isFinite(v) && v >= 0 ? v : 1.0; };
+  fillTrackSelect($('trackIn'));
+  refreshRtf();
+  $('trackShow').checked = !layout.hideTrack;
+  $('trackShow').onchange = () => { layout.hideTrack = !$('trackShow').checked; saveLayout(); };
+  $('trackIn').onchange = () => { tracks.selected = $('trackIn').value; $('trackIn2').value = tracks.selected; sendServer({ type: 'sim', track: tracks.selected }); };
+}
+function refreshRtf() {
+  const el = $('rtfVal'); if (!el) return;
+  const rtf = state && Number.isFinite(state.rtf) ? state.rtf : null;
+  setText(el, rtf === null ? '—' : rtf.toFixed(2) + '×');
+}
+function fillTrackSelect(sel) {
+  if (!sel) return;
+  sel.replaceChildren(...tracks.names.map((n) => new Option(n, n)));
+  sel.value = tracks.names.includes(tracks.selected) ? tracks.selected : tracks.names[0];
+}
+
+// ---------- LiDAR ----------
+// Off by default. While the panel is open and switched on, the page holds a /scan socket; closing it
+// (switching off, closing the panel) is what lets the server, bridge and sim stop producing scans.
+// Scans are drawn on the main view (drawScan), in the overlay colour picked in the panel.
+const OVERLAYS = ['overlay-1', 'overlay-2', 'overlay-3', 'overlay-4'];
+const FOV_MODES = ['fill', 'outline', 'none']; // FOV fan out to range_max on the main view
+const fovMode = () => FOV_MODES.includes(layout.lidarFov) ? layout.lidarFov : FOV_MODES[0];
+const lidar = { on: false, ws: null, retryAt: 0, scan: null, arrivals: [] };
+function parseScan(buf) {
+  // protocol.md, "Sensor websockets": little-endian header, then `count` float32 ranges.
+  const v = new DataView(buf);
+  const count = v.getUint32(24, true);
+  return { stamp: v.getFloat64(0, true), angleMin: v.getFloat32(8, true), angleInc: v.getFloat32(12, true),
+    rangeMin: v.getFloat32(16, true), rangeMax: v.getFloat32(20, true),
+    mount: { x: v.getFloat32(28, true), y: v.getFloat32(32, true), yaw: v.getFloat32(36, true) },
+    ranges: new Float32Array(buf, 40, count) };
+}
+function syncLidar() {
+  if (!els.lidar) lidar.on = false; // closing the panel (or a layout reset) switches it off
+  const want = lidar.on && !!els.lidar && serverUp;
+  if (want && !lidar.ws && performance.now() >= lidar.retryAt) {
+    const ws = new WebSocket(`ws://${location.host}/scan`);
+    ws.binaryType = 'arraybuffer';
+    ws.onmessage = (e) => {
+      if (!(e.data instanceof ArrayBuffer)) return;
+      const s = lidar.scan = parseScan(e.data);
+      lidar.arrivals.push(nowS());
+      let nearest = Infinity;
+      for (const r of s.ranges) if (r >= s.rangeMin && r <= s.rangeMax && r < nearest) nearest = r;
+      ingest('/scan', 'LaserScan', { nearest: Number.isFinite(nearest) ? nearest : null, count: s.ranges.length });
+    };
+    ws.onclose = () => { if (lidar.ws === ws) { lidar.ws = null; lidar.scan = null; lidar.retryAt = performance.now() + 1000; } };
+    lidar.ws = ws;
+  } else if (!want && lidar.ws) {
+    const ws = lidar.ws; lidar.ws = null; lidar.scan = null; ws.close();
+  }
+}
+function lidarHz() {
+  const t = nowS();
+  while (lidar.arrivals.length && lidar.arrivals[0] < t - 1) lidar.arrivals.shift();
+  return lidar.arrivals.length;
+}
+const lidarColour = () => css(`--${OVERLAYS.includes(layout.lidarColour) ? layout.lidarColour : OVERLAYS[0]}`);
+function lidarMeta() { return lidar.on ? (lidar.scan ? `${lidarHz()} Hz` : 'waiting') : 'off'; }
+function buildLidar(b) {
+  b.innerHTML = `<dl class="kv">
+      <dt>scan</dt><dd><div class="seg"><button data-on="1">on</button><button data-on="0">off</button></div></dd>
+      <dt>fov</dt><dd><div class="seg">${FOV_MODES.map((m) => `<button data-fov="${m}">${m}</button>`).join('')}</div></dd>
+      <dt>colour</dt><dd><div class="seg">${OVERLAYS.map((o) =>
+        `<button data-colour="${o}" aria-label="${o}"><span class="swatch" style="background:var(--${o})"></span></button>`).join('')}</div></dd>
+    </dl>
+    <div class="sub" style="margin:0" data-f="note"></div>`;
+  b.addEventListener('click', (e) => {
+    const on = e.target.closest('button[data-on]');
+    if (on) { lidar.on = on.dataset.on === '1'; syncLidar(); }
+    const c = e.target.closest('button[data-colour]');
+    if (c) { layout.lidarColour = c.dataset.colour; saveLayout(); }
+    const f = e.target.closest('button[data-fov]');
+    if (f) { layout.lidarFov = f.dataset.fov; saveLayout(); }
+  });
+}
+function updateLidar(b) {
+  for (const t of b.querySelectorAll('button[data-on]')) t.setAttribute('aria-pressed', String((t.dataset.on === '1') === lidar.on));
+  const sel = OVERLAYS.includes(layout.lidarColour) ? layout.lidarColour : OVERLAYS[0];
+  for (const t of b.querySelectorAll('button[data-colour]')) t.setAttribute('aria-pressed', String(t.dataset.colour === sel));
+  for (const t of b.querySelectorAll('button[data-fov]')) t.setAttribute('aria-pressed', String(t.dataset.fov === fovMode()));
+  const s = lidar.scan;
+  setText(q(b, '[data-f=note]'), !lidar.on ? 'off: the sim renders nothing for it' : s
+    ? `/scan · ${s.ranges.length} points · ${s.rangeMax.toFixed(0)} m range` : serverUp ? 'waiting for /scan' : 'no server');
+}
+// In world coordinates, under the car: the FOV as a fan out to range_max (filled at 50 %, outlined, or
+// not drawn), then every return as a 2 px square.
+// Car pose is the newest drawn pose; the mount (base_link -> lidar) comes with each scan.
+function drawScan(car) {
+  const s = lidar.scan;
+  if (!s || !car) return;
+  const colour = lidarColour();
+  ctx.save();
+  ctx.translate(car.x, car.y); ctx.rotate(car.yaw);
+  ctx.translate(s.mount.x, s.mount.y); ctx.rotate(s.mount.yaw);
+  ctx.fillStyle = ctx.strokeStyle = colour;
+  const fov = fovMode();
+  if (fov !== 'none') {
+    ctx.beginPath(); ctx.moveTo(0, 0);
+    ctx.arc(0, 0, s.rangeMax, s.angleMin, s.angleMin + s.angleInc * (s.ranges.length - 1));
+    ctx.closePath();
+    if (fov === 'fill') { ctx.globalAlpha = 0.5; ctx.fill(); ctx.globalAlpha = 1; }
+    else { ctx.lineWidth = 1 / scale; ctx.setLineDash([]); ctx.stroke(); }
+  }
+  const d = 2 / scale;
+  ctx.beginPath();
+  for (let i = 0; i < s.ranges.length; i++) {
+    const r = s.ranges[i];
+    if (!(r >= s.rangeMin && r <= s.rangeMax)) continue; // inf / nan: no return
+    const a = s.angleMin + i * s.angleInc;
+    ctx.rect(r * Math.cos(a) - d / 2, r * Math.sin(a) - d / 2, d, d);
+  }
+  ctx.fill();
+  ctx.restore();
+}
+
+// ---------- IMU ----------
+// One panel per IMU the bridge announces (`sensors`), so a second IMU in the URDF gets its own. While a
+// panel is open the page holds that IMU's socket; the server filters every raw sample and sends a summary
+// per step (0.1 s unless the panel picks a finer one). Plots show the last second, a smooth line through
+// the summaries. What the panel shows is the operator's pick from IMU_MODS.
+const IMU_STEPS = [0.1, 0.05, 0.02, 0.01];
+const IMU_MODS = {
+  attitude: 'roll · pitch · yaw',
+  yawrate: 'yaw rate vs commanded',
+  g: 'lateral · longitudinal g',
+  peak: 'peak g · saturation',
+  rate: 'rate · staleness',
+  bias: 'gyro bias',
+};
+const IMU_DEFAULT_MODS = ['attitude', 'rate'];
+const IMU_WINDOW = 1;   // s shown in the plots
+const IMU_STALE = 0.5;  // s without a sample before the panel calls it stale
+const G = 9.80665;
+const DEG = 180 / Math.PI;
+let imuNames = [];
+const imus = new Map(); // name -> {ws, retryAt, pts: [{t, msg, cmd}], last}
+let lastCmd = null;     // latest teleop sent: {speed, steer, t}
+
+const imuCfg = (name) => {
+  layout.imu ||= {};
+  const c = layout.imu[name] ||= {};
+  if (!Array.isArray(c.mods)) c.mods = [...IMU_DEFAULT_MODS];
+  if (!IMU_STEPS.includes(c.step)) c.step = IMU_STEPS[0];
+  return c;
+};
+const imuState = (name) => {
+  if (!imus.has(name)) imus.set(name, { ws: null, retryAt: 0, pts: [], last: null });
+  return imus.get(name);
+};
+// Yaw rate the teleop asks for: speed * tan(steer) / wheelbase, the same conversion car_link uses.
+function commandedYawRate() {
+  if (!lastCmd || nowS() - lastCmd.t > 0.2) return null; // no teleop: the car isn't under our command
+  return lastCmd.speed * Math.tan(lastCmd.steer) / WHEELBASE;
+}
+
+function setImus(names) {
+  imuNames = Array.isArray(names) ? names : [];
+  for (const name of imuNames) {
+    const id = `imu:${name}`;
+    if (PANELS[id]) continue;
+    PANELS[id] = {
+      title: `IMU ${name}`, group: 'sensors', w: 320, available: () => imuNames.includes(name), note: 'not found',
+      meta: () => imuMeta(name), build: (b) => buildImu(b, name), update: (b) => updateImu(b, name),
+    };
+  }
+  mountPanels();
+}
+function syncImus() {
+  for (const name of new Set([...imus.keys(), ...imuNames])) {
+    const st = imuState(name);
+    const want = !!els[`imu:${name}`] && serverUp && imuNames.includes(name);
+    if (want && !st.ws && performance.now() >= st.retryAt) {
+      const ws = new WebSocket(`ws://${location.host}/imu/${encodeURIComponent(name)}`);
+      ws.onopen = () => ws.send(JSON.stringify({ type: 'step', s: imuCfg(name).step }));
+      ws.onmessage = (e) => {
+        const m = JSON.parse(e.data);
+        if (m.type !== 'imu') return;
+        const t = nowS();
+        st.last = m;
+        st.pts.push({ t, m, cmd: commandedYawRate() });
+        while (st.pts.length && st.pts[0].t < t - IMU_WINDOW - 0.5) st.pts.shift();
+        if (m.roll !== null) ingest(`/imu/${name}`, 'Imu', { roll: m.roll * DEG, pitch: m.pitch * DEG, yaw: m.yaw * DEG, rate: m.rate });
+      };
+      ws.onclose = () => { if (st.ws === ws) { st.ws = null; st.last = null; st.pts = []; st.retryAt = performance.now() + 1000; } };
+      st.ws = ws;
+    } else if (!want && st.ws) {
+      const ws = st.ws; st.ws = null; st.last = null; st.pts = []; ws.close();
+    }
+  }
+}
+function sendImu(name, msg) {
+  const ws = imuState(name).ws;
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg));
+}
+const imuStale = (m) => !m || m.age === null || m.age > IMU_STALE;
+function imuMeta(name) {
+  const m = imuState(name).last;
+  return !serverUp ? 'no server' : !m ? 'waiting' : imuStale(m) ? 'stale' : `${m.rate} Hz`;
+}
+
+function buildImu(b, name) {
+  const c = imuCfg(name);
+  b.innerHTML = `<dl class="kv">
+      <dt>step</dt><dd><div class="seg">${IMU_STEPS.map((s) => `<button data-step="${s}">${s}</button>`).join('')}</div></dd></dl>
+    <details class="mods"><summary data-f="modsum"></summary><div class="mods__list">${Object.entries(IMU_MODS).map(([k, label]) =>
+      `<label class="check"><input type="checkbox" data-mod="${k}" ${c.mods.includes(k) ? 'checked' : ''}> ${esc(label)}</label>`).join('')}</div></details>
+    <div class="stack" data-f="mods"></div>`;
+  b.addEventListener('click', (e) => {
+    const s = e.target.closest('button[data-step]');
+    if (s) { c.step = +s.dataset.step; saveLayout(); sendImu(name, { type: 'step', s: c.step }); }
+    if (e.target.closest('button[data-f=resetyaw]')) sendImu(name, { type: 'reset_yaw' });
+  });
+  b.addEventListener('change', (e) => {
+    const k = e.target.dataset && e.target.dataset.mod;
+    if (!k) return;
+    c.mods = Object.keys(IMU_MODS).filter((m) => m === k ? e.target.checked : c.mods.includes(m));
+    saveLayout(); buildImuMods(b, name);
+  });
+  buildImuMods(b, name);
+}
+const imuPlot = (k) => `<canvas data-plot="${k}"></canvas>`;
+const imuLegend = (items) => `<div class="legend">${items.map(([label, i, dashed]) =>
+  `<span><i class="${dashed ? 'dashed' : ''}" style="background:var(--series-${i});border-color:var(--series-${i})"></i>${label}</span>`).join('')}</div>`;
+function buildImuMods(b, name) {
+  const c = imuCfg(name);
+  setText(q(b, '[data-f=modsum]'), `modules · ${c.mods.length} of ${Object.keys(IMU_MODS).length} shown`);
+  const html = {
+    attitude: `<dl class="kv"><dt>roll</dt><dd data-v="roll"></dd><dt>pitch</dt><dd data-v="pitch"></dd>
+        <dt>yaw <span class="unit">relative</span></dt><dd data-v="yaw"></dd></dl>
+      ${imuPlot('attitude')}${imuLegend([['roll', 1], ['pitch', 2], ['yaw', 3]])}
+      <button class="btn btn--small" data-f="resetyaw">reset yaw</button>`,
+    yawrate: `<dl class="kv"><dt>measured</dt><dd data-v="yr"></dd><dt>commanded</dt><dd data-v="yrcmd"></dd></dl>
+      ${imuPlot('yawrate')}${imuLegend([['measured', 1], ['commanded', 2, true]])}`,
+    g: `<dl class="kv"><dt>lateral <span class="unit">+ left</span></dt><dd data-v="lat"></dd>
+        <dt>longitudinal <span class="unit">+ forward</span></dt><dd data-v="lon"></dd></dl>
+      ${imuPlot('g')}${imuLegend([['lateral', 1], ['longitudinal', 2]])}`,
+    peak: `<dl class="kv"><dt>peak |a| <span class="unit">last 1 s</span></dt><dd data-v="peak"></dd><dt>saturation</dt><dd data-v="sat"></dd></dl>`,
+    rate: `<dl class="kv"><dt>received</dt><dd data-v="hz"></dd><dt>last sample</dt><dd data-v="age"></dd><dt>summaries</dt><dd data-v="pps"></dd></dl>`,
+    bias: `<dl class="kv"><dt>x</dt><dd data-v="bx"></dd><dt>y</dt><dd data-v="by"></dd><dt>z</dt><dd data-v="bz"></dd></dl>
+      <div class="sub" data-v="bnote"></div>`,
+  };
+  q(b, '[data-f=mods]').innerHTML = c.mods.length ? c.mods.map((k) =>
+    `<div class="mod" data-mod-box="${k}"><div class="sub">${esc(IMU_MODS[k])}</div>${html[k]}</div>`).join('')
+    : '<div class="empty">pick modules above</div>';
+}
+const fmt = (v, d, unit) => v === null || v === undefined ? '—' : `${v.toFixed(d)}<span class="unit"> ${unit}</span>`;
+function updateImu(b, name) {
+  const c = imuCfg(name), st = imuState(name), m = st.last, t = nowS();
+  for (const el of b.querySelectorAll('button[data-step]')) el.setAttribute('aria-pressed', String(+el.dataset.step === c.step));
+  const v = (k, html, cls) => { const el = q(b, `[data-v=${k}]`); if (el) { el.innerHTML = html; el.className = cls || ''; } };
+  const recent = st.pts.filter((p) => p.t >= t - IMU_WINDOW);
+  const has = (p) => p.m.n > 0;
+  if (c.mods.includes('attitude')) {
+    v('roll', fmt(m && m.roll !== null ? m.roll * DEG : null, 1, '°'));
+    v('pitch', fmt(m && m.pitch !== null ? m.pitch * DEG : null, 1, '°'));
+    v('yaw', fmt(m && m.yaw !== null ? m.yaw * DEG : null, 1, '°'));
+    drawImuPlot(q(b, 'canvas[data-plot=attitude]'), st.pts, [
+      (p) => p.m.roll === null ? null : p.m.roll * DEG, (p) => p.m.pitch === null ? null : p.m.pitch * DEG,
+      (p) => p.m.yaw === null ? null : p.m.yaw * DEG]);
+  }
+  if (c.mods.includes('yawrate')) {
+    const cmd = commandedYawRate();
+    v('yr', fmt(m && m.gyro ? m.gyro[2] * DEG : null, 1, '°/s'));
+    v('yrcmd', cmd === null ? 'no command' : fmt(cmd * DEG, 1, '°/s'), cmd === null ? 'is-muted' : '');
+    drawImuPlot(q(b, 'canvas[data-plot=yawrate]'), st.pts, [
+      (p) => has(p) ? p.m.gyro[2] * DEG : null, (p) => p.cmd === null ? null : p.cmd * DEG], [false, true]);
+  }
+  if (c.mods.includes('g')) {
+    v('lat', fmt(m && m.accel ? m.accel[1] / G : null, 2, 'g'));
+    v('lon', fmt(m && m.accel ? m.accel[0] / G : null, 2, 'g'));
+    drawImuPlot(q(b, 'canvas[data-plot=g]'), st.pts, [(p) => has(p) ? p.m.accel[1] / G : null, (p) => has(p) ? p.m.accel[0] / G : null]);
+  }
+  if (c.mods.includes('peak')) {
+    const peaks = recent.filter(has).map((p) => p.m.peak_g);
+    v('peak', fmt(peaks.length ? Math.max(...peaks) : null, 2, 'g'));
+    const sat = recent.some((p) => p.m.sat);
+    v('sat', m ? (sat ? 'CLIPPED' : 'ok') : '—', m ? (sat ? 'is-bad' : 'is-ok') : '');
+  }
+  if (c.mods.includes('rate')) {
+    const stale = imuStale(m);
+    v('hz', m ? `${m.rate}<span class="unit"> Hz</span>` : '—', m && stale ? 'is-warn' : '');
+    v('age', m ? fmtAge(m.age) : '—', m && stale ? 'is-warn' : '');
+    v('pps', `${recent.length}<span class="unit"> /s · step ${c.step} s</span>`);
+  }
+  if (c.mods.includes('bias')) {
+    const bias = m && m.bias;
+    ['bx', 'by', 'bz'].forEach((k, i) => v(k, fmt(bias ? bias[i] * DEG : null, 3, '°/s')));
+    setText(q(b, '[data-v=bnote]'), !m ? '' : m.stopped ? 'car still: learning' : bias ? 'car moving: holding the last value' : 'learned once the car is still', 'sub');
+  }
+}
+// The last IMU_WINDOW seconds as smooth lines (quadratic curves through the midpoints between summaries).
+// A null value breaks the line, unless `joinNulls` (then the point is skipped).
+function drawImuPlot(c, pts, series, dashed = [], joinNulls = false) {
+  if (!c) return;
+  const dpr = devicePixelRatio || 1, W = c.clientWidth, H = c.clientHeight;
+  if (!W || !H) return;
+  if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const t = nowS(), t0 = t - IMU_WINDOW, x = (ts) => (ts - t0) / IMU_WINDOW * W;
+  const shown = pts.filter((p) => p.t >= t0 - 0.2);
+  let lo = Infinity, hi = -Infinity;
+  for (const p of shown) for (const f of series) { const val = f(p); if (val !== null) { lo = Math.min(lo, val); hi = Math.max(hi, val); } }
+  if (!Number.isFinite(lo)) return;
+  if (hi - lo < 1e-6) { hi += 1; lo -= 1; }
+  const pad = (hi - lo) * 0.1; hi += pad; lo -= pad;
+  const y = (val) => H - (val - lo) / (hi - lo) * H;
+  g.strokeStyle = css('--line'); g.lineWidth = 1;
+  if (lo < 0 && hi > 0) { const zy = Math.round(y(0)) + 0.5; g.beginPath(); g.moveTo(0, zy); g.lineTo(W, zy); g.stroke(); }
+  series.forEach((f, i) => {
+    g.strokeStyle = css(`--series-${i % 4 + 1}`); g.lineWidth = 1.5; g.lineJoin = 'round';
+    g.setLineDash(dashed[i] ? [4, 3] : []);
+    let run = [];
+    const flush = () => {
+      if (run.length > 1) {
+        g.beginPath(); g.moveTo(run[0][0], run[0][1]);
+        for (let k = 1; k < run.length - 1; k++) {
+          g.quadraticCurveTo(run[k][0], run[k][1], (run[k][0] + run[k + 1][0]) / 2, (run[k][1] + run[k + 1][1]) / 2);
+        }
+        g.lineTo(run[run.length - 1][0], run[run.length - 1][1]);
+        g.stroke();
+      }
+      run = [];
+    };
+    for (const p of shown) { const val = f(p); if (val !== null) run.push([x(p.t), y(val)]); else if (!joinNulls) flush(); }
+    flush();
+  });
+  g.setLineDash([]);
+  g.fillStyle = css('--ink-muted'); g.font = `10px ${css('--font-mono')}`;
+  g.fillText(hi.toFixed(2), 4, 11); g.fillText(lo.toFixed(2), 4, H - 4);
+}
+
+// ---------- wheel encoders ----------
+// One panel for the four wheel encoders, available when the bridge announces them (`sensors`). While it is
+// open the page holds the /encoders/wheel socket; the server takes every angle sample and sends per wheel
+// the measured speed over each step, the received rate and the share of reads dropped. The plot is the
+// last second of measured speed, sign as the encoders give it (forward is positive on every wheel in the sim).
+// A step with no frame from the bridge has null speeds: the plot skips those points rather than breaking.
+let encoderNames = [];
+const enc = { ws: null, retryAt: 0, pts: [], last: null }; // pts: [{t, m}]
+const encCfg = () => {
+  const c = layout.encoders ||= {};
+  if (!IMU_STEPS.includes(c.step)) c.step = IMU_STEPS[0];
+  return c;
+};
+const encLabel = (name) => name.replace(/^wheel_/, '');
+function setEncoders(names) {
+  encoderNames = Array.isArray(names) ? names : [];
+  mountPanels();
+}
+function syncEncoders() {
+  const want = !!els.encoders && serverUp && encoderNames.length > 0;
+  if (want && !enc.ws && performance.now() >= enc.retryAt) {
+    const ws = new WebSocket(`ws://${location.host}/encoders/wheel`);
+    ws.onopen = () => ws.send(JSON.stringify({ type: 'step', s: encCfg().step }));
+    ws.onmessage = (e) => {
+      const m = JSON.parse(e.data);
+      if (m.type !== 'encoders') return;
+      const t = nowS();
+      enc.last = m;
+      enc.pts.push({ t, m });
+      while (enc.pts.length && enc.pts[0].t < t - IMU_WINDOW - 0.5) enc.pts.shift();
+    };
+    ws.onclose = () => { if (enc.ws === ws) { enc.ws = null; enc.last = null; enc.pts = []; enc.retryAt = performance.now() + 1000; } };
+    enc.ws = ws;
+  } else if (!want && enc.ws) {
+    const ws = enc.ws; enc.ws = null; enc.last = null; enc.pts = []; ws.close();
+  }
+}
+function encoderMeta() {
+  const m = enc.last;
+  return !serverUp ? 'no server' : !m ? 'waiting' : imuStale(m) ? 'stale' : `step ${encCfg().step} s`;
+}
+function buildEncoders(b) {
+  const c = encCfg();
+  b.innerHTML = `<dl class="kv">
+      <dt>step</dt><dd><div class="seg">${IMU_STEPS.map((s) => `<button data-step="${s}">${s}</button>`).join('')}</div></dd></dl>
+    <div class="mod"><div class="sub">measured speed <span class="unit">rad/s · last ${IMU_WINDOW} s · y axis is dynamic</span></div>
+      ${imuPlot('speed')}${imuLegend(encoderNames.map((n, i) => [esc(encLabel(n)), i % 4 + 1]))}</div>
+    <div class="mod"><div class="sub">per wheel <span class="unit">speed · received · dropped</span></div>
+      <dl class="kv">${encoderNames.map((n, i) => `<dt>${esc(encLabel(n))}</dt><dd data-v="w${i}"></dd>`).join('')}</dl></div>`;
+  b.addEventListener('click', (e) => {
+    const s = e.target.closest('button[data-step]');
+    if (!s) return;
+    c.step = +s.dataset.step; saveLayout();
+    if (enc.ws && enc.ws.readyState === WebSocket.OPEN) enc.ws.send(JSON.stringify({ type: 'step', s: c.step }));
+  });
+}
+function updateEncoders(b) {
+  const c = encCfg(), m = enc.last, stale = imuStale(m);
+  for (const el of b.querySelectorAll('button[data-step]')) el.setAttribute('aria-pressed', String(+el.dataset.step === c.step));
+  encoderNames.forEach((_, i) => {
+    const el = q(b, `[data-v=w${i}]`);
+    if (!el) return;
+    const sp = m && m.speed[i] !== undefined ? m.speed[i] : null;
+    const dr = m && m.dropped[i] !== undefined ? m.dropped[i] : null;
+    // The last non-null speed: a step without a frame shouldn't blank the readout.
+    const lastSp = sp !== null ? sp : (enc.pts.findLast((p) => p.m.speed[i] !== null) || { m: { speed: [] } }).m.speed[i];
+    const pad = (text, n) => text.padStart(n, '\u2007'); // figure spaces: the columns stay put as digits come and go
+    el.innerHTML = !m ? '—' : `${fmt(lastSp === undefined ? null : lastSp, 2, 'rad/s')} · ${pad(String(m.rate[i]), 4)}<span class="unit"> Hz</span> · ${
+      dr === null ? '—' : `${pad((dr * 100).toFixed(1), 5)}<span class="unit"> %</span>`}`;
+    el.className = m && stale ? 'is-warn' : '';
+  });
+  drawImuPlot(q(b, 'canvas[data-plot=speed]'), enc.pts, encoderNames.map((_, i) => (p) => p.m.speed[i] ?? null), [], true);
+}
+
+// ---------- server websocket ----------
+let serverWs = null;
+function sendServer(msg) {
+  if (serverWs && serverWs.readyState === WebSocket.OPEN) serverWs.send(JSON.stringify(msg));
+}
+function connectServer() {
+  const ws = new WebSocket(`ws://${location.host}/ws`);
+  serverWs = ws;
+  ws.onopen = () => { serverUp = true; };
+  ws.onclose = () => {
+    serverUp = false;
+    // Without the server we know nothing about the car: drop stale pose and stop the helper's UDP.
+    state = null; link = null; trackStatus = null; onLink(); setImus([]); setEncoders([]);
+    setTimeout(connectServer, 1000);
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'state') onState(msg);
+    else if (msg.type === 'link') { link = msg; onLink(); }
+    else if (msg.type === 'track') loadTrack(msg.meta, msg.png);
+    else if (msg.type === 'tracks') setTracks(msg.names, msg.selected);
+    else if (msg.type === 'track_status') onTrackStatus(msg);
+    else if (msg.type === 'sensors') { setImus(msg.imu); setEncoders(msg.encoders); }
+  };
+}
+
+function onTrackStatus(msg) {
+  const prev = trackStatus;
+  trackStatus = msg;
+  if (prev && prev.status === msg.status && prev.name === msg.name) return;
+  if (msg.status === 'loading') logLine(`sim: loading track ${msg.name || 'none'}`);
+  else if (msg.status === 'ready') logLine(`sim: track ${msg.name} loaded`);
+  else if (msg.status === 'failed') logLine(`sim: track ${msg.name} failed: ${msg.error || 'unknown error'}`);
+}
+
+function onState(msg) {
+  state = msg;
+  refreshRtf();
+  const names = TOPICS[msg.source === 'sim' ? 'sim' : 'car'];
+  for (const k of ['estimate', 'truth', 'link']) if (names[k]) ingest(names[k][0], names[k][1], msg[k]);
+  const p = drawnPose();
+  if (!p) return;
+  const key = `${msg.source}/${simMode() ? 'truth' : 'estimate'}`;
+  if (key !== trailKey) { trail = []; trailKey = key; }
+  const now = nowS();
+  trail.push([p.x, p.y, now]);
+  while (trail.length && now - trail[0][2] > 60) trail.shift();
+}
+
+const simMode = () => !!link && link.mode === 'sim';
+// Sim: draw ground truth (ghost = estimate). Real: no truth exists, so draw the car's own estimate.
+const drawnPose = () => state ? (simMode() ? state.truth : state.estimate) || null : null;
+
+let lastCarFound = false;
+let lastUdpKey = undefined;
+let lastSimMode = null;
+function onLink() {
+  const l = link;
+  if (l && !l.connected) { state = null; trackStatus = null; } // no bridge, so the last pose is stale
+  // Real mode with no car: say so prominently, but only the user switches back to sim.
+  $('nocar').style.display = l && l.mode === 'real' && !l.connected ? 'flex' : 'none';
+  // Toast only on the rising edge, and only while we're in sim (in real it's already in use).
+  const found = !!l && !!l.car_found;
+  if (found && !lastCarFound && simMode()) $('toast').style.display = 'flex';
+  if (!found || (l && l.mode === 'real')) $('toast').style.display = 'none';
+  lastCarFound = found;
+  // Sim settings exists only while connected to the sim.
+  if (simMode() !== lastSimMode) { lastSimMode = simMode(); mountPanels(); }
+  // Max speed is set in Sim settings only; the real car always drives at the default.
+  if (l && l.mode === 'real') opts.maxSpeed = 1.0;
+  refreshSettings();
+  refreshRtf();
+  // Tell the helper where to send UDP, but only when it changes.
+  const udp = l ? l.udp : null;
+  const key = JSON.stringify(udp || null);
+  if (key !== lastUdpKey) { lastUdpKey = key; sendTarget(); }
+}
+
+function sendTarget() {
+  const udp = link ? link.udp : null;
+  sendHelper(udp ? { type: 'target', host: udp.host, port: udp.port } : { type: 'target', host: null });
+}
+
+function switchMode(mode) {
+  if (mode === 'sim') sendServer({ type: 'sim', track: tracks.selected || null }); // before the switch so the sim starts on it
+  sendServer({ type: 'switch', mode });
+}
+$('toSim').onclick = () => switchMode('sim');
+$('trackIn2').onchange = () => { tracks.selected = $('trackIn2').value; if ($('trackIn')) $('trackIn').value = tracks.selected; };
+
+// The server lists the bundled tracks, so only a track that exists can be picked.
+function setTracks(names, selected) {
+  tracks = { names, selected: names.includes(selected) ? selected : names[0] };
+  fillTrackSelect($('trackIn')); fillTrackSelect($('trackIn2'));
+}
+$('toastX').onclick = () => { $('toast').style.display = 'none'; };
+$('toastOpen').onclick = () => {
+  if (!layout.open.settings) { layout.open.settings = { x: snap(480), y: snap(TOPBAR + 96) }; saveLayout(); mountPanels(); }
+  els.settings.style.zIndex = ++zTop;
+  $('toast').style.display = 'none';
+};
+
+// ---------- helper websocket ----------
+let helperWs = null;
+let cutoffOn = false;
+let lastSent = null; // previous `sent` report, to log only the changes
+function sendHelper(msg) {
+  if (helperWs && helperWs.readyState === WebSocket.OPEN) helperWs.send(JSON.stringify(msg));
+}
+function connectHelper() {
+  const ws = new WebSocket('ws://localhost:8081');
+  helperWs = ws;
+  ws.onopen = () => {
+    helperUp = true;
+    logLine('helper connected');
+    sendTarget(); // a restarted helper knows nothing; give it the target straight away
+  };
+  ws.onclose = () => {
+    if (lastSent !== 'down') logLine('helper disconnected');
+    lastSent = 'down';
+    helperUp = false;
+    setTimeout(connectHelper, 1000);
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'sent') onSent(msg);
+  };
+}
+
+const SENT_REASON = {
+  handshaking: 'handshaking with car_link',
+  replaced: 'different session detected: another ground station took over',
+};
+let lastRejected = null;
+function onSent(m) {
+  sent = m;
+  cutoffOn = !!m.cutoff; // the helper's view is the truth for the button
+  const now = `${m.sending}/${m.reason}`;
+  if (now !== lastSent) logLine(m.sending ? `sending (session ${m.session})` : `stopped: ${SENT_REASON[m.reason] || m.reason}`);
+  lastSent = now;
+  if (m.rejected && m.rejected !== lastRejected) logLine(`car_link rejecting packets sent: ${m.rejected}`);
+  lastRejected = m.rejected;
+}
+
+function toggleCutoff() {
+  cutoffOn = !cutoffOn; // optimistic; the next `sent` report confirms it
+  sendHelper({ type: 'cutoff', on: cutoffOn });
+}
+
+// Page heartbeat: the helper only sends UDP heartbeats while these keep arriving.
+let hbSeq = 0;
+setInterval(() => { sendHelper({ type: 'hb', seq: hbSeq++ }); }, HB_MS);
+
+// ---------- teleop ----------
+const keys = new Set();
+const DRIVE_KEYS = { w: 1, s: 1, a: 1, d: 1, arrowup: 1, arrowdown: 1, arrowleft: 1, arrowright: 1 };
+const typing = (e) => {
+  const t = e.target;
+  return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable);
+};
+addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if (typing(e) || !DRIVE_KEYS[k] || e.metaKey || e.ctrlKey || e.altKey) return;
+  keys.add(k); e.preventDefault(); // arrows would otherwise scroll a panel
+});
+addEventListener('keyup', (e) => { keys.delete(e.key.toLowerCase()); });
+// A key released while the window is unfocused never sends keyup: drop everything so the car stops.
+addEventListener('blur', () => keys.clear());
+
+const dz = (v) => (Math.abs(v) < DEADZONE ? 0 : v);
+function gamepadInput() {
+  for (const gp of navigator.getGamepads ? navigator.getGamepads() : []) {
+    if (!gp) continue;
+    const steer = dz(-(gp.axes[0] || 0)); // stick left is negative; + steer is left
+    const rt = gp.buttons[7] ? gp.buttons[7].value : 0, lt = gp.buttons[6] ? gp.buttons[6].value : 0;
+    let throttle = dz(rt) - dz(lt);
+    if (!throttle) throttle = dz(-(gp.axes[3] || 0)); // right stick Y as the alternative, up = forward
+    if (steer || throttle) return { throttle, steer };
+  }
+  return null;
+}
+
+let lastActive = -Infinity;
+let driving = false;
+setInterval(() => {
+  let throttle = 0, steer = 0, active = false;
+  if (keys.size) {
+    throttle = (keys.has('w') || keys.has('arrowup') ? 1 : 0) - (keys.has('s') || keys.has('arrowdown') ? 1 : 0);
+    steer = (keys.has('a') || keys.has('arrowleft') ? 1 : 0) - (keys.has('d') || keys.has('arrowright') ? 1 : 0);
+    active = true;
+  } else {
+    const gp = gamepadInput();
+    if (gp) { throttle = gp.throttle; steer = gp.steer; active = true; }
+  }
+  const now = performance.now();
+  if (active) lastActive = now;
+  else if (now - lastActive > TELEOP_TAIL_MS) { driving = false; return; } // idle: send nothing
+  const speed = active ? throttle * opts.maxSpeed : 0;
+  const steerRad = active ? Math.max(-1, Math.min(1, steer)) * MAX_STEER : 0;
+  sendHelper({ type: 'teleop', speed, steer: steerRad });
+  lastCmd = { speed, steer: steerRad, t: nowS() };
+  driving = active;
+}, TELEOP_MS);
+
+// ---------- hidden tab ----------
+// Browsers throttle timers in hidden tabs, so page heartbeats stop and the car stops by design.
+let hiddenAt = null, bannerTimer = null;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { hiddenAt = performance.now(); keys.clear(); return; }
+  if (hiddenAt === null) return;
+  const secs = ((performance.now() - hiddenAt) / 1000).toFixed(1);
+  hiddenAt = null;
+  const b = $('banner');
+  b.textContent = `Heartbeat paused while this tab was hidden (${secs} s); the car stops without it.`;
+  b.style.display = 'block';
+  clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => { b.style.display = 'none'; }, 4000);
+});
+
+// ---------- top bar ----------
+function setPill(el, st, v) {
+  const cls = 'pill' + (st ? ` pill--${st}` : '');
+  if (el.className !== cls) el.className = cls;
+  setText(q(el, '.pill__v'), v);
+}
+function updateTopbar() {
+  const sim = simMode();
+  const tgt = $('pillTarget');
+  setPill(tgt, '', link ? (sim ? `sim · ${trackNote}` : `car · ${link.udp ? link.udp.host : 'not found'}`) : '—');
+  q(tgt, '.pill__dot').style.background = link ? css(sim ? '--accent' : '--car') : '';
+  setPill($('pillDrive'), driving ? 'ok' : '', driving ? 'driving' : 'idle');
+  const lk = state ? state.link : null, hb = $('pillHb');
+  if (!lk) setPill(hb, '', 'no report');
+  else if (lk.reason === 'heartbeat' || (lk.heartbeat_age !== null && lk.heartbeat_age > TIMEOUT_S)) setPill(hb, 'bad', 'LOST');
+  else if (sent && sent.sending) setPill(hb, 'ok', `ok ${sent.count * 5} Hz`);
+  else setPill(hb, 'warn', sent ? sent.reason : 'not sending');
+}
+
+// ---------- drawing ----------
+function drawCar(p, fill, stroke, dashed) {
+  ctx.save();
+  ctx.translate(p.x, p.y); ctx.rotate(p.yaw);
+  ctx.beginPath();
+  ctx.moveTo(CAR.back, -CAR.half); ctx.lineTo(CAR.front - 0.08, -CAR.half);
+  ctx.lineTo(CAR.front, 0); ctx.lineTo(CAR.front - 0.08, CAR.half);
+  ctx.lineTo(CAR.back, CAR.half); ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  ctx.setLineDash(dashed ? [0.04, 0.03] : []);
+  ctx.lineWidth = (dashed ? 1.5 : 2) / scale; ctx.strokeStyle = stroke; ctx.stroke();
+  ctx.restore();
+}
+
+function frame() {
+  const w = innerWidth, h = innerHeight - TOPBAR;
+  const sim = simMode();
+  const car = drawnPose();
+  const ghost = sim && state ? state.estimate : null;
+  // Colour follows who produced the data: red for the sim, white (dark outline) for the real car.
+  const fromSim = state ? state.source === 'sim' : sim;
+  const fill = css(fromSim ? '--car' : '--real'), edge = css(fromSim ? '--car' : '--real-edge');
+  ctx.fillStyle = css('--bg'); ctx.fillRect(0, 0, w, h);
+
+  // World to screen: follow the drawn car unless dragged, x right, y up.
+  const cx = cam ? cam.x : car ? car.x : 0, cy = cam ? cam.y : car ? car.y : 0;
+  ctx.save();
+  ctx.translate(w / 2, h / 2); ctx.scale(scale, -scale); ctx.translate(-cx, -cy);
+
+  // 1 m grid over the visible area; every 5 m and the axes a step darker.
+  const hw = w / 2 / scale, hh = h / 2 / scale;
+  ctx.lineWidth = 1 / scale; ctx.setLineDash([]);
+  const grid = css('--grid'), axis = css('--grid-axis');
+  for (let x = Math.floor(cx - hw); x <= cx + hw; x++) {
+    ctx.strokeStyle = x % 5 === 0 ? axis : grid;
+    ctx.beginPath(); ctx.moveTo(x, cy - hh); ctx.lineTo(x, cy + hh); ctx.stroke();
+  }
+  for (let y = Math.floor(cy - hh); y <= cy + hh; y++) {
+    ctx.strokeStyle = y % 5 === 0 ? axis : grid;
+    ctx.beginPath(); ctx.moveTo(cx - hw, y); ctx.lineTo(cx + hw, y); ctx.stroke();
+  }
+
+  // Track: the image's bottom-left corner sits at origin; pixel rows run top to bottom.
+  if (track && !layout.hideTrack) {
+    const [ox, oy, oyaw] = track.origin, r = track.resolution;
+    ctx.save();
+    ctx.translate(ox, oy); ctx.rotate(oyaw);
+    ctx.translate(0, track.height * r); ctx.scale(r, -r);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(track.img, 0, 0);
+    ctx.restore();
+  }
+
+  const shown = opts.trail ? trail.filter((p) => nowS() - p[2] <= opts.trail) : [];
+  if (shown.length > 1) {
+    ctx.strokeStyle = fromSim ? css('--car') : css('--real'); ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 2 / scale; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(shown[0][0], shown[0][1]);
+    for (const [x, y] of shown) ctx.lineTo(x, y);
+    ctx.stroke(); ctx.globalAlpha = 1;
+  }
+
+  drawScan(car);
+  if (car) drawCar(car, fill, edge, false);
+  if (ghost && opts.ghost) drawCar(ghost, null, css('--odom'), true);
+  ctx.restore();
+
+  updateTopbar();
+  syncLidar();
+  syncImus();
+  syncEncoders();
+  for (const [id, el] of Object.entries(els)) {
+    const def = PANELS[id];
+    if (def.meta) setText(q(el, '.panel__meta'), def.meta());
+    if (def.update && !layout.open[id].collapsed) def.update(q(el, '.panel__body'));
+  }
+  requestAnimationFrame(frame);
+}
+
+mountPanels();
+onLink();
+connectServer();
+connectHelper();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

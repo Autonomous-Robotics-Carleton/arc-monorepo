@@ -11,6 +11,8 @@ The monorepo for ARC (Autonomous Robotics Carleton): a 1/10-scale 4WD autonomy r
 | `systems/` | **Source of truth for the car**: requirements, decisions (ADRs), interfaces (ICDs), budgets, risks, BOM, verification. Read [`systems/README.md`](systems/README.md) first | Markdown + CSV |
 | `ros/` | ROS 2 Jazzy workspace for the car's Orin (Orin Nano dev kit on v1.0, Orin NX on v1.1): the car interface, a backend per target (Gazebo, Webots, gym, replay, car) and `arc_bringup` (`target:=`, `sim:=`, `sensors:=`) | colcon |
 | `firmware/` | `sync-mcu/` (Zephyr; builds for native_sim, NUCLEO-H723ZG and the car's `arc_sync`) and `vesc/` (upstream VESC firmware for the A50S motor controllers, plus our modules in `vesc/arc/`) | west, make, CMake |
+| `ground-station/` | The operator's app, run natively on a laptop: `server.py` and `helper.py` (Python) and a plain HTML/JS page. Contracts in `ground-station/protocol.md` | Python, HTML |
+| `simulator/` | Gazebo simulator in Docker, standing in for the car; `run.sh --bridge` serves the ground station | Docker, ROS 2 |
 | `experiments/` | Team experiments and their template (scaffold) | |
 | `.devcontainer/` | The dev container every firmware and ROS build runs in; CI uses the same image | Docker |
 | `hardware/` | Board designs and mechanical exports; Altium scaffolds (no circuitry yet) for the motherboard and sensor boards, imported by `tools/altium-sync/` | |
@@ -65,6 +67,13 @@ Gotchas:
 - With rootless Docker, the container's root is your own user: run containers with `--user root` to write to the repo, and never `chown` files to uid 1000 inside one (that maps to a different user on the host, and git can no longer delete them).
 - Upstream VESC's own `.gitignore` ignores `tools` and `.vscode`, which it also tracks; `tools/vesc-upstream.sh` force-adds on import for this reason.
 
+## Ground station and simulator
+
+- **`ground-station/protocol.md` is the contract** between the page, `helper.py`, `server.py` and the bridge and car_link in `simulator/`. A message change updates both sides and that file in the same commit. Values in it are provisional (TBC) until the car's teleop receiver is recorded in `systems/` (ADR-0015).
+- **The heartbeat chain is a safety path** (SYS-04): page → helper every 50 ms, helper → car_link at 50 Hz only while the page's are fresh, car_link stops the car after 0.15 s without one. Don't add anything that sends heartbeats or teleop on its own, keeps them going while the page is hidden, or hides a stop from the operator.
+- **The page is one file, `ground-station/web/index.html`**: no build step and no external requests. Its look follows the ground station design system, summarised in `ground-station/README.md` ("The page"): tokens in `:root`, lowercase labels, colour only for state, free-floating panels registered in `PANELS`. The product name is `arc ground station`, lowercase.
+- Neither folder is an Nx project yet: no CI builds or tests them, so run them by hand (`ground-station/run.sh`, `simulator/run.sh`).
+
 ## Docs site
 
 - Pages come from several places, declared in `apps/docs/source.config.ts` and combined in `apps/docs/lib/source.ts`: `apps/docs/content/docs/` (index, handbook, car topology, the software overview and reference; MDX), `systems/` (→ `/docs/car`, except the pages one discipline reads, which go to `/docs/electrical`, `/docs/mechanical` or `/docs/software`: `systemsPages`, their titles `systemsTitles` and their sidebars `systemsSidebar` in `lib/source.ts`; a moved page gets a redirect in `next.config.mjs`), the software READMEs in `ros/`, `firmware/`, `experiments/`, `platform/`, `tools/` and `libs/*/` (→ `/docs/software`; their page names and titles are `softwareReadmes` in `lib/source.ts`), `apps/web/docs/`, `platform/dev-kit/`, `.github/CONTRIBUTING.md`.
@@ -84,7 +93,7 @@ Gotchas:
 
 ## Git and PRs
 
-- Open work is in GitHub issues, indexed in #110 and labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`) plus `needs-decision` / `blocked`. No ground-station software exists yet (#71).
+- Open work is in GitHub issues, indexed in #110 and labelled by area (`firmware`, `ros`, `electrical`, `mechanical`, `ground-station`, `safety`) plus `needs-decision` / `blocked`. The ground station works against the simulator only; the car side doesn't exist yet (#71).
 - **Every new issue goes in #110.** A workflow (`.github/workflows/issue-index.yml`) adds it under "New, not sorted yet" with its labels. Whoever opened it then moves the line into its area section, with what it waits on (`- #123 (after #75)`), and adds the area label if it's missing.
 - Branch from `main`: `yourname/<type>/<issue>-<short-name>` (issue number optional).
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope): summary`, imperative, ≤ 72 chars. Scope is usually the project: `systems`, `systems-model`, `docs`, `web`, `ros`, `sync-mcu`, `vesc`, `firmware-in-loop`, `tools`, `devcontainer`, `experiments`, `hardware`, `platform`, `ci`. One logical change per commit.

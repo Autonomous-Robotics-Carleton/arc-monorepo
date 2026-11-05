@@ -1,0 +1,4 @@
+{
+  "car": {"host": null, "bridge_port": 8765, "udp_port": 9870},
+  "sim": {"host": "127.0.0.1", "bridge_port": 8765, "udp_port": 9870, "track": "oval"}
+}
