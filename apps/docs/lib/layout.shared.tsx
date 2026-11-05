@@ -35,7 +35,7 @@ export function baseOptions(): BaseLayoutProps {
         type: 'icon',
         text: 'Discord',
         icon: <DiscordIcon />,
-        url: 'https://discord.gg/bRWPQXv6zk', // <-- Replace with your invite URL
+        url: 'https://discord.gg/jPyvn2DEYz',
         external: true,
       },
       {
