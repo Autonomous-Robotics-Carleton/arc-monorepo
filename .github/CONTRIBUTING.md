@@ -100,7 +100,7 @@ The full rules are in [`systems/README.md`](../systems/README.md). The short ver
 - **Every incident ends in a test.** A hardware or firmware failure during a run gets a *Failure report* ([`ISSUE_TEMPLATE/failure-report.yml`](ISSUE_TEMPLATE/failure-report.yml), SYS-18), and the report isn't closed until a scenario or replay test reproduces the failure and passes with the fix. Link the test under *Fix*. The scenario runner (#157) and replay (#86) are still being built.
 - **Releases:** not decided yet (#180). Today, tags name only `systems/` baselines and gated builds (`sys-v1-srr`, `power-board-r1`; see [`systems/README.md`](../systems/README.md)).
 - **Hardware runners:** not set up yet (#183). Because the repo is public, hardware jobs will run only on `main` or on PRs a member has approved, never automatically on a fork's code. The car itself is never a CI runner: a CI job runs unattended, and nothing drives a real car with nobody at the e-stop ([platform plan](../systems/software/platform-plan.md)).
-- **Coverage on safety code:** the minimum isn't decided yet (#159). Until then, a reviewer checks that every safety function has its own tests.
+- **Coverage on safety code:** 100% line and branch for our motor controller modules' logic (`firmware/vesc/arc/src/`), and `nx test vesc` fails below it. The sync MCU's safety code has no enforced minimum yet (#159); until it does, a reviewer checks that every safety function has its own tests.
 
 ## Security
 
