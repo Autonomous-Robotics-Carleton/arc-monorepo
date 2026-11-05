@@ -31,7 +31,7 @@ One controller at a time, the first one fully checked before the next.
 | Configuration | Read the motor configuration in VESC Tool | It matches the backup and the motor's row in `motors.csv`; if not, load them (`firmware/vesc/motors/README.md`) |
 | Speed cap (ADR-0034) | Read the eRPM limits in Motor Settings | Neither is above the cap (75k eRPM, TBC); our firmware clamps them on every control-loop tick |
 | E-stop brake (ADR-0012) | With the wheel clear, spin it slowly from VESC Tool, then press the e-stop | Braked on the ramp, no coasting; commands ignored while pressed |
-| E-stop release (ADR-0012 item 4) | Release the e-stop, send nothing | The wheel stays braked until a fresh command |
+| E-stop release (ADR-0012 item 4) | Close VESC Tool's connection first (its keepalive counts as a fresh command), release the e-stop, then turn the wheel by hand; reconnect VESC Tool | Braked after the release, with nothing sent; reconnecting is the fresh command, and the brake lets go |
 | Command timeout (ADR-0035, once #221 is merged) | Spin it slowly from VESC Tool, then stop sending (close VESC Tool's connection, which also stops its keepalive) | Braked on the ramp within ~150 ms (TBC) |
 
 Record each controller's result in the table at the end. A controller that fails any check is taken off the car until the cause is known.
