@@ -4,6 +4,8 @@
 
 This folder is the working location for the combined motherboard design. The [native Altium scaffold](altium/README.md) and [ARC-Motherboard project](altium/ARC-Motherboard.PrjPcb) contain draft schematic sections and an empty PCB placeholder. Circuit capture and layout remain unfinished; the separate future carrier's [provenance and conversion audit](../orin-carrier/README.md) remain available after its deferred reference CAD was removed.
 
+For the EasyEDA Pro draft, import [ARC-Motherboard.epro](easyeda/ARC-Motherboard.epro) via **File → Import → EasyEDA Professional**. The archive has 15 blank A3 schematic sheets and a blank PCB. The [sheet-by-sheet capture guide](sync-mcu-easyeda-guide.md) lists draft interfaces, pins, and parts. The EasyEDA and Altium files are separate; editing one does not update the other.
+
 | Motherboard section | Scope | Design inputs |
 | --- | --- | --- |
 | Power — E-41 / E-46 | Battery/wall input, protected LV rails, switching, voltage/current and cell monitoring, e-stop circuitry and shutdown sequencing | [Power rails](../../systems/icd/power-rails.md), [electrical handoff §1](../../systems/handoff/electrical.md#1-power-board--e-stop-circuit-and-bus-clamp-board) |
