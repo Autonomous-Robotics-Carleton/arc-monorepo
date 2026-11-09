@@ -4,7 +4,8 @@
 
   Geometry comes from f1tenth_simulator's racecar.xacro (an RViz-only model), extended
   with inertia, collision, movable steering/wheel joints and the AckermannSteering plugin.
-  The chassis visual is the OpenRC F1 STL, reduced; it does not match these dimensions.
+  The chassis is drawn as its collision box: a placeholder until the car's CAD gives a mesh we may
+  publish under the repo's licence.
 
   Values marked TBC are placeholders until the ARC car's CAD lands (systems/mechanical,
   layout-brief M2). Swap this file to swap the car.
@@ -56,8 +57,9 @@
                izz="${chassis_mass/12*(wheelbase*wheelbase + width*width)}"/>
     </inertial>
     <visual>
+      <origin xyz="${wheelbase/2} 0 ${ground_offset + height/2}"/>
       <geometry>
-        <mesh filename="package://arc_sim/meshes/chassis.stl"/>
+        <box size="${wheelbase} ${width} ${height}"/>
       </geometry>
     </visual>
     <collision>

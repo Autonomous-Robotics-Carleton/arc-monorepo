@@ -6,7 +6,7 @@ find_package(ament_cmake_python REQUIRED)
 
 ament_python_install_package(${PROJECT_NAME})
 
-install(DIRECTORY config launch meshes tracks urdf worlds
+install(DIRECTORY config launch tracks urdf worlds
   DESTINATION share/${PROJECT_NAME})
 
 install(PROGRAMS scripts/bridge.py scripts/car_link.py scripts/lidar_noise.py scripts/imu_noise.py

@@ -23,6 +23,14 @@ The 2D top-down view and the driving controls are the ground station's ([`../gro
 - **`--bridge`**: publishes the bridge (`127.0.0.1:8765`: track files, a websocket streaming the car's estimate, Gazebo's true pose and car_link's status, and one websocket per sensor) and car_link (`127.0.0.1:9870/udp`: heartbeat and teleop). Both follow [`../ground-station/protocol.md`](../ground-station/protocol.md). Costs almost nothing: the sim stays at real time.
 - **`--gui3d`** (`http://localhost:6080`): Gazebo's own GUI on a virtual screen streamed through noVNC; the camera follows the car. It renders 3D on the CPU (llvmpipe), which slowed the blank-plane sim to about 37% of real time on an 8-core M-series Mac. Use it to inspect the model, not to drive.
 
+## Tests
+
+`src/arc_sim/test/` checks car_link's heartbeat stop under a UDP flood and that the bridge loads only bundled tracks. They run in the image `run.sh` builds:
+
+```bash
+docker run --rm --entrypoint /entrypoint.sh arc-sim python3 -m pytest -p no:cacheprovider /sim_ws/src/arc_sim/test
+```
+
 ## Sensors
 
 Sensors are off until something subscribes to them, normally the ground station's sensor panels. Gazebo renders a sensor only while its topic has a subscriber, and every node between it and the ground station subscribes only while it has one too:
@@ -125,7 +133,6 @@ docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.p
 | Path | What |
 | --- | --- |
 | `urdf/racecar.urdf.xacro` | Car model: joints, inertia, collision, Ackermann plugin, ground-truth publisher, wheel joint states. Swap it to swap the car |
-| `meshes/chassis.stl` | Visual only. OpenRC F1 body, reduced to 20k triangles, metres, nose on +x |
 | `worlds/empty.sdf` | Blank plane with a sun (the light is only used by the 3D viewer); the bridge spawns a track's walls into it |
 | `tracks/` | Bundled tracks: map yaml + image |
 | `arc_sim/track.py` | Map yaml + image → occupied pixels → merged wall boxes → walls model SDF. Used by the bridge |
