@@ -140,7 +140,7 @@
   /* ---------- state strip ---------- */
   .strip { padding: var(--space-4) 10px; border: 1px solid; border-radius: var(--radius-sm); font-size: 14px; line-height: 18px; font-weight: 700; letter-spacing: .04em; }
   .strip small { font-size: 12px; font-weight: 400; letter-spacing: 0; }
-  .strip--armed { color: var(--ok); background: var(--ok-bg); border-color: var(--ok); }
+  .strip--drivable { color: var(--ok); background: var(--ok-bg); border-color: var(--ok); }
   .strip--stopping { color: var(--bad); background: var(--bad-bg); border-color: var(--bad); }
 
   /* ---------- log ---------- */
@@ -628,7 +628,9 @@ const STOP_REASON = { heartbeat: 'heartbeat timeout', teleop: 'teleop timeout', 
 function carStop() {
   const lk = state ? state.link : null;
   if (!lk) return { stopping: true, reason: 'no report' };
-  return { stopping: !!lk.stopping, reason: lk.stopping ? STOP_REASON[lk.reason] || lk.reason : 'not stopping' };
+  // Not "armed": nothing here re-arms. car_link drives again as soon as heartbeats return, which
+  // SYS-04 and ADR-0052 don't allow on the car; the operator re-arm comes with #144 and #150.
+  return { stopping: !!lk.stopping, reason: lk.stopping ? STOP_REASON[lk.reason] || lk.reason : 'resumes without re-arm' };
 }
 function updateHeartbeat(b) {
   const f = (n) => q(b, `[data-f=${n}]`);
@@ -646,8 +648,8 @@ function updateHeartbeat(b) {
   setBar(f('hbAge'), lk ? lk.heartbeat_age : null);
   setBar(f('teAge'), lk ? lk.teleop_age : null);
   const st = carStop(), strip = f('strip');
-  const html = `${st.stopping ? 'STOPPING' : 'ARMED'} <small>· ${esc(st.reason)}</small>`;
-  if (strip.innerHTML !== html) { strip.innerHTML = html; strip.className = 'strip ' + (st.stopping ? 'strip--stopping' : 'strip--armed'); }
+  const html = `${st.stopping ? 'STOPPING' : 'DRIVABLE'} <small>· ${esc(st.reason)}</small>`;
+  if (strip.innerHTML !== html) { strip.innerHTML = html; strip.className = 'strip ' + (st.stopping ? 'strip--stopping' : 'strip--drivable'); }
   setText(f('cutoff'), cutoffOn ? 'Cutoff active · Resume heartbeat' : 'Test cutoff');
 }
 function renderLog() {
