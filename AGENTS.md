@@ -72,7 +72,7 @@ Gotchas:
 - **`ground-station/protocol.md` is the contract** between the page, `helper.py`, `server.py` and the bridge and car_link in `simulator/`. A message change updates both sides and that file in the same commit. Values in it are provisional (TBC) until the car's teleop receiver is recorded in `systems/` (ADR-0015).
 - **The heartbeat chain is a safety path** (SYS-04): page → helper every 50 ms, helper → car_link at 50 Hz only while the page's are fresh, car_link stops the car after 0.15 s without one. Don't add anything that sends heartbeats or teleop on its own, keeps them going while the page is hidden, or hides a stop from the operator.
 - **The page is one file, `ground-station/web/index.html`**: no build step and no external requests. Its look follows the ground station design system, summarised in `ground-station/README.md` ("The page"): tokens in `:root`, lowercase labels, colour only for state, free-floating panels registered in `PANELS`. The product name is `arc ground station`, lowercase.
-- Neither folder is an Nx project yet: no CI builds or tests them, so run them by hand (`ground-station/run.sh`, `simulator/run.sh`).
+- Neither folder is an Nx project yet: no CI builds or tests them, so run them and their tests by hand (`ground-station/run.sh`, `simulator/run.sh`; the Tests sections of their READMEs).
 
 ## Docs site
 

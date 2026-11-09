@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Ground station helper: turns the page's heartbeat and teleop into UDP packets for car_link.
 
-ws://127.0.0.1:8081   page <-> helper messages, see protocol.md
+ws://127.0.0.1:8081   page <-> helper messages, see protocol.md. Only the ground station's own page
+                      may connect (its Origin, on --page-port): any other website open in the
+                      browser could otherwise send heartbeats and teleop.
 
 Every 20 ms (50 Hz), to the target the page set:
 - a heartbeat, while a page heartbeat arrived within 0.15 s and Test heartbeat cutoff is off;
@@ -47,6 +49,13 @@ PERIOD = 0.02  # 50 Hz
 FRESH = 0.15  # s: page heartbeat / teleop older than this is stale (SYS-04 timeout)
 REPORT_EVERY = 10  # ticks: 5 Hz `sent` reports
 DSCP_EF = 0xB8
+MAX_READS = 64  # UDP replies read per tick, so a flood can't hold the send loop
+F32_MAX = 3.4028234663852886e38  # largest value the packet's f32 speed and steer can carry
+
+
+def page_origins(port):
+    """The Origins the ground station's page has: server.py on this machine."""
+    return ['http://localhost:%d' % port, 'http://127.0.0.1:%d' % port]
 
 log = logging.getLogger('helper')
 
@@ -103,7 +112,9 @@ class Helper:
                 speed, steer = float(msg['speed']), float(msg['steer'])
             except (KeyError, TypeError, ValueError):
                 return
-            if math.isfinite(speed) and math.isfinite(steer):
+            # Values the packet can't carry are dropped: packing them would kill the send loop.
+            # Not a speed limit: car_link clamps steering, and the speed cap is TBD.
+            if all(math.isfinite(v) and abs(v) <= F32_MAX for v in (speed, steer)):
                 self.teleop = (speed, steer)
                 self.last_teleop = now
         elif kind == 'target':
@@ -144,6 +155,8 @@ class Helper:
         self.seq[kind] = (seq + 1) & 0xFFFFFFFF
         try:
             self.sock.sendto(PACKET.pack(MAGIC, kind, self.session, seq, time.monotonic(), speed, steer), self.target)
+        except (struct.error, OverflowError) as e:  # handle() already drops what doesn't fit; never let it end the loop
+            log.error('unpackable %s packet dropped: %s', kind, e)
         except OSError as e:  # unreachable, buffer full: the car's timeouts cover a lost packet
             self.send_errors += 1
             if self.send_errors == 1 or self.send_errors % 500 == 0:
@@ -151,8 +164,10 @@ class Helper:
         return seq
 
     def receive(self, now):
-        """car_link's replies: ack and reject, from the current target, for our session."""
-        while True:
+        """car_link's replies: ack and reject, from the current target, for our session.
+
+        At most MAX_READS per tick: a flood of packets must not keep the loop from sending."""
+        for _ in range(MAX_READS):
             try:
                 data, addr = self.sock.recvfrom(64)
             except (BlockingIOError, InterruptedError):
@@ -233,13 +248,13 @@ class Helper:
             await asyncio.sleep(max(delay, 0))
 
 
-async def main_async(port):
+async def main_async(port, page_port):
     helper = Helper()
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, stop.set)
-    async with serve(helper.page, '127.0.0.1', port):
+    async with serve(helper.page, '127.0.0.1', port, origins=page_origins(page_port)):
         log.info('listening on ws://127.0.0.1:%d', port)
         task = asyncio.create_task(helper.loop())
         stopping = asyncio.create_task(stop.wait())
@@ -256,10 +271,11 @@ async def main_async(port):
 def main():
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument('--port', type=int, default=8081)
+    p.add_argument('--page-port', type=int, default=47380, help="server.py's port: pages from it may connect")
     args = p.parse_args()
     logging.basicConfig(level=logging.INFO, format='%(asctime)s helper: %(message)s', datefmt='%H:%M:%S')
     logging.getLogger('websockets').setLevel(logging.WARNING)
-    return asyncio.run(main_async(args.port))
+    return asyncio.run(main_async(args.port, args.page_port))
 
 
 if __name__ == '__main__':

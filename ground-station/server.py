@@ -8,6 +8,10 @@ ws://127.0.0.1:47380/scan         the connected bridge's /scan (binary LiDAR fra
 ws://127.0.0.1:47380/imu/<name>   one IMU, filtered here: a JSON summary per step the page picks
 ws://127.0.0.1:47380/encoders/wheel  the wheel encoders, likewise: measured speed per wheel per step
 
+Only this machine's page may use it: requests must name it as Host (localhost or 127.0.0.1 on this
+port), and websockets must come from its Origin. Otherwise any website open in the browser could
+switch modes or read the car's state, and a DNS-rebinding page could fetch the page and track.
+
 Modes: `real` (startup) connects to the car's bridge at config car.host, retrying every 2 s.
 `sim` starts ../simulator/run.sh --bridge and connects to its bridge on 127.0.0.1. The sim
 starts with no track: the server asks the bridge to load the page's pick on every connect and
@@ -131,8 +135,10 @@ def response(status, body, content_type):
 
 class Server:
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, port=47380):
         self.cfg = cfg
+        self.hosts = {'localhost:%d' % port, '127.0.0.1:%d' % port}  # Host headers we answer
+        self.origins = ['http://' + h for h in sorted(self.hosts)]  # the page's own origin
         self.pages = set()
         self.mode = 'real'
         self.connected = False
@@ -169,6 +175,8 @@ class Server:
             broadcast(self.pages, msg)
 
     async def process_request(self, connection, request):
+        if request.headers.get('Host', '').lower() not in self.hosts:
+            return connection.respond(HTTPStatus.MISDIRECTED_REQUEST, 'wrong host\n')
         path = request.path.split('?', 1)[0]
         if path in ('/ws', ENCODERS) or path in SENSORS or path.startswith('/imu/'):
             return None
@@ -625,7 +633,7 @@ class Server:
         loop = asyncio.get_running_loop()
         for sig in (signal.SIGINT, signal.SIGTERM):
             loop.add_signal_handler(sig, stop.set)
-        async with serve(self.page, host, port, process_request=self.process_request):
+        async with serve(self.page, host, port, process_request=self.process_request, origins=self.origins):
             log.info('serving http://%s:%d/ (car: %s, sim track: %s)', host, port,
                      self.cfg['car']['host'] or 'TBD', self.track)
             self.bridge_task = asyncio.create_task(self.bridge_loop())
@@ -648,7 +656,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format='%(asctime)s server: %(message)s', datefmt='%H:%M:%S')
     logging.getLogger('websockets').setLevel(logging.WARNING)
     cfg = load_config(args.config, args.car)
-    asyncio.run(Server(cfg).run('127.0.0.1', args.port))
+    asyncio.run(Server(cfg, args.port).run('127.0.0.1', args.port))
 
 
 if __name__ == '__main__':

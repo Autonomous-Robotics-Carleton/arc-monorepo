@@ -41,6 +41,11 @@ HEARTBEAT, TELEOP, HELLO, ACK, REJECT = 1, 2, 3, 4, 5
 NO_SESSION, REPLACED = 1, 2
 REASONS = {NO_SESSION: 'no-session', REPLACED: 'replaced'}
 REJECT_EVERY = 0.2  # s between rejects to one sender
+# Packets read per tick. A helper sends 2 per tick (heartbeat and teleop at 50 Hz); the cap only
+# matters under a flood, where reading without end would stop the tick from ever publishing, and
+# so from ever stopping the car. Packets left unread are dropped by the kernel, heartbeats among
+# them, so a flood ends in a heartbeat stop.
+MAX_READS = 64
 
 
 def newer(seq, last):
@@ -122,8 +127,8 @@ class CarLink(Node):
         self.reply(ACK, session, 0, addr)
 
     def receive(self, now):
-        """Drain every pending packet; keep only valid, newer ones from the current session."""
-        while True:
+        """Read pending packets, at most MAX_READS; keep only valid, newer ones from the current session."""
+        for _ in range(MAX_READS):
             try:
                 data, addr = self.sock.recvfrom(64)
             except BlockingIOError:

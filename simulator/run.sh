@@ -2,7 +2,8 @@
 # Build (cached) and start the simulator.
 #   ./run.sh           headless
 #   ./run.sh --bridge  for the ground station: bridge on 127.0.0.1:8765, car_link on 127.0.0.1:9870/udp
-#   ./run.sh --gui3d   Gazebo 3D GUI in your browser via noVNC (http://localhost:6080); CPU-heavy
+#   ./run.sh --gui3d   Gazebo 3D GUI in your browser via noVNC (http://localhost:6080); CPU-heavy.
+#                      Each run gets a new VNC password, which the printed URL carries.
 #   --verbose          show Docker's full build output instead of one line per step
 # There is no track option: the ground station picks the track and loads it through the bridge.
 # Every phase says what it is doing; anything that waits says so every few seconds.
@@ -76,7 +77,8 @@ done
 
 say "building image arc-sim (the first build takes several minutes; later ones are cached)..."
 start=$SECONDS
-log=$(mktemp -t arc-sim-build)
+# A full template: macOS's `mktemp -t` takes a prefix, but GNU's needs the X's.
+log=$(mktemp "${TMPDIR:-/tmp}/arc-sim-build.XXXXXX")
 set +e
 if [ -n "$verbose" ]; then
   docker build --progress=plain -t arc-sim . 2>&1 | tee "$log"
@@ -110,7 +112,8 @@ if [ -z "$mode" ]; then
   exec docker run --rm --name arc-sim ${env[@]+"${env[@]}"} arc-sim
 fi
 
-# Ports are bound to this machine only; nothing on them has a password.
+# Ports are bound to this machine only. The bridge only answers clients without an Origin (the
+# ground station's server, not a browser); the 3D viewer asks for a password made here per run.
 if [ "$mode" = bridge ]; then
   say "starting arc-sim: bridge on 127.0.0.1:8765, car_link on 127.0.0.1:9870/udp (Ctrl+C stops it)"
   docker run --rm --name arc-sim ${env[@]+"${env[@]}"} -e BRIDGE=1 \
@@ -118,7 +121,12 @@ if [ "$mode" = bridge ]; then
   probe="http://localhost:8765/track.json"
 else
   say "starting arc-sim: 3D viewer on 127.0.0.1:6080 (Ctrl+C stops it)"
-  docker run --rm --name arc-sim ${env[@]+"${env[@]}"} -e GUI=3d -p 127.0.0.1:6080:6080 arc-sim &
+  # VNC passwords are 8 characters at most. Without one, any website open in the browser could
+  # drive the viewer (websockify doesn't check Origin).
+  vnc_password=$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 8 || true)
+  [ ${#vnc_password} -eq 8 ] || fail "couldn't make a VNC password"
+  docker run --rm --name arc-sim ${env[@]+"${env[@]}"} -e GUI=3d -e VNC_PASSWORD="$vnc_password" \
+    -p 127.0.0.1:6080:6080 arc-sim &
   probe="http://localhost:6080/vnc.html"
 fi
 sim=$!
@@ -144,8 +152,12 @@ if [ -z "$up" ]; then
 elif [ "$mode" = bridge ]; then
   say "bridge ready: http://localhost:8765/track.json, ws://localhost:8765/ws; car_link: udp://127.0.0.1:9870"
 else
-  url="http://localhost:6080/vnc.html?autoconnect=1&resize=scale"
+  url="http://localhost:6080/vnc.html?autoconnect=1&resize=scale&password=$vnc_password"
   say "viewer: $url"
-  open "$url" 2>/dev/null || true
+  if [ "$(uname)" = Darwin ]; then
+    open "$url" 2>/dev/null || true
+  elif command -v xdg-open >/dev/null; then
+    xdg-open "$url" >/dev/null 2>&1 || true
+  fi
 fi
 wait "$sim"

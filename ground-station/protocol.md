@@ -19,6 +19,15 @@ browser page ──ws localhost:47380/encoders/wheel─▶ server.py ──ws :8
 | 8765 | bridge (sim: `simulator/.../bridge.py`) | HTTP + websockets `/ws`, `/scan`, `/imu/<name>`, `/encoders/wheel` | sim container, published on `127.0.0.1:8765` |
 | 9870 | car_link (sim: `simulator/.../car_link.py`) | UDP | sim container, published on `127.0.0.1:9870/udp` |
 
+**Who may connect.** A browser lets any website open a websocket to `localhost`, so each service checks who is asking:
+
+- `server.py` answers only requests whose `Host` is `localhost:47380` or `127.0.0.1:47380` (421 otherwise, against DNS rebinding), and accepts websockets only with the page's `Origin`, `http://localhost:47380` or `http://127.0.0.1:47380` (403 otherwise).
+- `helper.py` accepts websockets only with that same `Origin` (its `--page-port` sets the port).
+- The bridge accepts websockets only **without** an `Origin`: its one client is `server.py`, and browsers always send one.
+- The 3D viewer (`run.sh --gui3d`, port 6080) asks for a VNC password that `run.sh` makes per run and puts in the URL it prints.
+
+UDP to car_link is not authenticated (see below).
+
 The sim is reached at `127.0.0.1`. The real car's address is a config value in the ground station, `TBD` until the car runs a bridge and car_link.
 
 ## UDP: helper ↔ car_link
@@ -41,7 +50,9 @@ Little-endian, 29 bytes, Python `struct` format `<4sBIIdff`, both directions:
   - `no-session`: car_link has no session (it restarted). The helper says hello again.
   - `replaced`: another session said hello since. The helper stops sending to that target and reports `replaced`; only a different target or a ground station restart starts a new handshake, so two ground stations never take the car back and forth.
 - Within the session, the receiver drops a packet whose `seq` is not newer than the last one of the same type it accepted (wrap-aware), so stale or reordered packets never apply. A late packet from a replaced session can't take control back: only a hello switches sessions.
-- Known limits: a hello from an old helper that arrives very late could still switch sessions (hellos are only sent while handshaking). Packets are not authenticated.
+- Each side reads at most 64 packets per 20 ms tick, so a flood can't keep it from running its timers: car_link still publishes, and the heartbeats lost in the flood stop the car.
+- Known limits: a hello from an old helper that arrives very late could still switch sessions (hellos are only sent while handshaking). Packets are not authenticated, so anything that can reach port 9870 can take the session with a hello.
+- The helper drops teleop values a packet's f32 can't carry (not finite, or beyond ±3.4e38). That isn't a speed limit: car_link clamps steering, and has no speed cap yet (TBD).
 
 ## car_link behaviour
 
@@ -50,6 +61,8 @@ Little-endian, 29 bytes, Python `struct` format `<4sBIIdff`, both directions:
 - **Ramp:** commanded speed moves toward the target at no more than 5 m/s² (TBC, SYS-04 / ADR-0012). Steering holds its last value while braking.
 - **Conversion:** sim input is a Twist (speed, yaw rate): `yaw_rate = speed * tan(steer) / wheelbase`, wheelbase 0.3302 m (placeholder, `racecar.urdf.xacro`). Steering is clamped to ±0.4189 rad.
 - **Sources:** UDP teleop, and `/sim/auto/cmd_vel` (`geometry_msgs/Twist`) for algorithms. Teleop wins while fresh; both are gated by the heartbeat.
+- **No re-arm (a known gap):** after a heartbeat stop, the car drives again as soon as heartbeats and teleop return. SYS-04 and ADR-0052 require the operator to re-arm first; that comes with the operator-link ICD (#144) and `arc_safety` (#150). Until then the page says `DRIVABLE`, not `ARMED`.
+- **If car_link exits,** the launch stops the whole sim: nothing else stops the car, since Gazebo keeps the last `/sim/cmd_vel`.
 - **Status:** publishes `/sim/link/status` (`std_msgs/String`, JSON) at 10 Hz: `{"heartbeat_age": s|null, "teleop_age": s|null, "stopping": bool, "reason": "ok"|"heartbeat"|"teleop"|"idle", "session": "<hex>"|null, "rejected": n, "rejected_reason": "no-session"|"replaced"|null}`. Ages are null before the first packet of the current session. `idle` means nothing has been received in it yet. `rejected` counts rejected packets since car_link started; `rejected_reason` is the latest one's.
 - Output `/sim/cmd_vel` at 50 Hz (wall clock).
 
@@ -70,7 +83,7 @@ Little-endian, 29 bytes, Python `struct` format `<4sBIIdff`, both directions:
 - `estimate`: the car's own odometry in the world frame (sim: `/sim/odom` shifted by the spawn pose). Null until known.
 - `truth`: sim only (`/sim/ground_truth`). A real car's bridge omits it.
 - `source`: `"sim"` or `"car"`.
-- `link`: the latest car_link status, or null.
+- `link`: the latest car_link status, or null when none arrived in the last 0.5 s (car_link stopped or never started). The page shows null as `STOPPING · no report`.
 - `rtf`: sim only. Gazebo's real-time factor (sim seconds per wall second, from `/world/<name>/stats`): below 1 when the computer can't keep up. Null while paused or not yet known. A real car's bridge omits it.
 
 The sim's bridge also sends, once on connect and on every change:
@@ -93,7 +106,7 @@ The bridge also sends, once on connect and whenever the list changes, the sensor
 
 Server → bridge (sim only):
 
-- `{"type": "load_track", "name": "<name>"|null}`: load bundled track `<name>` (`simulator/src/arc_sim/tracks/<name>.yaml`) into the running sim, or clear it with null. The bridge replaces the walls and moves the car to the track's start pose; the car's `estimate` restarts there. A repeat of the loaded track is ignored. Requests arriving during a load wait for it, and only the newest is loaded. Load time is about 1 s (TBC).
+- `{"type": "load_track", "name": "<name>"|null}`: load bundled track `<name>` (`simulator/src/arc_sim/tracks/<name>.yaml`) into the running sim, or clear it with null. `name` must be one of the bundled names, never a path; anything else fails with `no such track`. The bridge replaces the walls and moves the car to the track's start pose; the car's `estimate` restarts there. A repeat of the loaded track is ignored. Requests arriving during a load wait for it, and only the newest is loaded. Load time is about 1 s (TBC).
 
 ## Sensor websockets (bridge → server → page)
 

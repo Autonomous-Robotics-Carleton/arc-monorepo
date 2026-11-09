@@ -13,6 +13,14 @@ The operator's app for driving the car, or the simulator standing in for it. It 
 
 Switching to the simulator needs Docker Desktop running, as for [`simulator/`](../simulator/README.md).
 
+## Tests
+
+`tests/` checks that only this machine's page can connect (Host and Origin), and that bad teleop or a UDP flood can't stop the helper's send loop. Standard library `unittest`, with the `.venv` that `run.sh` makes:
+
+```bash
+.venv/bin/python -m unittest discover -s tests
+```
+
 ## How it connects
 
 Two processes, two paths to the car. The full contract is [`protocol.md`](protocol.md).
@@ -52,7 +60,7 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 
 - **Top bar:** the title `arc ground station` (always lowercase), three always-on pills (target, driving/idle, heartbeat), `Reset layout`, and `+ Add panel ▾`. Nothing else goes in the top bar.
 - **Panels** are free-floating, never docked: drag by the header, resize from the corner (both snap to 8 px), collapse `▾`/`▸`, close `✕`, and reopen from `+ Add panel`. Positions, sizes, which panels are open and the plotted topics are kept in `localStorage` (`arc-gs-layout-v1`); `Reset layout` restores the default (Status and Heartbeat on the left, Topics and Plots on the right).
-- **Panels today:** Status (the chain target → server → helper → link → sim: the first failure is red, every tile after it greyed), Heartbeat (what the helper sends, the heartbeat and teleop ages the car reports against the 150 ms timeout, the ARMED / STOPPING strip, Test cutoff, event log), Car (pose, odom, odom error), Topics, Plots, Settings, and Sim settings (shown only in sim mode; it picks the track and can hide the track from the view, which leaves the walls in the sim).
+- **Panels today:** Status (the chain target → server → helper → link → sim: the first failure is red, every tile after it greyed), Heartbeat (what the helper sends, the heartbeat and teleop ages the car reports against the 150 ms timeout, the DRIVABLE / STOPPING strip, Test cutoff, event log), Car (pose, odom, odom error), Topics, Plots, Settings, and Sim settings (shown only in sim mode; it picks the track and can hide the track from the view, which leaves the walls in the sim).
 - **LiDAR:** off by default. Its panel switches `/scan` on and off, picks the scan colour and the FOV drawing (fill, outline or none); the scan itself is drawn on the main view (see the viewport rule below). Closing the panel also switches it off.
 - **Not wired yet:** Camera and Computer (CPU, memory, GPU free) are in the menu but greyed out, because nothing sends their data.
 - **IMU:** one panel per IMU the bridge announces (`IMU cg` in the sim), so a second IMU in the car model gets its own panel. While it is open the IMU streams. The panel picks the step between points (0.1 s by default, down to 0.01 s) and, under `modules`, what it shows: roll · pitch · relative yaw (with `reset yaw`), yaw rate vs the yaw rate the teleop commands, lateral and longitudinal g, peak g and saturation, received rate and the age of the last sample, and the gyro bias learned while the car is still. Plots cover the last second, a smooth line through the points.
@@ -63,7 +71,7 @@ If several pages are open, a heartbeat from any of them counts, and the latest t
 **Look.** The page follows the ARC Ground Station design system (Claude Design; ask Yufeng for access). Its tokens are copied into `:root` at the top of the page. The rules that matter most when you change the page:
 
 - Dark theme first; light through `prefers-color-scheme`. Every colour is a token defined for both themes.
-- One monospace face. Lowercase keys and values with no colons (`heartbeat age`); uppercase only for alarm states (`LOST`, `ARMED`, `STOPPING`). Join a state and its reason with a middle dot: `STOPPING · heartbeat timeout`.
+- One monospace face. Lowercase keys and values with no colons (`heartbeat age`); uppercase only for alarm states (`LOST`, `DRIVABLE`, `STOPPING`). Join a state and its reason with a middle dot: `STOPPING · heartbeat timeout`.
 - Colour only for state (except sensor overlays, below): `ok`, `warn`, `bad`, always paired with a word. Red means the car is or will be stopping. `accent` is for interaction only (selected, focus), never a status.
 - Plain data is `ink`; units and sub-labels `ink-muted`. Tabular figures with fixed decimals, so numbers don't jitter.
 - No icons, only text glyphs (`▾ ▸ ✕ ✓ → + ·`). Status dots are 6 px squares. Nothing rounder than 4 px.

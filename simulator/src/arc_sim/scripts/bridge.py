@@ -18,6 +18,8 @@ estimate is the car's own odometry (/sim/odom), which starts at zero at the spaw
 doesn't notice a teleport. So it is taken relative to its value when the car was last placed,
 then moved into the world frame by that placement. truth is Gazebo's actual pose
 (/sim/ground_truth), which only the sim has. link is car_link's latest /sim/link/status.
+It is null when no status arrived in the last LINK_STALE s (car_link publishes at 10 Hz), so a
+dead car_link shows as no report rather than its last status, frozen.
 rtf is Gazebo's real-time factor (/sim/stats), null while paused or before the first.
 The page itself is served by the ground station, not here.
 
@@ -78,6 +80,10 @@ ENCODER_NAMES = ('wheel_fl', 'wheel_fr', 'wheel_rl', 'wheel_rr')  # index in the
 ENCODER_SAMPLE = struct.Struct('<dBxxxf')  # stamp, sensor index, 3 bytes padding, angle (rad): 16 bytes
 ENCODER_DEPTH = 400  # 0.1 s of four sensors at 1 kHz; batching and the client queue are the IMU's
 G = 9.80665
+LINK_STALE = 0.5  # s without /sim/link/status before `link` is sent as null (5 missed reports)
+# Only the ground station's server.py connects, and it sends no Origin. Browsers always send one,
+# so this keeps any website open on this machine from loading tracks or reading the car's state.
+ORIGINS = [None]
 
 
 def yaw_of(q):
@@ -103,6 +109,7 @@ class Bridge(Node):
         self.raw_odom = None
         self.state = {'type': 'state', 'source': 'sim', 'estimate': None, 'truth': None, 'link': None,
                       'rtf': None}
+        self.link_time = None  # monotonic time of the latest /sim/link/status
         self.create_subscription(Odometry, '/sim/ground_truth', self.on_truth, 10)
         self.create_subscription(Odometry, '/sim/odom', self.on_odom, 10)
         self.create_subscription(String, '/sim/link/status', self.on_link, 10)
@@ -269,6 +276,7 @@ class Bridge(Node):
     def on_link(self, msg):
         try:
             self.state['link'] = json.loads(msg.data)
+            self.link_time = time.monotonic()
         except ValueError:
             self.get_logger().warn('Unparseable /sim/link/status: %r' % msg.data)
 
@@ -340,6 +348,14 @@ def track_files(path):
     meta = {'name': t.name, 'resolution': t.resolution, 'origin': t.origin,
             'width': alpha.shape[1], 'height': alpha.shape[0]}
     return json.dumps(meta).encode(), png.getvalue()
+
+
+def bundled_tracks(tracks_dir):
+    """Names of the tracks shipped in tracks/ (<name>.yaml)."""
+    try:
+        return {f[:-5] for f in os.listdir(tracks_dir) if f.endswith('.yaml')}
+    except OSError:
+        return set()
 
 
 async def serve(node):
@@ -531,7 +547,8 @@ async def serve(node):
                     continue
                 if isinstance(msg, dict) and msg.get('type') == 'load_track':
                     name = msg.get('name')
-                    if name is not None and not os.path.isfile(os.path.join(node.tracks_dir, '%s.yaml' % name)):
+                    # Only a bundled track's name: never a path, so nothing outside tracks/ is opened.
+                    if name is not None and name not in bundled_tracks(node.tracks_dir):
                         set_status(name=name, status='failed', error='no such track')
                         continue
                     wanted['name'] = name
@@ -543,11 +560,14 @@ async def serve(node):
 
     loop.create_task(loader())
 
-    async with websockets.serve(handler, '0.0.0.0', node.port, process_request=process_request):
+    async with websockets.serve(handler, '0.0.0.0', node.port, process_request=process_request, origins=ORIGINS):
         node.get_logger().info('Bridge on port %d' % node.port)
         while rclpy.ok():
             if clients:
-                websockets.broadcast(clients, json.dumps(node.state))
+                state = dict(node.state)
+                if node.link_time is None or time.monotonic() - node.link_time > LINK_STALE:
+                    state['link'] = None
+                websockets.broadcast(clients, json.dumps(state))
             await asyncio.sleep(1.0 / node.rate)
 
 

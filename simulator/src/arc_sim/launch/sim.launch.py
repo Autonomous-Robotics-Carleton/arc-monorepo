@@ -13,7 +13,7 @@ import re
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (AppendEnvironmentVariable, DeclareLaunchArgument, IncludeLaunchDescription,
-                            OpaqueFunction)
+                            ExecuteProcess, OpaqueFunction, Shutdown)
 from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
@@ -107,9 +107,17 @@ def generate_launch_description():
         ),
 
         # The car's receiving end: heartbeat gate, UDP teleop and /sim/auto/cmd_vel -> /sim/cmd_vel.
+        # It is also the only thing that stops the car: Gazebo keeps driving at the last /sim/cmd_vel.
+        # So if it exits, the car is told to stop (straight to Gazebo: the ROS bridge may be going too),
+        # then the whole sim stops, and the ground station sees it go. Gazebo takes ~5 s to exit.
         Node(
             package='arc_sim',
             executable='car_link.py',
+            on_exit=ExecuteProcess(
+                cmd=['timeout', '10', 'gz', 'topic', '-t', '/model/racecar/cmd_vel', '-m', 'gz.msgs.Twist',
+                     '-p', 'linear: {x: 0}, angular: {z: 0}'],
+                on_exit=Shutdown(reason='car_link exited: nothing else can stop the car'),
+            ),
         ),
 
         # /sim/scan -> /scan, subscribing only while /scan has subscribers.
