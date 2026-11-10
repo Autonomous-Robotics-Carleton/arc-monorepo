@@ -59,6 +59,8 @@ export const ALLOWED: { path: string; why: string }[] = [
   { path: 'hardware/**', why: 'Board designs' },
   { path: '.github/**', why: 'CI workflows' },
   { path: '.devcontainer/**', why: 'The dev container' },
+  { path: 'ground-station/**', why: "The operator's laptop app: choosing between the sim and the car is its job, and it never runs on the car" },
+  { path: 'simulator/**', why: 'The prototype simulator (#228): a stand-in for the car, retired by the full twin (#106)' },
 ];
 
 // Known violations in code that can't be fixed in the same change. Each one

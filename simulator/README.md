@@ -1,0 +1,183 @@
+# simulator
+
+Gazebo simulator for the car. The same ROS 2 stack runs against it or the real car: the sim stands in for the car's drivers behind the same topics. It runs on a laptop in Docker, never on the car.
+
+ROS 2 Jazzy + Gazebo Harmonic, headless by default, software rendering (Mesa llvmpipe, since Docker on macOS has no GPU).
+
+## Run
+
+```bash
+./run.sh            # headless
+./run.sh --bridge   # for the ground station: bridge on :8765, car_link on :9870/udp
+./run.sh --gui3d    # Gazebo's 3D GUI in your browser (noVNC); CPU-heavy
+```
+
+The sim starts with no track. You pick one in the ground station, which loads it into the running sim through the bridge (see Tracks).
+
+`run.sh` builds the image (cached after the first time) and runs the container in the foreground. Ctrl+C (or a TERM signal) stops it. Published ports listen on this machine only and have no password.
+
+It reports each phase as it goes: which Docker context it's using, waiting for Docker (up to 60 s, so it can be started right after opening Docker Desktop), one line per build step (`--verbose` shows the full build output), the `.env` it loaded, and waiting for the bridge every 5 s. Before starting it checks the ports it publishes and names what holds one that is taken. The first build under a Docker setup takes several minutes; Docker Desktop and OrbStack keep separate images, so switching between them builds again.
+
+The 2D top-down view and the driving controls are the ground station's ([`../ground-station/`](../ground-station/)); it starts the sim with `run.sh --bridge` itself when you switch it to sim mode. The physics and sensors are 3D either way.
+
+- **`--bridge`**: publishes the bridge (`127.0.0.1:8765`: track files, a websocket streaming the car's estimate, Gazebo's true pose and car_link's status, and one websocket per sensor) and car_link (`127.0.0.1:9870/udp`: heartbeat and teleop). Both follow [`../ground-station/protocol.md`](../ground-station/protocol.md). Costs almost nothing: the sim stays at real time.
+- **`--gui3d`** (`http://localhost:6080`): Gazebo's own GUI on a virtual screen streamed through noVNC; the camera follows the car. It renders 3D on the CPU (llvmpipe), which slowed the blank-plane sim to about 37% of real time on an 8-core M-series Mac. Use it to inspect the model, not to drive.
+
+## Tests
+
+`src/arc_sim/test/` checks car_link's heartbeat stop under a UDP flood and that the bridge loads only bundled tracks. They run in the image `run.sh` builds:
+
+```bash
+docker run --rm --entrypoint /entrypoint.sh arc-sim python3 -m pytest -p no:cacheprovider /sim_ws/src/arc_sim/test
+```
+
+## Sensors
+
+Sensors are off until something subscribes to them, normally the ground station's sensor panels. Gazebo renders a sensor only while its topic has a subscriber, and every node between it and the ground station subscribes only while it has one too:
+
+```
+page panel on ─▶ bridge /scan socket ─▶ /scan ─▶ lidar_noise (lazy) ─▶ /sim/scan ─▶ ros_gz_bridge (lazy) ─▶ Gazebo renders
+page panel open ─▶ bridge /imu/cg socket ─▶ /imu/cg ─▶ imu_noise (lazy) ─▶ /sim/imu/cg ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
+page panel open ─▶ bridge /encoders/wheel socket ─▶ /encoders/wheel ─▶ wheel_encoder_noise (lazy) ─▶ /sim/wheel_joints ─▶ ros_gz_bridge (lazy) ─▶ Gazebo
+```
+
+So a sensor nobody watches costs nothing, and `ros2 topic echo /scan` (or a bag) switches it on as well. Turning one on takes a moment while each link subscribes.
+
+Settings are in [`.env`](.env), passed to the container by `run.sh` and read by the car model (`$(optenv …)` in the xacro, which falls back to the same defaults). Edit it and rerun `./run.sh`; no image rebuild needed. The defaults follow `systems/bom/electrical.md`.
+
+| Sensor | `systems/` | Model | Topic | Settings |
+| --- | --- | --- | --- | --- |
+| 2D LiDAR | E-10, Hokuyo UST-10LX (ADR-0001) | `gpu_lidar` on link `lidar` | `/scan` (`/sim/scan` before noise) | `LIDAR_RATE`, `LIDAR_SAMPLES`, `LIDAR_FOV_DEG`, `LIDAR_RANGE_MIN`, `LIDAR_RANGE_MAX` |
+| IMU | E-20, ST ISM330DHCX at the CG | `imu` on link `imu_cg` (`gz-sim-imu-system`) | `/imu/cg` (`/sim/imu/cg` before noise) | `IMU_RATE`, `IMU_ACCEL_RANGE_G`, `IMU_GYRO_RANGE_DPS` |
+| Wheel encoders ×4 | E-22, AS5047P, 14-bit absolute | `JointStatePublisher` on the four wheel joints | `/encoders/wheel` (`/sim/wheel_joints` before noise) | `ENCODER_JITTER_DEG`, `ENCODER_NONLINEARITY_DEG`; `SENSOR_NOISE_SCALE`, `SENSOR_FAIL_PROB`, `SENSOR_SEED` |
+
+Sensors render on the CPU (Mesa llvmpipe through EGL, `--headless-rendering`), since Docker on macOS has no GPU. The LiDAR's mount pose (front of the chassis, above the body) is TBC until the ARC CAD places it. The bridge reads it from `/tf_static` (the URDF, through `robot_state_publisher`) and sends it with every scan, so the ground station follows the URDF. No noise is added yet: `lidar_noise.py` passes scans through unchanged.
+
+**IMU.** Sampled every 1 ms (`IMU_RATE=1000`): once per physics step (`max_step_size` 0.001 in `worlds/empty.sdf`), the fastest Gazebo can produce new data. The real part is specified at ≥ 4 kHz (E-20); simulating that would mean a 0.25 ms physics step and a sim about 4× slower, so it isn't. Its rate is sim time: with the sim below real time, fewer samples arrive per wall-clock second. The IMU sits at the chassis centre of mass with base_link's axes (TBC until the CAD places it). `imu_noise.py` drops Gazebo's orientation, which is ground truth no real 6-axis IMU gives (quaternion zeroed, `orientation_covariance[0] = -1`), and otherwise passes samples through: no noise or bias yet, and no clipping at the part's range. The ranges in `.env` go to the ground station, which flags saturation and estimates attitude itself.
+
+To add an IMU: a link and `<sensor type="imu">` publishing `/model/racecar/imu/<name>` in the xacro, and its `/sim/imu/<name>` entry in `config/bridge.yaml`. `imu_noise.py`, the bridge and the ground station find it by name.
+
+**Wheel encoders.** Gazebo's `JointStatePublisher` reports the four wheel joints' true angles every physics step (1 ms); the real car samples its AS5047Ps at 2 kHz (`systems/architecture.md`, SYS-06), which the sim doesn't, for the IMU's reason. For every sample, `wheel_encoder_noise.py` takes each wheel's true continuous angle through, in order:
+
+1. nonlinearity and jitter: a fixed error as a function of angle, the sum of a 1× and a 2× per-revolution sine with a phase drawn once per sensor at startup (each term half of `ENCODER_NONLINEARITY_DEG`, so the sum stays within it), plus gaussian jitter (sigma `ENCODER_JITTER_DEG`), both times `SENSOR_NOISE_SCALE`
+2. wrap to [0, 2π)
+3. quantize to 16384 steps (floor)
+4. back to a float in radians, a multiple of 2π/16384
+
+With probability `SENSOR_FAIL_PROB` a sensor's sample is dropped instead, as the firmware discards a read with its parity or error flag set: nothing is published for it, so its stamps have a gap, and consumers treat a gap as no data. Output is one `sensor_msgs/JointState` per sensor per sample on `/encoders/wheel`, carrying exactly the fields of `ARC_ANGLE_SAMPLE` (`systems/icd/sync-link.xml`): `header.stamp` the sample's sim time, `name` one of `wheel_fl`, `wheel_fr`, `wheel_rl`, `wheel_rr`, `position` the absolute angle; `velocity` and `effort` are empty, since the encoder measures angle only. The sign is the joint's own (axis +y on every wheel), so a right wheel's angle runs the same way as the left's and isn't flipped.
+
+The three `SENSOR_*` knobs in `.env` are global, meant for every sensor's noise model, though only the wheel encoders read them so far: `SENSOR_NOISE_SCALE` multiplies each sensor's datasheet baseline (0 = no noise), `SENSOR_FAIL_PROB` is the chance per sample per sensor of a failed read (0 = none), and `SENSOR_SEED` (an integer) makes the noise and drops repeatable, empty drawing a new seed each run. The encoder baselines come from the AS5047P datasheet (v2-00, Figure 8): 0.068° rms output noise and ±0.8° INL, both maxima, the INL with the magnet in the optimum position at 25 °C. The datasheet gives totals only, so the 1× + 2× sine shape is an assumption of the sim, not the part's measured error.
+
+## Tracks
+
+A track is a ROS occupancy map: a `.yaml` plus the image it names, the format `map_server`, slam_toolbox and [f1tenth_gym](https://github.com/f1tenth/f1tenth_gym/blob/main/examples/example_map.yaml) use, so their maps drop straight in.
+
+```yaml
+image: track.png          # next to the yaml
+resolution: 0.05          # metres per pixel
+origin: [-10.0, -5.0, 0.0] # world pose (x, y, yaw) of the image's bottom-left corner
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+start: [0.0, -3.5, 0.0]   # optional, ours: car spawn pose (x, y, yaw); default 0, 0, 0
+```
+
+Occupied pixels become static 0.3 m walls (`wall_height:=` changes it), merged into as few boxes as possible; free and unknown pixels stay open floor, so a map must enclose its track with occupied pixels. Walls have low friction (0.1): at the default, the tyres climb a wall and flip the car. The bridge serves the same map to the ground station, which draws it under the car, walls solid and unknown space faint.
+
+Tracks are loaded while the sim runs, not at launch. The ground station sends the bridge `load_track` with a bundled track's name (`src/arc_sim/tracks/<name>.yaml`); the bridge removes the old walls, spawns the new ones and moves the car to the track's `start` through Gazebo's UserCommands services (`/world/empty/remove`, `create`, `set_pose`), which takes about a second, and reports `track_status` (`loading`, `ready`, `failed`) for the ground station's status panel. Gazebo and car_link keep running, so the heartbeat chain is never interrupted. Only bundled tracks can be loaded: to use your own map, add it to `src/arc_sim/tracks/` (the image is rebuilt on the next `run.sh`). Bundled:
+
+| Name | What |
+| --- | --- |
+| `oval` | Synthetic stadium oval: 2 m lane, 10 m straights, 0.15 m walls. Spawns on the bottom straight, facing counter-clockwise |
+
+To see the walls a map produces: `docker exec arc-sim /entrypoint.sh python3 -m arc_sim.track <map.yaml>`.
+
+## Drive
+
+Drive from the ground station. The car only moves while it receives heartbeats: `car_link` (the sim's stand-in for the car's receiving end) stops the car on a 5 m/s² ramp if heartbeats stop for 0.15 s, and treats teleop as zero speed if teleop stops for 0.15 s.
+
+For scripted testing without the ground station, send the same UDP packets yourself (`./run.sh --bridge` publishes the port). This says hello with a new session, waits for the ack, then drives at 1 m/s, steering 0.2 rad left, for 2 s:
+
+```python
+import random, socket, struct, time
+P, car = struct.Struct('<4sBIIdff'), ('127.0.0.1', 9870)
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.settimeout(0.1)
+session = random.getrandbits(32)
+while True:  # hello until car_link acks this session
+    s.sendto(P.pack(b'ARC0', 3, session, 0, time.monotonic(), 0, 0), car)
+    try:
+        if P.unpack(s.recv(64))[1:3] == (4, session): break
+    except socket.timeout:
+        pass
+for seq in range(100):  # 50 Hz
+    for kind, speed, steer in ((1, 0, 0), (2, 1.0, 0.2)):  # heartbeat, teleop
+        s.sendto(P.pack(b'ARC0', kind, session, seq, time.monotonic(), speed, steer), car)
+    time.sleep(0.02)
+```
+
+The hello replaces whatever session car_link had, so a running ground station is told `replaced` and stops sending (its Link tile shows `Different session detected`). Algorithms in the container publish `geometry_msgs/Twist` on `/sim/auto/cmd_vel` instead; teleop wins while fresh, and both stop without heartbeats.
+
+Watch the link and the position from another shell (`/sim/odom` is the car's estimate; swap in `/sim/ground_truth` for the actual pose):
+
+```bash
+docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/link/status
+docker exec arc-sim /entrypoint.sh ros2 topic echo /sim/odom --field pose.pose.position
+```
+
+## Layout
+
+`run.sh` starts everything on your machine; `start-sim.sh` is the container's main process (`BRIDGE=1` adds the bridge, `GUI=3d` the noVNC stack); `entrypoint.sh` sources ROS for every command, including `docker exec`.
+
+`.env` holds the sensor settings. `src/arc_sim/` is one ROS 2 package:
+
+| Path | What |
+| --- | --- |
+| `urdf/racecar.urdf.xacro` | Car model: joints, inertia, collision, Ackermann plugin, ground-truth publisher, wheel joint states. Swap it to swap the car |
+| `worlds/empty.sdf` | Blank plane with a sun (the light is only used by the 3D viewer); the bridge spawns a track's walls into it |
+| `tracks/` | Bundled tracks: map yaml + image |
+| `arc_sim/track.py` | Map yaml + image → occupied pixels → merged wall boxes → walls model SDF. Used by the bridge |
+| `config/bridge.yaml` | Gazebo ↔ ROS 2 topics. Add one entry per new topic; sensors are `lazy: true` |
+| `scripts/lidar_noise.py` | `/sim/scan` → `/scan`, subscribing upstream only while `/scan` has subscribers. Pass-through until noise is designed |
+| `scripts/imu_noise.py` | `/sim/imu/<name>` → `/imu/<name>` for every IMU, lazy like `lidar_noise.py`. Drops orientation; otherwise pass-through |
+| `scripts/wheel_encoder_noise.py` | `/sim/wheel_joints` → `/encoders/wheel` (E-22), lazy like `lidar_noise.py`. Nonlinearity, jitter, wrap, 14-bit quantization, dropped failed reads |
+| `config/gui.config` | Gazebo 3D GUI layout for `--gui3d`: window size, starting camera |
+| `launch/sim.launch.py` | Server, spawn, topic bridge, car_link. `bridge:=true` adds the ground-station bridge; `gui:=true` the 3D GUI (needs a display) |
+| `scripts/car_link.py` | The car's receiving end: session handshake, UDP heartbeat + teleop on port 9870 and `/sim/auto/cmd_vel` in, heartbeat gate and speed ramp, `/sim/cmd_vel` and `/sim/link/status` out |
+| `scripts/bridge.py` | Loads tracks into the running sim on request, serves the track files and streams the car's estimate, true pose and link status over a websocket (port 8765), plus one websocket per sensor (`/scan`, `/imu/<name>`, `/encoders/wheel`), for the ground station |
+
+## Topics
+
+Internal names, except `/scan`, `/imu/<name>` and `/encoders/wheel`. Noise nodes own the public names such as `/drive` and `/odom`; the LiDAR's, `lidar_noise.py`, runs in the sim for now so the ground station can read `/scan` as an algorithm would.
+
+The sim runs on `ROS_DOMAIN_ID=42` (set in the `Dockerfile`), so its graph stays separate from the car's (default domain 0) even if the container shares the host network. A node outside the container must set the same ID to see these topics.
+
+| Topic | Direction | Type |
+| --- | --- | --- |
+| `/sim/auto/cmd_vel` | in (algorithm → car_link) | `geometry_msgs/Twist` (speed + yaw rate) |
+| `/sim/cmd_vel` | in (car_link → car) | `geometry_msgs/Twist` (speed + yaw rate) |
+| `/sim/link/status` | out (car_link → bridge) | `std_msgs/String`, JSON: heartbeat and teleop ages, `stopping`, `reason` |
+| `/sim/odom` | out | `nav_msgs/Odometry`, the car's estimate from wheel motion |
+| `/sim/ground_truth` | out | `nav_msgs/Odometry`, Gazebo's actual pose. For viewers and scoring; algorithms must never use it |
+| `/sim/scan` | out (Gazebo → lidar_noise) | `sensor_msgs/LaserScan`, perfect ranges, frame `lidar`. Lazy |
+| `/scan` | out (lidar_noise) | `sensor_msgs/LaserScan`, what algorithms and the ground station read. Lazy |
+| `/sim/imu/cg` | out (Gazebo → imu_noise) | `sensor_msgs/Imu`, 1 kHz sim time, frame `imu_cg`, with Gazebo's true orientation. Lazy |
+| `/imu/cg` | out (imu_noise) | `sensor_msgs/Imu` without orientation, what algorithms and the ground station read. Lazy |
+| `/sim/wheel_joints` | out (Gazebo → wheel_encoder_noise) | `sensor_msgs/JointState`, the four wheel joints' true continuous angles, 1 kHz sim time. Lazy |
+| `/encoders/wheel` | out (wheel_encoder_noise) | `sensor_msgs/JointState`, one message per sensor per sample: `name` `wheel_fl`/`fr`/`rl`/`rr`, `position` the absolute angle in [0, 2π), 14-bit steps. A gap in a sensor's stamps is a failed read. Lazy |
+| `/clock` | out | sim time |
+
+## Placeholders and assumptions
+
+The car is the F1TENTH (Traxxas) geometry from `f1tenth_simulator`'s `racecar.xacro` until the ARC CAD exists; the chassis mesh is a different car and doesn't match it. Values for the ARC car come from `systems/` (wheelbase is open, `systems/mechanical/layout-brief.md` M2). Until then:
+
+- Mass (3 kg chassis, 0.1 kg per wheel) and inertia are TBC; see the comments in the xacro.
+- Steering limit 0.4189 rad is the f1tenth gym's value, TBC.
+- All four wheels are driven, assumed from the 4WD layout (ADR-0026); not checked against the real drivetrain.
+- Tire friction is Gazebo's default. car_link limits speed changes to 5 m/s² (TBC, SYS-04 / ADR-0012); there is no steering-rate limit yet, so steering changes faster than a real car's.
+- The bridge's `estimate` is odometry shifted by the spawn pose, which assumes odometry starts at zero there. If they disagree, the estimate is offset by the same amount.
+
+## Known issues
+
+- The car turns less than commanded: about 0.66 rad/s for 1.0 rad/s requested at 1 m/s. Not yet investigated (steering lag, tire slip or plugin limits).
+- `/sim/odom` drifts from `/sim/ground_truth` during turns (about 0.3 m after a 4 s turn), likely the same cause: the plugin's odometry assumes the commanded turn. No noise is added anywhere yet.
+- The IMU's accelerometer spikes while the car drives: in a 4 s drive at 1 m/s, about 1.4 % of samples read over 2 g and single samples up to 47 g, against a median of 1.00 g. They look like the rigid wheel–ground contacts being resolved each 1 ms step (the model has no suspension or tyre compliance). The ground station's attitude ignores them (it trusts the accelerometer only near 1 g), but its peak g and saturation readouts show them. Where to handle them (physics, `imu_noise.py`, or the display) is not decided.

@@ -1,0 +1,57 @@
+# ros_gz_bridge topics. One entry per topic: add sensors here as the interface list firms up.
+# ROS-side names are internal (/sim/...); the noise nodes own the public names (/drive, /odom, /scan).
+
+- ros_topic_name: "/clock"
+  gz_topic_name: "/clock"
+  ros_type_name: "rosgraph_msgs/msg/Clock"
+  gz_type_name: "gz.msgs.Clock"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/sim/cmd_vel"
+  gz_topic_name: "/model/racecar/cmd_vel"
+  ros_type_name: "geometry_msgs/msg/Twist"
+  gz_type_name: "gz.msgs.Twist"
+  direction: ROS_TO_GZ
+
+- ros_topic_name: "/sim/odom"
+  gz_topic_name: "/model/racecar/odometry"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+- ros_topic_name: "/sim/ground_truth"
+  gz_topic_name: "/model/racecar/ground_truth"
+  ros_type_name: "nav_msgs/msg/Odometry"
+  gz_type_name: "gz.msgs.Odometry"
+  direction: GZ_TO_ROS
+
+# Lazy: subscribes to Gazebo only while something subscribes to /sim/scan, so Gazebo stops
+# rendering the LiDAR when nobody is watching. lidar_noise.py is that something, and is lazy too.
+- ros_topic_name: "/sim/scan"
+  gz_topic_name: "/model/racecar/scan"
+  ros_type_name: "sensor_msgs/msg/LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
+  direction: GZ_TO_ROS
+  lazy: true
+
+# One entry per IMU in the URDF (/model/racecar/imu/<name> -> /sim/imu/<name>); imu_noise.py finds
+# them by name. Lazy like the LiDAR; deeper queues so a 1 kHz stream isn't dropped in bursts.
+- ros_topic_name: "/sim/imu/cg"
+  gz_topic_name: "/model/racecar/imu/cg"
+  ros_type_name: "sensor_msgs/msg/Imu"
+  gz_type_name: "gz.msgs.IMU"
+  direction: GZ_TO_ROS
+  lazy: true
+  publisher_queue: 100
+  subscriber_queue: 100
+
+# The four wheel joints' angles (E-22's source); wheel_encoder_noise.py turns them into /encoders/wheel.
+# Lazy like the IMU, with the same deeper queues for a 1 kHz stream.
+- ros_topic_name: "/sim/wheel_joints"
+  gz_topic_name: "/model/racecar/wheel_joints"
+  ros_type_name: "sensor_msgs/msg/JointState"
+  gz_type_name: "gz.msgs.Model"
+  direction: GZ_TO_ROS
+  lazy: true
+  publisher_queue: 100
+  subscriber_queue: 100
