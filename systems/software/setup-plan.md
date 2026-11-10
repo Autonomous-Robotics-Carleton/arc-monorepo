@@ -95,7 +95,7 @@ Planned in [`platform-plan.md`](platform-plan.md), which follows this plan:
 
 - The platform image and the path from a merged PR to the Orin (ADR-0016)
 - The real drivers, estimator, controllers and logging
-- The ground station: the operator laptop's software, including the heartbeat the Orin forwards (SYS-04). Nothing is scaffolded yet (issue #71)
+- The ground station: the operator laptop's software, including the heartbeat the Orin forwards (SYS-04). A prototype is in `ground-station/` (#228); what it becomes is issue #71
 
 ## Open questions
 

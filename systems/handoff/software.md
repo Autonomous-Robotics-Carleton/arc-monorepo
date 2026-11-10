@@ -125,11 +125,11 @@ The starting point for anyone writing the car's software. It collects, per compo
 ### 6. Ground station
 
 - **Decided:** the operator's laptop at the track; the network rules (ADR-0015): the operator link is a fixed-rate UDP stream with sequence numbers, marked top priority; the laptop is the car's internet gateway (Linux and macOS only); a button hotspot and a wired service port as fallbacks.
-- **What exists:** a working ground station on branch `yufeng/ground-station`: a Python helper and a browser page with gamepad teleop, a 50 Hz heartbeat with a test cutoff, a status panel and a 2D track view. It starts the simulator itself and reads the simulator's own state, including ground truth the car can't know.
+- **What exists:** a prototype ground station in [`ground-station/`](../../ground-station/README.md) (#228): a Python helper and server and a browser page with gamepad teleop, a 50 Hz heartbeat with a test cutoff, a status panel, a 2D track view and LiDAR, IMU and wheel-encoder panels. It starts the simulator itself and reads the simulator's own state, including ground truth the car can't know.
 - **Requirements:** SYS-04, -11, -26, -27, -28.
 - **Open:**
-  - What the ground station is, decided and scaffolded as its own project (#71). The working version is the obvious candidate.
-  - **The operator-link ICD** (`icd/README.md`: operator-link, TBD), from the branch's `protocol.md`.
+  - What the ground station is, decided and scaffolded as its own project (#71). The prototype in `ground-station/` is the obvious candidate.
+  - **The operator-link ICD** (`icd/README.md`: operator-link, TBD), from [`ground-station/protocol.md`](../../ground-station/protocol.md).
   - **Talk only to the car's Orin,** never to the simulator: the operator link plus a telemetry bridge on the Orin. Simulator controls go through a separate sim-only interface ([`software/simulation.md`](../software/simulation.md)).
   - Arm and re-arm, the car's state and faults, envelope settings (#90); the dashboard (#91); log offload and viewing (#93); router configuration and the gateway script (#92); gamepads on every OS the team uses.
 
@@ -157,7 +157,7 @@ The starting point for anyone writing the car's software. It collects, per compo
 - **Decided:** every component runs in simulation (SYS-33, ADR-0028); Gazebo Harmonic, Webots and the F1TENTH gym as simulators, with one car description for all (ADR-0032).
 - **Decided:** the twin runs the whole stack, firmware included, against models of the devices and the world (ADR-0047). Design, profiles, scenarios, fault injection and fidelity are in [`software/simulation.md`](../software/simulation.md).
 - **Decided:** the twin runs in lockstep on the simulator's clock: the firmware, the device models and every ROS node follow it (ADR-0049).
-- **What exists:** the firmware-in-the-loop test, and the working Gazebo sim on `yufeng/ground-station`.
+- **What exists:** the firmware-in-the-loop test, and the prototype Gazebo sim in [`simulator/`](../../simulator/README.md) (#228).
 - **Requirements:** SYS-33, and the evidence for every requirement a simulation can show.
 - **Open:** see the open-questions table in [`software/simulation.md`](../software/simulation.md). The largest pieces of work:
   - the device models (sensors, motor controllers, steering, power, LiDAR, cameras)

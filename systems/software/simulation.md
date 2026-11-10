@@ -145,8 +145,9 @@ The twin's timing is simulated (ADR-0049), so timing results show the logic, not
 ## What exists today
 
 - **Firmware in the loop:** `nx test firmware-in-loop` runs the `native_sim` firmware and the ROS car backend together; they exchange link status over UDP.
-- **A working Gazebo sim and ground station,** unmerged, on branch `yufeng/ground-station`:
+- **A prototype Gazebo sim and ground station** in [`simulator/`](../../simulator/README.md) and [`ground-station/`](../../ground-station/README.md) (#228):
   - Gazebo Harmonic with a track loader and a placeholder car model, in its own image that also builds for Apple Silicon
+  - LiDAR, IMU and wheel encoders with noise models
   - a browser ground station with gamepad teleop and a heartbeat test cutoff
 
   Its `car_link.py` re-implements the watchdog and brake ramp in Python. Under ADR-0047 that behaviour comes from the real firmware instead, so the file splits into the operator-link receiver on the Orin, the firmware's `safety.c`, and the Gazebo-side model.

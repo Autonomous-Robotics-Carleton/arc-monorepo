@@ -34,7 +34,7 @@ flowchart TB
 
 | Computer | What it is | Software | Lives in |
 | --- | --- | --- | --- |
-| **Operator laptop** | Any team member's laptop at the track | The ground station: drive with a gamepad, keep the car alive with a heartbeat, watch telemetry, pull logs | Not scaffolded yet (#71); a working version is on branch `yufeng/ground-station` |
+| **Operator laptop** | Any team member's laptop at the track | The ground station: drive with a gamepad, keep the car alive with a heartbeat, watch telemetry, pull logs | A prototype in `ground-station/` (#228), against the simulator only; what it becomes is #71 |
 | **Jetson Orin** | The car's main computer. v1.0: the Orin Nano 8 GB developer kit; v1.1: the Orin NX 16 GB (ADR-0046) | JetPack 7.2.1, Ubuntu 24.04, ROS 2 Jazzy, PREEMPT_RT (ADR-0016). The **platform software** runs here, and so do **experiments**, each in its own container | `ros/`, `experiments/`, `platform/` |
 | **Sync MCU** | An STM32H723 microcontroller on the motherboard (ADR-0042) | Zephyr firmware (ADR-0017). Owns the car's clock, reads every vehicle-state sensor, commands the motors and steering, and enforces the safety envelope and heartbeat watchdog | `firmware/sync-mcu/` |
 | **Motor controllers** | Four off-the-shelf A50S boards on the deck, one per wheel (ADR-0034) | Upstream VESC firmware plus our modules: e-stop braking, command timeout, telemetry, speed limit | `firmware/vesc/` |
@@ -211,7 +211,7 @@ How the simulator does this, and what it can and can't prove, is in [`simulation
 
 | Interface | Between | Defined in | Code |
 | --- | --- | --- | --- |
-| Operator link | Laptop ↔ Orin (heartbeat, teleop) | Not written (`icd/README.md`: operator-link, TBD); a working draft is `ground-station/protocol.md` on `yufeng/ground-station` | — |
+| Operator link | Laptop ↔ Orin (heartbeat, teleop) | Not written (`icd/README.md`: operator-link, TBD); a working draft is [`ground-station/protocol.md`](../../ground-station/protocol.md) | — |
 | Car interface | Backends and drivers ↔ platform nodes and experiments | ICD-ros2-msgs (draft, rev A) | `ros/src/arc_msgs/` |
 | Sync link | Orin ↔ sync MCU, UDP | ICD-sync-link, `sync-link.xml` (reviewed, version 3; MAVLink 2, ADR-0031) | Generated into the firmware and the car backend |
 | Command bus (classic CAN, 1 Mbit/s) | Sync MCU → motor controllers | `can-command.dbc` (reviewed; stock VESC frames) | Generated into the firmware |

@@ -37,7 +37,7 @@ The thinnest version of the car's whole code path, running in the twin end to en
 | Work | Issue |
 | --- | --- |
 | **Contracts:** the car interface (ICD ros2-msgs, `arc_msgs`) | #84 |
-| **Contracts:** the operator-link ICD, from `ground-station/protocol.md` on `yufeng/ground-station` | #144 |
+| **Contracts:** the operator-link ICD, from [`ground-station/protocol.md`](../../ground-station/protocol.md) | #144 |
 | **Contracts:** the sim-link ICD (simulator ↔ `native_sim`) | #145 |
 | **Contracts:** the re-arm message on the sync link | #141 |
 | **Sync MCU:** the envelope, watchdog and brake ramp in `safety.c`, free of Zephyr calls | #75 |
@@ -49,13 +49,13 @@ The thinnest version of the car's whole code path, running in the twin end to en
 | **Orin:** `arc_safety`, the operator-link receiver | #150 |
 | **Orin:** `arc_control`, the minimal command switch | #151 |
 | **Orin:** `arc_logging` | #152 |
-| **Twin:** the Gazebo world, from the sim on `yufeng/ground-station`, with a simple motor-controller model that answers commands and reports status | #106 |
+| **Twin:** the Gazebo world, from the prototype in `simulator/`, with a simple motor-controller model that answers commands and reports status | #106 |
 | **Twin:** a spike: can `native_sim` follow an outside clock (ADR-0049) | #153 |
 | **Twin:** lockstep: the `native_sim` clock component, time grants on the sim link, the models stepping | #154 |
 | **Twin:** the simulator image | #155 |
 | **Twin:** the sim-only control interface | #156 |
 | **Twin:** profiles and the scenario runner | #157 |
-| **Ground station:** moved into the repo; talks only to the Orin; drives and arms the twin | #71, #90 |
+| **Ground station:** from the prototype in `ground-station/`; talks only to the Orin; drives and arms the twin | #71, #90 |
 | **CI:** runs the scenarios | #157 |
 | **CI:** platform code reads time only through the ROS clock (ADR-0049) | #154 |
 | **CI:** formatters and linters for C, C++ and Python (clang-format, clang-tidy, ruff, `ament_lint`); today only the websites are linted | #158 |
@@ -141,7 +141,7 @@ Set up with the handbook's **Dev setup** page. Then pick by what you like workin
 | C and embedded (Zephyr) | #75: the envelope and watchdog, tested on `native_sim`, no hardware needed | The sync MCU's message handling, then the latch and re-arm |
 | C, motor control | The motor-controller model | #80, #120 |
 | ROS 2 (C++ or Python) | #84: the messages everything uses | `arc_control`, `arc_logging`, `arc_safety` |
-| Simulation, Gazebo | #106: the working sim, moved into the repo | Per-wheel control, the device models |
+| Simulation, Gazebo | #106: the prototype in `simulator/`, moved onto the twin | Per-wheel control, the device models |
 | Web, the operator's laptop | #71 and #90: the ground station | #91 |
 | Docker, CI | The simulator image | The scenarios in CI |
 | Writing, teaching | The handbook page, tested on a fresh laptop | — |

@@ -196,9 +196,9 @@ What else stops the car: `arc_control` handles a source that goes silent. `arc_c
 | `ControlMode` | `mode` (`MODE_OPERATOR`, `MODE_EXPERIMENT`) | — |
 | `SetControlMode` (service) | request `mode`; response `accepted`, `reason` | — |
 
-## From the simulator branch
+## From the prototype simulator
 
-`yufeng/simulator` and `yufeng/ground-station` already drive a simulated car on their own topics. Nothing there has to change now. When that work moves onto the platform, these are its counterparts:
+The prototype in `simulator/` and `ground-station/` (#228) already drives a simulated car on its own topics. Nothing there has to change now. When that work moves onto the platform, these are its counterparts:
 
 | There | Here |
 | --- | --- |
