@@ -129,7 +129,7 @@ The starting point for anyone writing the car's software. It collects, per compo
 - **Requirements:** SYS-04, -11, -26, -27, -28.
 - **Open:**
   - What the ground station is, decided and scaffolded as its own project (#71). The prototype in `ground-station/` is the obvious candidate.
-  - **The operator-link ICD** (`icd/README.md`: operator-link, TBD), from [`ground-station/protocol.md`](../../ground-station/protocol.md).
+  - **The operator-link ICD** ([`icd/operator-link.md`](../icd/operator-link.md), draft rev A, #144): its open issues, the encoding and the port first.
   - **Talk only to the car's Orin,** never to the simulator: the operator link plus a telemetry bridge on the Orin. Simulator controls go through a separate sim-only interface ([`software/simulation.md`](../software/simulation.md)).
   - Arm and re-arm, the car's state and faults, envelope settings (#90); the dashboard (#91); log offload and viewing (#93); router configuration and the gateway script (#92); gamepads on every OS the team uses.
 

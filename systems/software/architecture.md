@@ -211,7 +211,7 @@ How the simulator does this, and what it can and can't prove, is in [`simulation
 
 | Interface | Between | Defined in | Code |
 | --- | --- | --- | --- |
-| Operator link | Laptop ↔ Orin (heartbeat, teleop) | Not written (`icd/README.md`: operator-link, TBD); a working draft is [`ground-station/protocol.md`](../../ground-station/protocol.md) | — |
+| Operator link | Laptop ↔ Orin (heartbeat, teleop) | [ICD-operator-link](../icd/operator-link.md) (draft, rev A), from the prototype's [`ground-station/protocol.md`](../../ground-station/protocol.md) | — |
 | Car interface | Backends and drivers ↔ platform nodes and experiments | ICD-ros2-msgs (draft, rev A) | `ros/src/arc_msgs/` |
 | Sync link | Orin ↔ sync MCU, UDP | ICD-sync-link, `sync-link.xml` (reviewed, version 3; MAVLink 2, ADR-0031) | Generated into the firmware and the car backend |
 | Command bus (classic CAN, 1 Mbit/s) | Sync MCU → motor controllers | `can-command.dbc` (reviewed; stock VESC frames) | Generated into the firmware |

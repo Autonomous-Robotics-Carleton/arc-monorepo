@@ -6,7 +6,7 @@
 - **Side B:** the ground equipment: the team router, the operator's laptop, other laptops (ADR-0015) (owner: Shrikar Vempati, until reassigned)
 - **Traces to:** SYS-04, SYS-24, SYS-26, SYS-27, ADR-0015, ADR-0021, ADR-0031, ADR-0047, ADR-0049
 
-Every network the car is on, every address on them, and the ports and rates of the traffic between them. What the messages contain is in the link ICDs: [sync-link](sync-link.md) for the sync MCU and the Orin, operator-link (TBD) for the laptop and the Orin.
+Every network the car is on, every address on them, and the ports and rates of the traffic between them. What the messages contain is in the link ICDs: [sync-link](sync-link.md) for the sync MCU and the Orin, [operator-link](operator-link.md) (draft) for the laptop and the Orin.
 
 The twin uses the same addresses (ADR-0047), so nothing changes between the simulation and the car.
 
@@ -73,7 +73,7 @@ Set 2026-10-25 (#72). A change is a PR to this ICD, with the firmware's and the 
 | Drive commands | Orin → sync MCU | (sync link) | As the commander sends them, latest wins; up to 500 Hz, the command bus's rate (SYS-06) | [sync-link](sync-link.md) |
 | Operator heartbeat | Laptop → Orin → sync MCU | operator link, then sync link | 50–100 Hz (ADR-0015) | [sync-link](sync-link.md) |
 | Safety state | sync MCU → Orin | (sync link) | On change, plus 50 Hz | [sync-link](sync-link.md) |
-| Operator link (teleop, heartbeat, re-arm) | Laptop ↔ Orin | TBD | 50–100 Hz (ADR-0015) | operator-link (TBD) |
+| Operator link (teleop, heartbeat, re-arm) | Laptop ↔ Orin | TBD | 50–100 Hz (ADR-0015) | [operator-link](operator-link.md) (draft) |
 | Time sync (PTP) | sync MCU ↔ Orin | UDP 319, 320 (PTP's standard ports) | PTP's | ADR-0021 |
 | LiDAR | LiDAR → Orin | TCP 10940 (Hokuyo's) | 40 Hz scans | E-10 |
 

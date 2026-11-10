@@ -15,7 +15,7 @@ One file per interface. An ICD names an owner on **each** side. Changes need bot
 | [network](network.md) | The car (Orin, sync MCU, LiDAR, switch) | Ground equipment (team router, laptops; ADR-0015) | Markdown (networks, addresses, ports, rates) | Draft (rev A) |
 | [ros2-msgs](ros2-msgs.md) | The car backend and the Orin's drivers (ADR-0028, ADR-0047) | Platform nodes, experiments, the ground station | ROS 2 topics; `.msg` files in `ros/src/arc_msgs/` | Topics, types and QoS reviewed (2026-10-29, #84); measured values TBC |
 | steering-bus | Sync MCU | Steering controller (moteus-c1, CAN-FD, ADR-0019) | Markdown (moteus register protocol, rates, timeout mode) | TBD |
-| operator-link | Laptop | Orin (heartbeat, teleop; ADR-0015, SYS-04) | Markdown | TBD |
+| [operator-link](operator-link.md) | The ground station on the operator's laptop | `arc_safety` on the Orin (heartbeat, teleop, re-arm; ADR-0015, SYS-04) | Markdown; UDP, encoding TBD | Draft (rev A, #144) |
 | sim-link | Simulator (device models) | Sync MCU firmware on `native_sim` only (ADR-0047; `software/simulation.md`) | MAVLink 2 or Zephyr device emulators, TBD | TBD |
 | battery-pack | Car (battery bay, power input, per-cell monitor) | Charging station | Markdown (pack form factor, main connector, balance connector (4S JST-XH 5-pin assumed, TBC) which the car also uses for cell monitoring, chemistry and cell count) | TBD |
 | [deck-grid](deck-grid.md) | Chassis | Sensor mounts | Markdown + CAD | Draft (outline) |
